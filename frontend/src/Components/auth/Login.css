@@ -3,7 +3,7 @@
 h2 {
     font-family: "Sofia", sans-serif;
   }
-body{
+.body-login{
     font-family: Playfair Display;
     background-image: url('../images/bg1.png'); 
     background-size: cover;
@@ -12,32 +12,3 @@ body{
 
 }  
 
-@keyframes moveRightLeft {
-0% {
-    transform: translateX(100%) ;
-}
-100% {
-    transform: translateX(0%) ;
-}
-}
-  
-.animate-move-right-left {
-    animation: moveRightLeft 3s ease-out forwards; /* Run once, ease-out, and stop at the final position */
-
-}
-
-@keyframes slideUp {
-    0% {
-      transform: translateY(-20px); /* Start above the screen */
-      opacity: 0; /* Make it invisible */
-    }
-    100% {
-      transform: translateY(0); /* Slide to its original position */
-      opacity: 1; /* Make it fully visible */
-    }
-  }
-  
-  /* Add the animation to the card */
-  .animate-slide-up {
-    animation: slideUp 1s ease-out forwards; /* Apply the slide-up animation */
-  }

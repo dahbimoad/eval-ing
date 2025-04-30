@@ -1,15 +1,17 @@
 import React from "react";
-import login from "../images/Login.png";
+import login from "../images/Login2.png";
 import './Login.css'; // Add your custom styles here (if needed)
+import Header from "../HomePage/Header";
 
 function Login() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-8 ">
+    
+    <div className="body-login flex min-h-screen items-center justify-center px-6 py-8 ">
       <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg w-full max-w-4xl p-6 ">
         
         <div className="flex-1 p-8 animate-slide-up">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-bold text-[#5D5FEF] mb-4 font-inter">
+          <h2 className="mt-6 text-center text-3xl  text-yellow-400 font-bold  mb-4 font-inter">
             Connexion
           </h2>
           </div>
@@ -56,7 +58,7 @@ function Login() {
               <div>
                 <button
                   type="submit"
-                  className="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex w-full justify-center rounded-md bg-purple-700 px-4 py-2 text-white font-semibold hover:bg-indigo-700 hover:bg-purple-500"
                 >
                   Se connecter
                 </button>
