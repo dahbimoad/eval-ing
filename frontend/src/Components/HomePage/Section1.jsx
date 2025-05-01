@@ -1,5 +1,5 @@
 import React from "react";
-import section1 from '../images/section1.png';
+import section1 from '../images/HomePage/section1.png';
 import { Link } from 'react-router-dom'; 
 
 

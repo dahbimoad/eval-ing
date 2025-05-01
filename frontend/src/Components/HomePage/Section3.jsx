@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import img4 from '../images/4.png';
-import img5 from '../images/5.png';
-import img6 from '../images/6.png';
+import img4 from '../images/HomePage/4.png';
+import img5 from '../images/HomePage/5.png';
+import img6 from '../images/HomePage/6.png';
 
 function Section3() {
     // State pour chaque fonctionnalité
@@ -15,7 +15,7 @@ function Section3() {
     const toggleDetails3 = () => setShowDetails3(!showDetails3);
 
     return (
-        <div id="#function" className="bg-blue-800 py-16 ">
+        <div id="#function" className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16 ">
             <h2 className="text-3xl font-bold text-center text-yellow-400 mb-12" >Nos Fonctionnalités</h2>
 
             <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 a animate-slide-up">

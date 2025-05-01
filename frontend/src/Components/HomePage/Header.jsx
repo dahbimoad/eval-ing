@@ -1,14 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from "../images/Eval.png";
+import logo from "../images/HomePage/Eval.png";
 
 function Header(){
   return (
-    <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white">
-      <header className="max-w-screen-xl mx-auto p-6 flex justify-between items-center">
+    <div className="bg-blue-600 text-white ">
+      <header className="max-w-screen-xl mx-auto p-6 flex justify-between items-center animate-slide-up">
         <div className="flex items-center space-x-4">
-          <img href="/" src={logo} alt="" className="w-64 h-auto" />
-          {/* <span className="text-3xl font-bold">EvalIng</span> */}
+          <img href="/" src={logo} alt="" className="w-64 h-auto " />
         </div>
         
         <nav>

@@ -1,17 +1,16 @@
 import React from "react";
-import login from "../images/Login2.png";
+import login from "../images/Login/Login2.png";
 import './Login.css'; // Add your custom styles here (if needed)
-import Header from "../HomePage/Header";
 
 function Login() {
   return (
     
-    <div className="body-login flex min-h-screen items-center justify-center px-6 py-8 ">
+    <div className="body-login bg-gray-200 flex min-h-screen items-center justify-center px-6 py-8 animate-slide-up   ">
       <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg w-full max-w-4xl p-6 ">
         
         <div className="flex-1 p-8 animate-slide-up">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl  text-yellow-400 font-bold  mb-4 font-inter">
+          <h2 className="mt-6 text-center text-3xl  text-purple-700 font-bold  mb-4 font-inter">
             Connexion
           </h2>
           </div>
@@ -49,7 +48,7 @@ function Login() {
                   />
                 </div>
                 <div className="mt-2 text-center">
-                  <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500">
+                  <a href="/forget" className="text-sm text-indigo-600 hover:text-indigo-500">
                     Mot de passe oublié ?
                   </a>
                 </div>
@@ -69,9 +68,9 @@ function Login() {
         </div>
 
 
-        <div className="hidden lg:flex w-1/2 items-center justify-center bg-indigo-600 rounded-r-lg overflow-hidden">
+        <div className="hidden lg:flex w-1/2 items-center justify-center rounded-r-lg overflow-hidden">
           <img
-            className="h-full w-full object-cover rounded-r-lg animate-move-right-left"
+            className="h-full w-full object-cover rounded-r-lg animate-slide-up"
             src={login}
             alt="Image de connexion"
           />

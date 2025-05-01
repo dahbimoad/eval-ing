@@ -1,7 +1,7 @@
 import React from "react";
-import img1 from "../images/1.png"
-import img2 from "../images/2.png"
-import img3 from "../images/3.png"
+import img1 from "../images/HomePage/1.png"
+import img2 from "../images/HomePage/2.png"
+import img3 from "../images/HomePage/3.png"
 
 function Section2(){
     return(

@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 function About(){
     return(
-    <div id="#about" className="bg-indigo-900 py-16">
+    <div id="#about" className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16">
     <div className="max-w-screen-xl mx-auto text-center">
-        <h2 className="text-3xl font-bold text-white mb-6">À Propos de Nous</h2>
+        <h2 className="text-3xl font-bold text-white mb-6 text-yellow-400">À Propos de Nous</h2>
         <p className="text-lg text-white mb-8">
         EvalIng est une plateforme innovante dédiée à l'évaluation continue des étudiants en ingénierie.
         Nous permettons aux enseignants et administrateurs de suivre efficacement les progrès des étudiants, tout en fournissant un retour détaillé pour chaque évaluation.
