@@ -1,4 +1,3 @@
-// Models/Module.cs
 using System;
 
 namespace Catalog.API.Models

@@ -1,4 +1,3 @@
-// Models/Formation.cs
 using System;
 using System.Collections.Generic;
 
