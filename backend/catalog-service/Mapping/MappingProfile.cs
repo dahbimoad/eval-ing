@@ -1,4 +1,3 @@
-// Mapping/MappingProfile.cs
 using AutoMapper;
 using Catalog.API.DTOs;
 using Catalog.API.Models;
