@@ -1,4 +1,3 @@
-// Data/Configurations/ModuleConfiguration.cs
 using Catalog.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

@@ -1,4 +1,3 @@
-// Data/ApplicationDbContext.cs
 using Catalog.API.Models;
 using Microsoft.EntityFrameworkCore;
 
