@@ -1,4 +1,3 @@
-// Services/FormationService.cs
 using AutoMapper;
 using Catalog.API.Data.Repositories.Interfaces;
 using Catalog.API.DTOs;

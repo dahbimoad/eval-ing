@@ -1,4 +1,3 @@
-// Services/Interfaces/IFormationService.cs
 using Catalog.API.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
