@@ -1,4 +1,3 @@
-// DTOs/ModuleDto.cs
 using System;
 
 namespace Catalog.API.DTOs
