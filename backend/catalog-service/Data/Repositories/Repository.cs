@@ -1,4 +1,3 @@
-// Data/Repositories/Repository.cs
 using Catalog.API.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;

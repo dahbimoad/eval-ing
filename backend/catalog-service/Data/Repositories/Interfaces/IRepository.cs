@@ -1,4 +1,3 @@
-// Data/Repositories/Interfaces/IRepository.cs
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;

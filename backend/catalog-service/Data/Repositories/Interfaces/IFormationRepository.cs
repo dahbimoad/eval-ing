@@ -1,4 +1,3 @@
-// Data/Repositories/Interfaces/IFormationRepository.cs
 using Catalog.API.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -1,4 +1,3 @@
-// Data/Repositories/ModuleRepository.cs
 using Catalog.API.Data.Repositories.Interfaces;
 using Catalog.API.Models;
 using Microsoft.EntityFrameworkCore;
