@@ -4,6 +4,8 @@ using Catalog.API.Data.Repositories.Interfaces;
 using Catalog.API.Services;
 using Catalog.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
