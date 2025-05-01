@@ -43,5 +43,4 @@ La chaîne de connexion PostgreSQL est configurée dans `appsettings.json`. Pour
 }
 ```
 
-Pour une utilisation avec Docker, la chaîne de connexion sera automatiquement configurée pour utiliser le conteneur PostgreSQL.
 
