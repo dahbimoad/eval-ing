@@ -59,10 +59,10 @@ builder.Services.AddDbContext<UserDbContext>(opt =>
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IUserAdminService, UserAdminService>();
 builder.Services.AddScoped<IErrorHandler, ErrorHandler>();
 builder.Services.AddScoped<StudentAdminService>();
 builder.Services.AddScoped<TeacherAdminService>();
+builder.Services.AddScoped<ProfessionalAdminService>();
 
 
 // Récupérer les variables d'environnement pour JWT
