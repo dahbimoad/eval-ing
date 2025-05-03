@@ -60,6 +60,7 @@ builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
+builder.Services.AddScoped<IErrorHandler, ErrorHandler>();
 
 // Récupérer les variables d'environnement pour JWT
 var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
