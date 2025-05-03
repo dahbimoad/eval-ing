@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, TrashIcon, PlusIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import ModuleForm from './ModuleForm';
+import Sidebar from "./Sidebar";
 
 const ModuleList = () => {
   const [modules, setModules] = useState([]);
@@ -109,6 +110,8 @@ const ModuleList = () => {
   }
 
   return (
+    <div className="flex h-screen">
+      <Sidebar />
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center">
@@ -196,6 +199,7 @@ const ModuleList = () => {
         module={editingModule}
         formations={formations}
       />
+    </div>
     </div>
   );
 };
