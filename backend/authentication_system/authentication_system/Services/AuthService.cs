@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-
+using authentication_system.Exceptions;
 namespace authentication_system.Services
 {
     public class AuthService : IAuthService
@@ -272,20 +272,25 @@ namespace authentication_system.Services
                     throw new ArgumentNullException(nameof(user));
                 }
 
-                var secretKey = _configuration["AppSettings:Token"];
-                if (string.IsNullOrEmpty(secretKey))
+                // Récupération des variables d'environnement
+                var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
+                var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+                var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
+                // Vérification que la clé JWT est bien définie
+                if (string.IsNullOrEmpty(jwtKey))
                 {
-                    throw new InvalidOperationException("JWT token secret key is not configured");
+                    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas définie.");
                 }
 
                 // Claims de base pour l'identifiant utilisateur et l'email
                 var claims = new List<Claim>
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
-                };
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
+        };
 
                 // Ajouter les rôles
                 List<string> roles = new List<string>();
@@ -315,12 +320,12 @@ namespace authentication_system.Services
                     claims.Add(new Claim("roles", System.Text.Json.JsonSerializer.Serialize(roles)));
                 }
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                // Utiliser la clé depuis les variables d'environnement
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+                // Récupérer la durée d'expiration du token
                 var tokenExpirationMinutes = GetTokenExpiryMinutes();
-                var issuer = _configuration["AppSettings:Issuer"] ?? "DefaultIssuer";
-                var audience = _configuration["AppSettings:Audience"] ?? "DefaultAudience";
 
                 var token = new JwtSecurityToken(
                     issuer: issuer,
@@ -339,18 +344,6 @@ namespace authentication_system.Services
                 throw new AuthenticationException("Erreur lors de la création du token JWT", ex);
             }
         }
-    }
-    
 
-    // Custom exception pour les erreurs d'authentification
-    public class AuthenticationException : Exception
-    {
-        public AuthenticationException(string message) : base(message)
-        {
-        }
-
-        public AuthenticationException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }

@@ -1,12 +1,18 @@
+using System.Text;
 using authentication_system.Data;
 using authentication_system.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
+using DotNetEnv;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Charger les variables d'environnement depuis le fichier .env
+Env.Load();
 
 // Add controllers
 builder.Services.AddControllers();
@@ -16,7 +22,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "JwtAuthDotNet9 API", Version = "v1" });
-
     var jwtScheme = new OpenApiSecurityScheme
     {
         Scheme = "bearer",
@@ -30,7 +35,6 @@ builder.Services.AddSwaggerGen(o =>
             Type = ReferenceType.SecurityScheme
         }
     };
-
     o.AddSecurityDefinition(jwtScheme.Reference.Id, jwtScheme);
     o.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -38,16 +42,34 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
+// Configuration de la base de données avec les variables d'environnement
+var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
+                       $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
+                       $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
+                       $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
+                       $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};";
+
+
 // Configure PostgreSQL database context
 builder.Services.AddDbContext<UserDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("UserDatabase")));
+    opt.UseNpgsql(connectionString));
 
 // Dependency injection
-
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
+
+// Récupérer les variables d'environnement pour JWT
+var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
+// Vérifier que la clé JWT est définie
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas définie. Vérifiez votre fichier .env.");
+}
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -63,9 +85,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "auth-service",
-        ValidAudience = "formation-evaluation-app",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecureAndRandomKeyThatLooksJustAwesomeAndNeedsToBeVeryVeryLong!!!111oneeleven")) // Replace this with your real key
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
@@ -92,10 +114,8 @@ using (var scope = app.Services.CreateScope())
 
 // Middleware order is important
 app.UseHttpsRedirection();
-
 app.UseAuthentication(); // <- Must come before Authorization
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapGet("/health", () => "Service is running").AllowAnonymous();
 

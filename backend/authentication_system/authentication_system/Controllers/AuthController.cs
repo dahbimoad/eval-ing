@@ -1,5 +1,6 @@
 ﻿using authentication_system.Models;
 using authentication_system.Services;
+using authentication_system.Exceptions; // Ajout de cette directive
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -28,13 +29,11 @@ namespace authentication_system.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
                 var response = await _authService.LoginAsync(loginDto);
                 if (response == null)
                 {
                     return Unauthorized(new { message = "Email ou mot de passe incorrect" });
                 }
-
                 return Ok(response);
             }
             catch (AuthenticationException ex)
@@ -58,13 +57,11 @@ namespace authentication_system.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
                 var response = await _authService.RefreshTokensAsync(refreshRequest);
                 if (response == null)
                 {
                     return Unauthorized(new { message = "Token de rafraîchissement invalide ou expiré" });
                 }
-
                 return Ok(response);
             }
             catch (AuthenticationException ex)
