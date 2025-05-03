@@ -18,10 +18,6 @@ using System.Threading.Tasks;
 
 namespace authentication_system.Services
 {
-    /// <summary>
-    /// Service d'authentification gérant les opérations de connexion, de rafraîchissement 
-    /// des tokens et de création des JWT.
-    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly UserDbContext _context;
@@ -35,33 +31,25 @@ namespace authentication_system.Services
             ILogger<AuthService> logger,
             IErrorHandler errorHandler)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
+            _context = context;
+            _configuration = configuration;
+            _logger = logger;
+            _errorHandler = errorHandler;
         }
 
-        /// <summary>
-        /// Authentifie un utilisateur avec son email et mot de passe
-        /// </summary>
-        /// <param name="request">Données de connexion</param>
-        /// <returns>Réponse d'authentification avec les tokens</returns>
         public async Task<AuthResponseDTO?> LoginAsync(LoginDTO request)
         {
             return await _errorHandler.HandleOperationAsync(async () =>
             {
-                // Validation des entrées
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                 {
                     _logger.LogWarning("Login attempted with null request or empty email/password");
                     return null;
                 }
 
-                // Récupération de l'utilisateur avec ses rôles en une seule requête
                 var user = await _context.Users
-                    .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
-                    .AsNoTracking()  // Performance: nous n'avons pas besoin de tracker l'entité
+                    .Include(u => u.Role)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive);
 
                 if (user is null)
@@ -70,7 +58,6 @@ namespace authentication_system.Services
                     return null;
                 }
 
-                // Vérification du mot de passe
                 if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password)
                     == PasswordVerificationResult.Failed)
                 {
@@ -84,11 +71,6 @@ namespace authentication_system.Services
             "Une erreur s'est produite lors de la connexion");
         }
 
-        /// <summary>
-        /// Rafraîchit les tokens d'authentification
-        /// </summary>
-        /// <param name="request">Demande de rafraîchissement contenant le refresh token</param>
-        /// <returns>Nouveaux tokens d'authentification</returns>
         public async Task<AuthResponseDTO?> RefreshTokensAsync(RefreshTokenRequestDTO request)
         {
             return await _errorHandler.HandleOperationAsync(async () =>
@@ -112,18 +94,10 @@ namespace authentication_system.Services
             "Une erreur s'est produite lors du rafraîchissement du token");
         }
 
-        /// <summary>
-        /// Crée une réponse d'authentification complète avec access token et refresh token
-        /// </summary>
         private async Task<AuthResponseDTO> CreateTokenResponse(User user)
         {
             return await _errorHandler.HandleOperationAsync(async () =>
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user));
-                }
-
                 var accessToken = CreateToken(user);
                 var refreshToken = await GenerateAndSaveRefreshTokenAsync(user);
                 int tokenExpiryMinutes = GetConfigValue("AppSettings:TokenExpiryMinutes", 15);
@@ -138,40 +112,27 @@ namespace authentication_system.Services
             "Erreur lors de la création des tokens d'authentification");
         }
 
-        /// <summary>
-        /// Valide un refresh token et retourne l'utilisateur associé s'il est valide
-        /// </summary>
         private async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
         {
             return await _errorHandler.HandleOperationAsync(async () =>
             {
-                if (string.IsNullOrEmpty(refreshToken))
-                {
-                    return null;
-                }
-
                 var token = await _context.RefreshTokens
                     .Include(rt => rt.User)
-                    .ThenInclude(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
+                    .ThenInclude(u => u.Role)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(rt => rt.Token == refreshToken &&
-                                              rt.ExpiresAt > DateTime.UtcNow &&
-                                              rt.RevokedAt == null);
-
+                                             rt.ExpiresAt > DateTime.UtcNow &&
+                                             rt.RevokedAt == null);
                 return token?.User;
             },
             "Erreur lors de la validation du refresh token");
         }
 
-        /// <summary>
-        /// Génère un nouveau refresh token cryptographiquement sécurisé
-        /// </summary>
         private string GenerateRefreshToken()
         {
             return _errorHandler.HandleOperation(() =>
             {
-                var randomNumber = new byte[64]; // Augmenté pour plus de sécurité
+                var randomNumber = new byte[64];
                 using var rng = RandomNumberGenerator.Create();
                 rng.GetBytes(randomNumber);
                 return Convert.ToBase64String(randomNumber);
@@ -179,31 +140,15 @@ namespace authentication_system.Services
             "Erreur lors de la génération du refresh token");
         }
 
-        /// <summary>
-        /// Génère un nouveau refresh token et l'enregistre en base de données
-        /// </summary>
         private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
         {
             return await _errorHandler.HandleOperationAsync(async () =>
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user));
-                }
-
                 var refreshToken = GenerateRefreshToken();
 
-                // Invalider tous les anciens tokens en une seule opération
-                if (_context.RefreshTokens != null)
-                {
-                    await _context.RefreshTokens
-                        .Where(rt => rt.UserId == user.Id && rt.RevokedAt == null)
-                        .ExecuteUpdateAsync(s => s.SetProperty(rt => rt.RevokedAt, DateTime.UtcNow));
-                }
-                else
-                {
-                    throw new InvalidOperationException("La collection RefreshTokens est inaccessible");
-                }
+                await _context.RefreshTokens
+                    .Where(rt => rt.UserId == user.Id && rt.RevokedAt == null)
+                    .ExecuteUpdateAsync(s => s.SetProperty(rt => rt.RevokedAt, DateTime.UtcNow));
 
                 var newRefreshToken = new RefreshToken
                 {
@@ -213,7 +158,7 @@ namespace authentication_system.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _context.RefreshTokens?.Add(newRefreshToken);
+                _context.RefreshTokens.Add(newRefreshToken);
                 await _context.SaveChangesAsync();
 
                 return refreshToken;
@@ -221,38 +166,32 @@ namespace authentication_system.Services
             "Erreur lors de la génération et sauvegarde du refresh token");
         }
 
-        /// <summary>
-        /// Crée un JWT token avec les claims appropriés pour l'utilisateur
-        /// </summary>
         private string CreateToken(User user)
         {
             return _errorHandler.HandleOperation(() =>
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user));
-                }
-
-                // Récupération des variables d'environnement avec validation
                 var jwtKey = GetRequiredEnvironmentVariable("JWT_TOKEN");
                 var issuer = GetEnvironmentVariableOrDefault("JWT_ISSUER", "DefaultIssuer");
                 var audience = GetEnvironmentVariableOrDefault("JWT_AUDIENCE", "DefaultAudience");
 
-                // Construction des claims
-                var claims = BuildUserClaims(user);
+                var claims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
+                    new Claim(ClaimTypes.Role, user.Role?.Name ?? "")
+                };
 
-                // Création du token
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512); // Algorithme plus sécurisé
-
-                int tokenExpiryMinutes = GetConfigValue("AppSettings:TokenExpiryMinutes", 15);
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
                 var token = new JwtSecurityToken(
                     issuer: issuer,
                     audience: audience,
                     claims: claims,
                     notBefore: DateTime.UtcNow,
-                    expires: DateTime.UtcNow.AddMinutes(tokenExpiryMinutes),
+                    expires: DateTime.UtcNow.AddMinutes(GetConfigValue("AppSettings:TokenExpiryMinutes", 15)),
                     signingCredentials: creds
                 );
 
@@ -261,83 +200,23 @@ namespace authentication_system.Services
             "Erreur lors de la création du token JWT");
         }
 
-        /// <summary>
-        /// Construit les claims pour l'utilisateur, incluant ses rôles
-        /// </summary>
-        private List<Claim> BuildUserClaims(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
-            };
-
-            // Traitement des rôles
-            if (user.UserRoles?.Any() == true)
-            {
-                var roles = user.UserRoles
-                    .Where(ur => ur.Role != null && !string.IsNullOrEmpty(ur.Role.Name))
-                    .Select(ur => ur.Role.Name)
-                    .ToList();
-
-                // Ajouter le rôle principal
-                if (roles.Count > 0)
-                {
-                    claims.Add(new Claim("role", roles[0]));
-                }
-
-                // Ajouter tous les rôles individuellement
-                foreach (var role in roles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                }
-
-                // Ajouter tous les rôles en JSON pour la compatibilité
-                claims.Add(new Claim("roles", System.Text.Json.JsonSerializer.Serialize(roles)));
-            }
-
-            return claims;
-        }
-
-        #region Méthodes utilitaires
-
-        /// <summary>
-        /// Récupère une valeur de configuration avec une valeur par défaut
-        /// </summary>
         private int GetConfigValue(string key, int defaultValue)
         {
-            if (!int.TryParse(_configuration[key], out int value))
-            {
-                _logger.LogWarning("Configuration value {Key} not found or invalid, using default: {DefaultValue}", key, defaultValue);
-                return defaultValue;
-            }
-            return value > 0 ? value : defaultValue;
+            return int.TryParse(_configuration[key], out var value) && value > 0 ? value : defaultValue;
         }
 
-        /// <summary>
-        /// Récupère une variable d'environnement obligatoire
-        /// </summary>
         private string GetRequiredEnvironmentVariable(string name)
         {
             var value = Environment.GetEnvironmentVariable(name);
             if (string.IsNullOrEmpty(value))
-            {
                 throw new InvalidOperationException($"La variable d'environnement {name} n'est pas définie.");
-            }
             return value;
         }
 
-        /// <summary>
-        /// Récupère une variable d'environnement avec valeur par défaut
-        /// </summary>
         private string GetEnvironmentVariableOrDefault(string name, string defaultValue)
         {
             var value = Environment.GetEnvironmentVariable(name);
             return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
-
-        #endregion
     }
 }

@@ -5,16 +5,20 @@
         public Guid Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty; // Remplacer Username par Email
+        public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // 🔐 Rôle unique
+        public Guid RoleId { get; set; }
+        public Role Role { get; set; } = null!;
 
-        // Navigation properties
-        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        // 🔄 Navigation
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
-        public UserProfile? Profile { get; set; } // lien 1:1 optionnel avec UserProfile
+        public UserProfile? Profile { get; set; }
+        public StudentProfile? StudentProfile { get; set; }
+        public TeacherProfile? TeacherProfile { get; set; }
+        public ProfessionalProfile? ProfessionalProfile { get; set; }
     }
-
 }

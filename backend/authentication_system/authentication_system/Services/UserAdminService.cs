@@ -29,12 +29,11 @@ public class UserAdminService(UserDbContext db) : IUserAdminService
             LastName = dto.LastName,
             Email = email,
             CreatedAt = DateTime.UtcNow,
-            PasswordHash = new PasswordHasher<User>().HashPassword(null!, rawPassword)
+            PasswordHash = new PasswordHasher<User>().HashPassword(null!, rawPassword),
+            RoleId = role.Id
         };
 
         db.Users.Add(user);
-        db.UserRoles.Add(new UserRole { Id = Guid.NewGuid(), UserId = user.Id, RoleId = role.Id });
-
         await db.SaveChangesAsync();
 
         return (ToDto(user, role.Name), rawPassword, null);
@@ -42,27 +41,24 @@ public class UserAdminService(UserDbContext db) : IUserAdminService
 
     public async Task<IEnumerable<UserResponseDTO>> GetAllAsync() =>
         await db.Users
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-            .Select(u => ToDto(u, u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? ""))
+            .Include(u => u.Role)
+            .Select(u => ToDto(u, u.Role != null ? u.Role.Name : ""))
             .ToListAsync();
 
     public async Task<UserResponseDTO?> GetAsync(Guid id)
     {
         var user = await db.Users
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         return user == null
             ? null
-            : ToDto(user, user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? "");
+            : ToDto(user, user.Role?.Name ?? "");
     }
 
     public async Task<(bool, string?)> UpdateAsync(Guid id, UserUpdateDTO dto)
     {
-        var user = await db.Users
-            .Include(u => u.UserRoles)
-            .FirstOrDefaultAsync(u => u.Id == id);
-
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return (false, "Utilisateur introuvable.");
 
         var newRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == dto.RoleName);
@@ -71,11 +67,7 @@ public class UserAdminService(UserDbContext db) : IUserAdminService
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.IsActive = dto.IsActive;
-
-        // rôle : on remplace le premier rôle existant
-        var rel = user.UserRoles.FirstOrDefault();
-        if (rel != null && rel.RoleId != newRole.Id)
-            rel.RoleId = newRole.Id;
+        user.RoleId = newRole.Id;
 
         await db.SaveChangesAsync();
         return (true, null);
