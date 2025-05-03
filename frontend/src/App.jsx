@@ -8,6 +8,8 @@ import Admin from "./Components/Dashboard/Admin";
 import Students from "./Components/Dashboard/Students";
 import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
+import FormationList from './Components/Dashboard/FormationList';
+import ModuleList from './Components/Dashboard/ModuleList';
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="/admin/etud" element={<Students/>}/>
         <Route path="/admin/ens" element={<Enseignants/>}/>
         <Route path="/admin/pro" element={<Pro/>}/>
+        <Route path="/admin/formations" element={<FormationList/>}/>
+        <Route path="/admin/modules" element={<ModuleList/>}/>
 
       </Routes>
 

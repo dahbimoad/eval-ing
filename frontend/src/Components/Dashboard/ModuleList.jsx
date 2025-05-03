@@ -15,8 +15,8 @@ const ModuleList = () => {
     const fetchData = async () => {
       try {
         const [modulesRes, formationsRes] = await Promise.all([
-          fetch('/api/Module'),
-          fetch('/api/Formation')
+          fetch('http://localhost:5161/api/Module'),
+          fetch('http://localhost:5161/api/Formation')
         ]);
         
         if (!modulesRes.ok || !formationsRes.ok) {

@@ -14,7 +14,7 @@ const FormationList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/Formation');
+        const response = await fetch('http://localhost:5161/api/Formation');
         
         if (!response.ok) {
           throw new Error('Failed to fetch formations');

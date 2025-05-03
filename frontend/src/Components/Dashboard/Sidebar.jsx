@@ -24,6 +24,14 @@ function Sidebar(){
             </li>
             <li className="flex items-center space-x-3 hover:opacity-80 " >
                 <a className="text-yellow-400"><FaUsers /></a>
+                <a href="/admin/modules">Modules</a>
+            </li>
+            <li className="flex items-center space-x-3 hover:opacity-80 " >
+                <a className="text-yellow-400"><FaUsers /></a>
+                <a href="/admin/formations">Filières</a>
+            </li>
+            <li className="flex items-center space-x-3 hover:opacity-80 " >
+                <a className="text-yellow-400"><FaUsers /></a>
                 <a href="/admin/pro">Professionnel</a>
             </li>
             <li className="flex items-center space-x-3 hover:opacity-80">
