@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import FormationForm from './FormationForm';
 import ModuleListByFormation from './ModuleListByFormation';
+import Sidebar from "./Sidebar";
+
 
 const FormationList = () => {
   const [formations, setFormations] = useState([]);
@@ -103,6 +105,8 @@ const FormationList = () => {
   }
 
   return (
+    <div className="flex h-screen">
+      <Sidebar />
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center">
@@ -194,6 +198,7 @@ const FormationList = () => {
         onSubmit={handleFormSubmit}
         formation={editingFormation}
       />
+    </div>
     </div>
   );
 };
