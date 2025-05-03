@@ -4,6 +4,7 @@ using authentication_system.Data;
 using authentication_system.Entities;
 using authentication_system.Helpers;
 using authentication_system.Models;
+using authentication_system.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

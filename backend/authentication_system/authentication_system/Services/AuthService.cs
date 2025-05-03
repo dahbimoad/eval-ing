@@ -14,6 +14,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using authentication_system.Exceptions;
+using authentication_system.Services.Interfaces;
+
 namespace authentication_system.Services
 {
     public class AuthService : IAuthService

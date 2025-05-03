@@ -1,7 +1,7 @@
 ﻿using authentication_system.Models;
 using System.Threading.Tasks;
 
-namespace authentication_system.Services
+namespace authentication_system.Services.Interfaces
 {
     public interface IAuthService
     {

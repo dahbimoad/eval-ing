@@ -1,9 +1,9 @@
 ﻿using authentication_system.Models;
-using authentication_system.Services;
 using authentication_system.Exceptions; // Ajout de cette directive
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using authentication_system.Services.Interfaces;
 
 namespace authentication_system.Controllers
 {

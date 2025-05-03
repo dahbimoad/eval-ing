@@ -1,6 +1,6 @@
 // Controllers/AccountController.cs
 using authentication_system.Models;
-using authentication_system.Services;
+using authentication_system.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
