@@ -205,27 +205,6 @@ namespace authentication_system.Migrations
                     b.ToTable("UserProfiles");
                 });
 
-            modelBuilder.Entity("authentication_system.Entities.UserRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRole");
-                });
-
             modelBuilder.Entity("authentication_system.Entities.ProfessionalProfile", b =>
                 {
                     b.HasOne("authentication_system.Entities.User", "User")
@@ -290,30 +269,6 @@ namespace authentication_system.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("authentication_system.Entities.UserRole", b =>
-                {
-                    b.HasOne("authentication_system.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("authentication_system.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("authentication_system.Entities.Role", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("authentication_system.Entities.User", b =>
