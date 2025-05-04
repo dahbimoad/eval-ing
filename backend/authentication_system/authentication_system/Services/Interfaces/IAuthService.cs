@@ -20,6 +20,6 @@ namespace authentication_system.Services.Interfaces
         /// <returns>Nouvelle réponse d'authentification avec tokens ou null si échec</returns>
         /// <exception cref="AuthenticationException">Lancée en cas d'erreur lors du rafraîchissement</exception>
         Task<AuthResponseDTO?> RefreshTokensAsync(RefreshTokenRequestDTO request);
-
+        Task<bool> LogoutAsync(LogoutRequestDTO request);
     }
 }

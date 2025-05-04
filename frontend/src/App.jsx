@@ -8,9 +8,10 @@ import Admin from "./Components/Dashboard/Admin";
 import Students from "./Components/Dashboard/Students";
 import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
-
+import { AuthProvider } from './context/AuthContext.jsx';
 export default function App() {
   return (
+    <AuthProvider>
     <Router>
 
       <Routes>
@@ -26,5 +27,6 @@ export default function App() {
       </Routes>
 
     </Router>
+    </AuthProvider>
   );
 }

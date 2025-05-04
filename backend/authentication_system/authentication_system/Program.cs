@@ -97,6 +97,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontendDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // utile si tu utilises des cookies ou des requêtes auth
+    });
+});
+
+
+
 var app = builder.Build();
 
 // Swagger middleware (docs only in dev)
@@ -118,8 +131,11 @@ using (var scope = app.Services.CreateScope())
     await UserDbContext.SeedAsync(dbContext);
 }
 
+
 // Middleware order is important
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontendDev");
 app.UseAuthentication(); // <- Must come before Authorization
 app.UseAuthorization();
 app.MapControllers();

@@ -218,5 +218,47 @@ namespace authentication_system.Services
             var value = Environment.GetEnvironmentVariable(name);
             return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
+
+        public async Task<bool> LogoutAsync(LogoutRequestDTO request)
+        {
+            return await _errorHandler.HandleOperationAsync(async () =>
+            {
+                if (request == null || string.IsNullOrEmpty(request.RefreshToken))
+                {
+                    _logger.LogWarning("Logout attempted with null or empty refresh token");
+                    return false;
+                }
+
+                // Recherche du refresh token dans la base de données
+                var refreshToken = await _context.RefreshTokens
+                    .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken &&
+                                             rt.RevokedAt == null);
+
+                if (refreshToken == null)
+                {
+                    _logger.LogWarning("Logout failed: refresh token not found or already revoked");
+                    return false;
+                }
+
+                // Révocation du refresh token
+                refreshToken.RevokedAt = DateTime.UtcNow;
+
+                // Révocation de tous les autres refresh tokens du même utilisateur (option de sécurité)
+                // Décommentez cette section si vous souhaitez révoquer tous les tokens de l'utilisateur
+                /*
+                await _context.RefreshTokens
+                    .Where(rt => rt.UserId == refreshToken.UserId && rt.RevokedAt == null)
+                    .ExecuteUpdateAsync(s => s.SetProperty(rt => rt.RevokedAt, DateTime.UtcNow));
+                */
+
+                // Enregistrement des modifications
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("User with ID {UserId} logged out successfully", refreshToken.UserId);
+                return true;
+            },
+            "Une erreur s'est produite lors de la déconnexion");
+        }
+
     }
 }

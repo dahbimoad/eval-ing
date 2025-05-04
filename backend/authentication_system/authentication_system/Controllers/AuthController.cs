@@ -75,5 +75,17 @@ namespace authentication_system.Controllers
                 return StatusCode(500, new { message = "Une erreur inattendue est survenue" });
             }
         }
+
+        [HttpPost("logout")]
+        public async Task<ActionResult> Logout([FromBody] LogoutRequestDTO request)
+        {
+            var result = await _authService.LogoutAsync(request);
+            if (!result)
+                return BadRequest(new { message = "Échec de la déconnexion" });
+
+            return Ok(new { message = "Déconnexion réussie" });
+        }
+
+
     }
 }
