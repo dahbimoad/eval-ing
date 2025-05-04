@@ -63,6 +63,7 @@ builder.Services.AddScoped<IErrorHandler, ErrorHandler>();
 builder.Services.AddScoped<StudentAdminService>();
 builder.Services.AddScoped<TeacherAdminService>();
 builder.Services.AddScoped<ProfessionalAdminService>();
+builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 
 // Récupérer les variables d'environnement pour JWT
