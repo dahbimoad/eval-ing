@@ -9,24 +9,41 @@ import Students from "./Components/Dashboard/Students";
 import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
 import { AuthProvider } from './context/AuthContext.jsx';
+import PrivateRoute from './Components/auth/PrivateRoute';
+
 export default function App() {
   return (
     <AuthProvider>
-    <Router>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forget" element={<Forget />} />
+          <Route path="/reset" element={<Reset />} />
 
-      <Routes>
-        <Route path="/" element={<Home/>}/>
-        <Route path="/login" element={<Login/>}/>
-        <Route path="/forget" element={<Forget/>}/>
-        <Route path="/reset" element={<Reset/>}/>
-        <Route path="/admin" element={<Admin/>}/>
-        <Route path="/admin/etud" element={<Students/>}/>
-        <Route path="/admin/ens" element={<Enseignants/>}/>
-        <Route path="/admin/pro" element={<Pro/>}/>
-
-      </Routes>
-
-    </Router>
+          {/* 🔐 Routes protégées */}
+          <Route path="/admin" element={
+            <PrivateRoute>
+              <Admin />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/etud" element={
+            <PrivateRoute>
+              <Students />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/ens" element={
+            <PrivateRoute>
+              <Enseignants />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/pro" element={
+            <PrivateRoute>
+              <Pro />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }
