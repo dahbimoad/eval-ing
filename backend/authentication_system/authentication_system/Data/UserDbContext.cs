@@ -8,24 +8,26 @@ namespace authentication_system.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<StudentProfile> StudentProfiles { get; set; }
+        public DbSet<TeacherProfile> TeacherProfiles { get; set; }
+        public DbSet<ProfessionalProfile> ProfessionalProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Mapping standard UUID
-            modelBuilder.HasPostgresExtension("uuid-ossp"); // si tu veux aussi utiliser gen_random_uuid()
+            modelBuilder.HasPostgresExtension("uuid-ossp");
 
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnType("uuid");
-                entity.HasMany(u => u.UserRoles)
-                      .WithOne(ur => ur.User)
-                      .HasForeignKey(ur => ur.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(u => u.Role)
+                      .WithMany()
+                      .HasForeignKey(u => u.RoleId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(u => u.RefreshTokens)
                       .WithOne(rt => rt.User)
@@ -36,18 +38,24 @@ namespace authentication_system.Data
                       .WithOne(p => p.User)
                       .HasForeignKey<UserProfile>(p => p.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
-            });
 
-            modelBuilder.Entity<Role>(entity =>
-            {
-                entity.Property(e => e.Id).HasColumnType("uuid");
-                entity.HasMany(r => r.UserRoles)
-                      .WithOne(ur => ur.Role)
-                      .HasForeignKey(ur => ur.RoleId)
+                entity.HasOne(u => u.StudentProfile)
+                      .WithOne(sp => sp.User)
+                      .HasForeignKey<StudentProfile>(sp => sp.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(u => u.TeacherProfile)
+                      .WithOne(tp => tp.User)
+                      .HasForeignKey<TeacherProfile>(tp => tp.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(u => u.ProfessionalProfile)
+                      .WithOne(pp => pp.User)
+                      .HasForeignKey<ProfessionalProfile>(pp => pp.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<UserRole>(entity =>
+            modelBuilder.Entity<Role>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnType("uuid");
             });
@@ -60,18 +68,42 @@ namespace authentication_system.Data
             modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnType("uuid");
-                entity.HasIndex(p => p.UserId).IsUnique(); // 1 User → 1 Profile
+                entity.HasIndex(p => p.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<StudentProfile>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnType("uuid");
+                entity.HasIndex(p => p.UserId).IsUnique();
+                entity.Property(p => p.Filiere).IsRequired();
+            });
+
+            modelBuilder.Entity<TeacherProfile>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnType("uuid");
+                entity.HasIndex(p => p.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<ProfessionalProfile>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnType("uuid");
+                entity.HasIndex(p => p.UserId).IsUnique();
             });
         }
+
         public static async Task SeedAsync(UserDbContext context)
         {
             if (!await context.Roles.AnyAsync())
             {
-                var adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
-                var studentRole = new Role { Id = Guid.NewGuid(), Name = "Student" };
-                var teacherRole = new Role { Id = Guid.NewGuid(), Name = "Teacher" };
+                var roles = new[]
+                {
+                    new Role { Id = Guid.NewGuid(), Name = "Admin" },
+                    new Role { Id = Guid.NewGuid(), Name = "Enseignant" },
+                    new Role { Id = Guid.NewGuid(), Name = "Étudiant" },
+                    new Role { Id = Guid.NewGuid(), Name = "Professionnel" }
+                };
 
-                await context.Roles.AddRangeAsync(adminRole, studentRole, teacherRole);
+                await context.Roles.AddRangeAsync(roles);
                 await context.SaveChangesAsync();
             }
 
@@ -91,21 +123,11 @@ namespace authentication_system.Data
                 adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin@123");
 
                 var adminRole = await context.Roles.FirstAsync(r => r.Name == "Admin");
-
-                adminUser.UserRoles.Add(new UserRole
-                {
-                    UserId = adminUser.Id,
-                    RoleId = adminRole.Id
-                });
+                adminUser.RoleId = adminRole.Id;
 
                 context.Users.Add(adminUser);
                 await context.SaveChangesAsync();
             }
         }
-
-
     }
-
-
-
 }

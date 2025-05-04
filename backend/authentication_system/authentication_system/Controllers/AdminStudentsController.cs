@@ -1,4 +1,4 @@
-// Controllers/AdminUsersController.cs
+﻿// Controllers/AdminStudentsController.cs
 using authentication_system.Models;
 using authentication_system.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,17 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace authentication_system.Controllers;
 
 [ApiController]
-[Route("api/admin/users")]
+[Route("api/admin/students")]
 [Authorize(Roles = "Admin")]
-public class AdminUsersController(IUserAdminService svc) : ControllerBase
+public class AdminStudentsController(StudentAdminService svc) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Create(UserCreateDTO dto)
+    public async Task<IActionResult> Create(StudentCreateDTO dto)
     {
-        var (user, pwd, err) = await svc.CreateAsync(dto);
-        if (user == null) return BadRequest(new { message = err });
-
-        return Ok(new { user, password = pwd });
+        var (student, pwd, err) = await svc.CreateAsync(dto);
+        if (student == null) return BadRequest(new { message = err });
+        return Ok(new { student, password = pwd });
     }
 
     [HttpGet]
@@ -26,12 +25,12 @@ public class AdminUsersController(IUserAdminService svc) : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var user = await svc.GetAsync(id);
-        return user == null ? NotFound() : Ok(user);
+        var student = await svc.GetAsync(id);
+        return student == null ? NotFound() : Ok(student);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, UserUpdateDTO dto)
+    public async Task<IActionResult> Update(Guid id, StudentUpdateDTO dto)
     {
         var (ok, err) = await svc.UpdateAsync(id, dto);
         return ok ? NoContent() : BadRequest(new { message = err });

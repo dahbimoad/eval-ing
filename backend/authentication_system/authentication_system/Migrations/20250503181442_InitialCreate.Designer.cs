@@ -12,7 +12,7 @@ using authentication_system.Data;
 namespace authentication_system.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20250502214949_InitialCreate")]
+    [Migration("20250503181442_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,6 +25,26 @@ namespace authentication_system.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("authentication_system.Entities.ProfessionalProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("GraduationYear")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("ProfessionalProfiles");
+                });
 
             modelBuilder.Entity("authentication_system.Entities.RefreshToken", b =>
                 {
@@ -73,6 +93,48 @@ namespace authentication_system.Migrations
                     b.ToTable("Roles");
                 });
 
+            modelBuilder.Entity("authentication_system.Entities.StudentProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Filiere")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("StudentProfiles");
+                });
+
+            modelBuilder.Entity("authentication_system.Entities.TeacherProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("TeacherProfiles");
+                });
+
             modelBuilder.Entity("authentication_system.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -101,7 +163,12 @@ namespace authentication_system.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -159,7 +226,18 @@ namespace authentication_system.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRole");
+                });
+
+            modelBuilder.Entity("authentication_system.Entities.ProfessionalProfile", b =>
+                {
+                    b.HasOne("authentication_system.Entities.User", "User")
+                        .WithOne("ProfessionalProfile")
+                        .HasForeignKey("authentication_system.Entities.ProfessionalProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("authentication_system.Entities.RefreshToken", b =>
@@ -171,6 +249,39 @@ namespace authentication_system.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("authentication_system.Entities.StudentProfile", b =>
+                {
+                    b.HasOne("authentication_system.Entities.User", "User")
+                        .WithOne("StudentProfile")
+                        .HasForeignKey("authentication_system.Entities.StudentProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("authentication_system.Entities.TeacherProfile", b =>
+                {
+                    b.HasOne("authentication_system.Entities.User", "User")
+                        .WithOne("TeacherProfile")
+                        .HasForeignKey("authentication_system.Entities.TeacherProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("authentication_system.Entities.User", b =>
+                {
+                    b.HasOne("authentication_system.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("authentication_system.Entities.UserProfile", b =>
@@ -193,7 +304,7 @@ namespace authentication_system.Migrations
                         .IsRequired();
 
                     b.HasOne("authentication_system.Entities.User", "User")
-                        .WithMany("UserRoles")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -210,11 +321,15 @@ namespace authentication_system.Migrations
 
             modelBuilder.Entity("authentication_system.Entities.User", b =>
                 {
+                    b.Navigation("ProfessionalProfile");
+
                     b.Navigation("Profile");
 
                     b.Navigation("RefreshTokens");
 
-                    b.Navigation("UserRoles");
+                    b.Navigation("StudentProfile");
+
+                    b.Navigation("TeacherProfile");
                 });
 #pragma warning restore 612, 618
         }

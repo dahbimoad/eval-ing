@@ -12,18 +12,20 @@ namespace authentication_system.Controllers;
 [Authorize]
 public class AccountController(IAccountService accountService) : ControllerBase
 {
-    private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
 
     [HttpPost("change-password")]
+    [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
     {
-        var result = await accountService.ChangePasswordAsync(UserId, dto);
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            return Unauthorized();
 
-        if (!result.Success)
-            return BadRequest(new { message = result.Message });
-
-        return Ok(new { message = result.Message });
+        var result = await accountService.ChangePasswordAsync(userId, dto);
+        return result.Success ? Ok(new { result.Message }) : BadRequest(new { result.Message });
     }
+
 
 
 }
