@@ -16,7 +16,7 @@ function Login() {
     try {
       await login(email, password);
       // Rediriger vers dashboard ou autre
-      window.location.href = "/dashboard"; // À adapter selon ton routing
+      window.location.href = "/admin"; // À adapter selon ton routing
     } catch (err) {
       setError("Email ou mot de passe incorrect.");
     }

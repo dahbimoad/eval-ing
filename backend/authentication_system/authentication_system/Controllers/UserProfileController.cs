@@ -43,4 +43,33 @@ public class UserProfileController(IUserProfileService _profileService) : Contro
         var hasProfile = await _profileService.HasProfileAsync(UserId);
         return Ok(new { hasProfile });
     }
+    
+    
+    [HttpPost("upload-picture")]
+
+    public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "Fichier invalide." });
+
+        var ext = Path.GetExtension(file.FileName);
+        var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        if (!allowedExt.Contains(ext.ToLower()))
+            return BadRequest(new { message = "Format d’image non autorisé." });
+
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var uploadPath = Path.Combine("wwwroot", "uploads", "profiles");
+        Directory.CreateDirectory(uploadPath);
+
+        var filePath = Path.Combine(uploadPath, fileName);
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var imageUrl = $"{baseUrl}/uploads/profiles/{fileName}";
+
+        return Ok(new { url = imageUrl });
+    }
+
+
 }
