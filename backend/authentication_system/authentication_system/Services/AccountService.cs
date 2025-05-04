@@ -31,24 +31,12 @@ namespace authentication_system.Services
                 };
             }
 
-            var hasher = new PasswordHasher<User>();
-
-            if (hasher.VerifyHashedPassword(user, user.PasswordHash, dto.CurrentPassword)
-                == PasswordVerificationResult.Failed)
-            {
-                return new ChangePasswordResult
-                {
-                    Success = false,
-                    Message = "Mot de passe actuel incorrect."
-                };
-            }
-
             if (dto.NewPassword != dto.ConfirmPassword)
             {
                 return new ChangePasswordResult
                 {
                     Success = false,
-                    Message = "Les nouveaux mots de passe ne correspondent pas."
+                    Message = "Les mots de passe ne correspondent pas."
                 };
             }
 
@@ -61,14 +49,15 @@ namespace authentication_system.Services
                 };
             }
 
-            user.PasswordHash = hasher.HashPassword(user, dto.NewPassword);
+            user.PasswordHash = new PasswordHasher<User>().HashPassword(user, dto.NewPassword);
             await context.SaveChangesAsync();
 
             return new ChangePasswordResult
             {
                 Success = true,
-                Message = "Mot de passe mis à jour avec succès."
+                Message = "Mot de passe modifié avec succès."
             };
         }
+
     }
 }
