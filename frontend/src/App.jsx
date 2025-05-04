@@ -10,7 +10,7 @@ import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './Components/auth/PrivateRoute';
-
+import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
 export default function App() {
   return (
     <AuthProvider>
@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forget" element={<Forget />} />
           <Route path="/reset" element={<Reset />} />
-
+          <Route path="/ProfileCompletion" element={<ProfileCompletion />} />
           {/* 🔐 Routes protégées */}
           <Route path="/admin" element={
             <PrivateRoute>
@@ -42,6 +42,8 @@ export default function App() {
               <Pro />
             </PrivateRoute>
           } />
+        
+        
         </Routes>
       </Router>
     </AuthProvider>
