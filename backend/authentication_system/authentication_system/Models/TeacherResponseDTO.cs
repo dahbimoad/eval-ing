@@ -8,5 +8,7 @@
         public string LastName { get; set; } = null!;
         public string Module { get; set; } = null!;
         public bool IsActive { get; set; }
+        public string? PasswordDefault { get; set; }  // Ajouter ce champ
     }
+
 }

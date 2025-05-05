@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaTrash, FaUserEdit, FaPlus, FaCopy, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaTrash, FaUserEdit, FaPlus, FaCopy } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from "../../api/axiosInstance";
 
-const TABLE_HEAD = ["Nom", "Prénom", "Module", "Email", "Statut", "Modifier", "Supprimer"];
+const TABLE_HEAD = ["Nom", "Prénom", "Module", "Email", "Statut", "Mot de passe par défaut", "Modifier", "Supprimer"];
 
 const moduleOptions = [
   "Mathématiques", 
@@ -20,14 +20,11 @@ const moduleOptions = [
 function Enseignants() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [filter, setFilter] = useState(""); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newPassword, setNewPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -94,11 +91,10 @@ function Enseignants() {
       const response = await api.post('/admin/teachers', formData);
       const data = response.data;
       setTeachers([...teachers, data.teacher]);
-      setNewPassword(data.password);
-      setIsPasswordModalOpen(true);
       setIsAddOpen(false);
       setFormData({ firstName: "", lastName: "", module: "" });
       toast.success("Enseignant ajouté avec succès");
+      fetchTeachers(); // Rafraîchir la liste pour obtenir le mot de passe par défaut
     } catch (error) {
       console.error("Erreur:", error);
       toast.error("Erreur lors de l'ajout de l'enseignant");
@@ -113,7 +109,12 @@ function Enseignants() {
     }
 
     try {
-      const response = await api.put(`/admin/teachers/${selectedTeacher.id}`, formData);
+      const response = await api.put(`/admin/teachers/${selectedTeacher.id}`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        module: formData.module,
+        isActive: selectedTeacher.isActive
+      });
       const updatedTeacher = response.data;
       setTeachers(teachers.map(teacher => 
         teacher.id === selectedTeacher.id ? updatedTeacher : teacher
@@ -147,21 +148,6 @@ function Enseignants() {
       module: teacher.module
     });
     setIsEditOpen(true);
-  };
-
-  const handleResetPassword = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser le mot de passe de cet enseignant ?")) {
-      try {
-        const response = await api.post(`/admin/teachers/${id}/reset-password`);
-        const data = response.data;
-        setNewPassword(data.password);
-        setIsPasswordModalOpen(true);
-        toast.success("Mot de passe réinitialisé avec succès");
-      } catch (error) {
-        console.error("Erreur:", error);
-        toast.error("Erreur lors de la réinitialisation du mot de passe");
-      }
-    }
   };
 
   return (
@@ -252,6 +238,20 @@ function Enseignants() {
                         <span className={`px-2 py-1 rounded text-xs ${teacher.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {teacher.isActive ? 'Actif' : 'Inactif'}
                         </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center justify-center">
+                          <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded mr-2">
+                            {teacher.passwordDefault}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(teacher.passwordDefault)}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copier le mot de passe"
+                          >
+                            <FaCopy size={16} />
+                          </button>
+                        </div>
                       </td>
                       <td className="py-4 px-4">
                         <button
@@ -449,95 +449,35 @@ function Enseignants() {
                   />
                 </div>
                 <div className="md:col-span-2 flex justify-between">
-                  <button
-                    type="button"
-                    onClick={() => handleResetPassword(selectedTeacher.id)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                  >
-                    Réinitialiser le mot de passe
-                  </button>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+                      Mot de passe par défaut
+                    </label>
+                    <div className="flex">
+                      <input
+                        type="text"
+                        className="border rounded-l-md p-2 dark:bg-gray-600 dark:text-white"
+                        value={selectedTeacher?.passwordDefault || ""}
+                        readOnly
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selectedTeacher?.passwordDefault)}
+                        className="px-3 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600"
+                        title="Copier dans le presse-papiers"
+                      >
+                        <FaCopy />
+                      </button>
+                    </div>
+                  </div>
                   <button
                     type="submit"
-                    className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500"
+                    className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 h-10 self-end"
                   >
                     Mettre à jour
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* Password Display Modal */}
-        {isPasswordModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-800 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative dark:bg-gray-700">
-              <div className="flex items-center justify-between border-b pb-3 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Mot de passe généré
-                </h3>
-                <button
-                  onClick={() => setIsPasswordModalOpen(false)}
-                  className="text-gray-400 hover:text-red-500 text-lg font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                      Veuillez noter ce mot de passe car il ne sera plus affiché après la fermeture de cette fenêtre.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-                  Mot de passe
-                </label>
-                <div className="flex">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="flex-grow border rounded-l-md p-2 dark:bg-gray-600 dark:text-white"
-                    value={newPassword}
-                    readOnly
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="px-3 py-2 bg-gray-200 border-y border-r hover:bg-gray-300"
-                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(newPassword)}
-                    className="px-3 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600"
-                    title="Copier dans le presse-papiers"
-                  >
-                    <FaCopy />
-                  </button>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <button
-                  type="button"
-                  onClick={() => setIsPasswordModalOpen(false)}
-                  className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500"
-                >
-                  Fermer
-                </button>
-              </div>
             </div>
           </div>
         )}

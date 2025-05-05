@@ -1,4 +1,5 @@
-﻿using authentication_system.Data;
+﻿// Services/TeacherAdminService.cs
+using authentication_system.Data;
 using authentication_system.Entities;
 using authentication_system.Helpers;
 using authentication_system.Models;
@@ -16,17 +17,17 @@ public class TeacherAdminService
         _db = db;
     }
 
-    // ✅ CREATE
-    public async Task<(TeacherResponseDTO? Teacher, string? RawPassword, string? Error)> CreateAsync(TeacherCreateDTO dto)
+    // ✅ CREATE : retourne seulement le Teacher avec son mot de passe par défaut
+    public async Task<(TeacherResponseDTO? Teacher, string? Error)> CreateAsync(TeacherCreateDTO dto)
     {
         var email = $"{dto.FirstName.ToLower()}.{dto.LastName.ToLower()}@prof.uae.ac.ma";
 
         if (await _db.Users.AnyAsync(u => u.Email == email))
-            return (null, null, "Un utilisateur avec cet email existe déjà.");
+            return (null, "Un utilisateur avec cet email existe déjà.");
 
         var teacherRole = await _db.Roles.FirstOrDefaultAsync(r => r.Name == "Enseignant");
         if (teacherRole == null)
-            return (null, null, "Le rôle Enseignant n'existe pas.");
+            return (null, "Le rôle Enseignant n'existe pas.");
 
         var rawPassword = PasswordHelper.GenerateSecurePassword();
 
@@ -46,14 +47,16 @@ public class TeacherAdminService
         {
             Id = Guid.NewGuid(),
             UserId = user.Id,
-            Module = dto.Module
+            Module = dto.Module,
+            PasswordDefault = rawPassword // important : stocké en base
         };
 
         await _db.Users.AddAsync(user);
         await _db.TeacherProfiles.AddAsync(profile);
         await _db.SaveChangesAsync();
 
-        return (ToDTO(user, profile), rawPassword, null);
+        var dtoWithPassword = ToDTO(user, profile, includePassword: true);
+        return (dtoWithPassword, null);
     }
 
     // ✅ READ ALL
@@ -61,11 +64,10 @@ public class TeacherAdminService
     {
         var teachers = await _db.TeacherProfiles
             .Include(tp => tp.User)
-            .ToListAsync(); // ✅ Exécute la requête d'abord
+            .ToListAsync();
 
-        return teachers.Select(tp => ToDTO(tp.User, tp)).ToList(); // ✅ Projection en mémoire
+        return teachers.Select(tp => ToDTO(tp.User, tp, includePassword: true)).ToList();
     }
-
 
     // ✅ READ BY ID
     public async Task<TeacherResponseDTO?> GetAsync(Guid id)
@@ -74,7 +76,7 @@ public class TeacherAdminService
             .Include(tp => tp.User)
             .FirstOrDefaultAsync(tp => tp.UserId == id);
 
-        return tp == null ? null : ToDTO(tp.User, tp);
+        return tp == null ? null : ToDTO(tp.User, tp, includePassword: true);
     }
 
     // ✅ UPDATE
@@ -109,14 +111,15 @@ public class TeacherAdminService
         return true;
     }
 
-    // ✅ DTO Mapping
-    private static TeacherResponseDTO ToDTO(User user, TeacherProfile profile) => new()
+    // ✅ Mapping : inclure le mot de passe par défaut si demandé
+    private static TeacherResponseDTO ToDTO(User user, TeacherProfile profile, bool includePassword = false) => new()
     {
         Id = user.Id,
         FirstName = user.FirstName,
         LastName = user.LastName,
         Email = user.Email,
         IsActive = user.IsActive,
-        Module = profile.Module ?? ""
+        Module = profile.Module ?? "",
+        PasswordDefault = includePassword ? profile.PasswordDefault : null
     };
 }
