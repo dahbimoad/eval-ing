@@ -1,23 +1,42 @@
-import React from "react";
-import login from "../images/Login.png";
-import './Login.css'; // Add your custom styles here (if needed)
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+ // <-- import du contexte
+import loginImage from "../images/Login/Login2.png";
+import './Login.css';
 
 function Login() {
+  const { login } = useAuth(); // <-- hook du contexte
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await login(email, password);
+      // Rediriger vers dashboard ou autre
+      window.location.href = "/redirect"; // À adapter selon ton routing
+    } catch (err) {
+      setError("Email ou mot de passe incorrect.");
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-8 ">
-      <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg w-full max-w-4xl p-6 ">
+    <div className="body-login bg-gray-200 flex min-h-screen items-center justify-center px-6 py-8 animate-slide-up">
+      <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg w-full max-w-4xl p-6">
         
         <div className="flex-1 p-8 animate-slide-up">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-bold text-[#5D5FEF] mb-4 font-inter">
-            Connexion
-          </h2>
+            <h2 className="mt-6 text-center text-3xl text-purple-700 font-bold mb-4 font-inter">
+              Connexion
+            </h2>
           </div>
 
           <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm  text-[#737791] font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm text-[#737791] font-medium">
                   Email
                 </label>
                 <div className="mt-1">
@@ -25,9 +44,10 @@ function Login() {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm  focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm sm:text-sm"
                   />
                 </div>
               </div>
@@ -41,41 +61,42 @@ function Login() {
                     id="password"
                     name="password"
                     type="password"
-                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm sm:text-sm"
                   />
                 </div>
                 <div className="mt-2 text-center">
-                  <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500">
+                  <a href="/forget" className="text-sm text-indigo-600 hover:text-indigo-500">
                     Mot de passe oublié ?
                   </a>
                 </div>
               </div>
 
+              {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
+              )}
+
               <div>
                 <button
                   type="submit"
-                  className="flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex w-full justify-center rounded-md bg-purple-700 px-4 py-2 text-white font-semibold hover:bg-purple-500"
                 >
                   Se connecter
                 </button>
               </div>
             </form>
-           
           </div>
         </div>
 
-
-        <div className="hidden lg:flex w-1/2 items-center justify-center bg-indigo-600 rounded-r-lg overflow-hidden">
+        <div className="hidden lg:flex w-1/2 items-center justify-center rounded-r-lg overflow-hidden">
           <img
-            className="h-full w-full object-cover rounded-r-lg animate-move-right-left"
-            src={login}
+            className="h-full w-full object-cover rounded-r-lg animate-slide-up"
+            src={loginImage}
             alt="Image de connexion"
           />
-          
         </div>
-
       </div>
     </div>
   );
