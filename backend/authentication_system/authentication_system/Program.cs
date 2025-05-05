@@ -134,7 +134,7 @@ using (var scope = app.Services.CreateScope())
 
 // Middleware order is important
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
 app.UseCors("AllowFrontendDev");
 app.UseAuthentication(); // <- Must come before Authorization
 app.UseAuthorization();
