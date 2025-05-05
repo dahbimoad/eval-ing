@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Camera } from "lucide-react";
+import api from "../../api/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const WelcomeProfileCompletion = () => {
   const [step, setStep] = useState(1);
@@ -18,151 +20,113 @@ const WelcomeProfileCompletion = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [uploaded, setUploaded] = useState(false);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
-  // Animation effect on mount
   useEffect(() => {
-    document.querySelector('.welcome-container').classList.add('animate-slide-in');
+    const container = document.querySelector('.welcome-container');
+    if (container) {
+      container.classList.add('animate-slide-in');
+    }
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear any previous errors for this field
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
 
   const validatePasswordStep = () => {
     const newErrors = {};
-    
     if (formData.newPassword.length < 8) {
       newErrors.newPassword = "Le mot de passe doit contenir au moins 8 caractères";
     }
-    
     if (formData.newPassword !== formData.confirmPassword) {
       newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateProfileStep = () => {
     const newErrors = {};
-    
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Numéro de téléphone requis";
-    }
-    
-    if (!formData.cin) {
-      newErrors.cin = "CIN requis";
-    }
-    
-    if (!formData.birthDate) {
-      newErrors.birthDate = "Date de naissance requise";
-    }
-    
-    if (!formData.address) {
-      newErrors.address = "Adresse requise";
-    }
-    
-    if (!formData.profilePictureUrl) {
-      newErrors.profilePictureUrl = "Photo de profil requise";
-    }
-    
+    if (!formData.phoneNumber) newErrors.phoneNumber = "Numéro de téléphone requis";
+    if (!formData.cin) newErrors.cin = "CIN requis";
+    if (!formData.birthDate) newErrors.birthDate = "Date de naissance requise";
+    if (!formData.address) newErrors.address = "Adresse requise";
+    if (!formData.profilePictureUrl) newErrors.profilePictureUrl = "Photo de profil requise";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextStep = () => {
-    if (step === 1) {
-      if (validatePasswordStep()) {
+  const handleNextStep = async () => {
+    if (step === 1 && validatePasswordStep()) {
+      setIsLoading(true);
+      try {
+        await api.post("/Account/change-password", {
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword
+        });
         setStep(2);
-        // Trigger animation for step transition
         const container = document.querySelector('.form-container');
-        container.classList.remove('animate-slide-in');
-        setTimeout(() => {
-          container.classList.add('animate-slide-in');
-        }, 10);
+        if (container) {
+          container.classList.remove('animate-slide-in');
+          setTimeout(() => container.classList.add('animate-slide-in'), 10);
+        }
+      } catch (error) {
+        setErrors(prev => ({ ...prev, newPassword: "Erreur lors du changement de mot de passe" }));
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-
-    // Show preview
+    if (!file || !file.type.startsWith("image/")) {
+      setErrors(prev => ({ ...prev, profilePictureUrl: "Fichier non valide." }));
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewImage(e.target.result);
-    };
+    reader.onload = (e) => setPreviewImage(e.target.result);
     reader.readAsDataURL(file);
 
-    // Upload file
+    const imageFormData = new FormData();
+    imageFormData.append('file', file);
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('http://localhost:5255/api/upload-picture', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFormData(prev => ({
-          ...prev,
-          profilePictureUrl: data.url
-        }));
-        setUploaded(true);
-      } else {
-        throw new Error('Échec du téléchargement');
-      }
+      const response = await api.post('/UserProfile/upload-picture', imageFormData);
+      setFormData(prev => ({ ...prev, profilePictureUrl: response.data.url }));
+      setUploaded(true);
     } catch (error) {
-      setErrors(prev => ({
-        ...prev,
-        profilePictureUrl: "Erreur lors du téléchargement de l'image"
-      }));
+      setErrors(prev => ({ ...prev, profilePictureUrl: "Erreur lors de l'upload." }));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
-    
+    e.preventDefault();
     if (validateProfileStep()) {
       setIsLoading(true);
-      
       try {
-        // Simuler l'envoi des données au serveur (à remplacer par votre API)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Afficher message de succès
+        await api.post("/UserProfile", {
+          phoneNumber: formData.phoneNumber,
+          cin: formData.cin,
+          profilePictureUrl: formData.profilePictureUrl,
+          birthDate: formData.birthDate,
+          address: formData.address,
+          additionalInfos: formData.additionalInfos
+        });
         setSuccess(true);
-        
-        // Rediriger vers le dashboard après 2 secondes
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
-        
+        setTimeout(() => navigate("/redirect"), 2000);
       } catch (error) {
-        console.error("Erreur lors de la soumission du formulaire", error);
+        setErrors(prev => ({ ...prev, general: "Erreur lors de la soumission du profil" }));
       } finally {
         setIsLoading(false);
       }
     }
   };
+
 
   return (
     <div className="bg-gray-200 min-h-screen flex items-center justify-center px-6 py-8">

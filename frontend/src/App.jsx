@@ -11,6 +11,7 @@ import Pro from "./Components/Dashboard/Pro";
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './Components/auth/PrivateRoute';
 import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
+import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
 export default function App() {
   return (
     <AuthProvider>
@@ -20,11 +21,17 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forget" element={<Forget />} />
           <Route path="/reset" element={<Reset />} />
-          <Route path="/ProfileCompletion" element={<ProfileCompletion />} />
+          <Route path="/redirect" element={<FirstLoginRedirect />} />
+
           {/* 🔐 Routes protégées */}
           <Route path="/admin" element={
             <PrivateRoute>
               <Admin />
+            </PrivateRoute>
+          } />
+           <Route path="/ProfileCompletion" element={
+            <PrivateRoute>
+              <ProfileCompletion />
             </PrivateRoute>
           } />
           <Route path="/admin/etud" element={
