@@ -112,9 +112,9 @@ namespace authentication_system.Data
                 var adminUser = new User
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = "Super",
+                    FirstName = "Admin",
                     LastName = "Admin",
-                    Email = "admin@admin.com",
+                    Email = "admin@adm.uae.ac.ma",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
