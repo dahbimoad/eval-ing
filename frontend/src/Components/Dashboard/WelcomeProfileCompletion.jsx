@@ -73,12 +73,20 @@ const WelcomeProfileCompletion = () => {
           setTimeout(() => container.classList.add('animate-slide-in'), 10);
         }
       } catch (error) {
-        setErrors(prev => ({ ...prev, newPassword: "Erreur lors du changement de mot de passe" }));
+        let errorMessage = "Erreur lors du changement de mot de passe";
+        
+        // Vérifie si le backend a renvoyé un message d'erreur
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+  
+        setErrors(prev => ({ ...prev, newPassword: errorMessage }));
       } finally {
         setIsLoading(false);
       }
     }
   };
+  
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];

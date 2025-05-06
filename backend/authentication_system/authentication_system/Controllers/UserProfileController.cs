@@ -44,7 +44,13 @@ public class UserProfileController(IUserProfileService _profileService) : Contro
         return Ok(new { hasProfile });
     }
     
-    
+    [HttpGet("has-profile/{userId:guid}")]
+    public async Task<IActionResult> HasProfile(Guid userId)
+    {
+        var exists = await _profileService.HasProfileAsync(userId);
+        return Ok(new { hasProfile = exists });
+    }
+
     [HttpPost("upload-picture")]
 
     public async Task<IActionResult> UploadProfilePicture(IFormFile file)

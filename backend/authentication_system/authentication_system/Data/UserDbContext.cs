@@ -115,7 +115,6 @@ namespace authentication_system.Data
                     FirstName = "Admin",
                     LastName = "Admin",
                     Email = "admin@adm.uae.ac.ma",
-                    IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
 

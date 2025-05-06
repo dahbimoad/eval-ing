@@ -75,7 +75,7 @@ public class StudentAdminService(UserDbContext db)
 
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
-        user.IsActive = dto.IsActive;
+
         user.StudentProfile!.Filiere = dto.Filiere;
 
         await db.SaveChangesAsync();
@@ -97,7 +97,7 @@ public class StudentAdminService(UserDbContext db)
         FirstName = u.FirstName,
         LastName = u.LastName,
         Email = u.Email,
-        IsActive = u.IsActive,
+
         Filiere = profile.Filiere
     };
 }

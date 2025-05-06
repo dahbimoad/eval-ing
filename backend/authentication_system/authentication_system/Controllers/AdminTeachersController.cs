@@ -23,11 +23,11 @@ public class AdminTeachersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TeacherCreateDTO dto)
     {
-        var (teacher, pwd, err) = await _service.CreateAsync(dto);
+        var (teacher, err) = await _service.CreateAsync(dto);
         if (teacher == null)
             return BadRequest(new { message = err });
 
-        return Ok(new { teacher, password = pwd });
+        return Ok(new { teacher });
     }
 
     /// <summary>
