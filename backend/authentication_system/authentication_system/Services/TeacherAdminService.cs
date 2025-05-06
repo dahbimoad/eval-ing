@@ -39,7 +39,7 @@ public class TeacherAdminService
             Email = email,
             PasswordHash = new PasswordHasher<User>().HashPassword(null!, rawPassword),
             CreatedAt = DateTime.UtcNow,
-            IsActive = true,
+
             RoleId = teacherRole.Id
         };
 
@@ -90,7 +90,7 @@ public class TeacherAdminService
 
         teacher.User.FirstName = dto.FirstName;
         teacher.User.LastName = dto.LastName;
-        teacher.User.IsActive = dto.IsActive;
+
         teacher.Module = dto.Module;
 
         await _db.SaveChangesAsync();
@@ -118,7 +118,7 @@ public class TeacherAdminService
         FirstName = user.FirstName,
         LastName = user.LastName,
         Email = user.Email,
-        IsActive = user.IsActive,
+
         Module = profile.Module ?? "",
         PasswordDefault = includePassword ? profile.PasswordDefault : null
     };

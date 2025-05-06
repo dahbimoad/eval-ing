@@ -37,7 +37,7 @@ public class ProfessionalAdminService
             Email = email,
             PasswordHash = new PasswordHasher<User>().HashPassword(null!, rawPassword),
             CreatedAt = DateTime.UtcNow,
-            IsActive = true,
+
             RoleId = role.Id
         };
 
@@ -82,7 +82,7 @@ public class ProfessionalAdminService
 
         profile.User.FirstName = dto.FirstName;
         profile.User.LastName = dto.LastName;
-        profile.User.IsActive = dto.IsActive;
+
         profile.GraduationYear = dto.GraduationYear;
 
         await _db.SaveChangesAsync();
@@ -108,7 +108,7 @@ public class ProfessionalAdminService
         FirstName = user.FirstName,
         LastName = user.LastName,
         Email = user.Email,
-        IsActive = user.IsActive,
+
         GraduationYear = profile.GraduationYear
     };
 }
