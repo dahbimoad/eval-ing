@@ -50,7 +50,7 @@ namespace authentication_system.Services
                 var user = await _context.Users
                     .Include(u => u.Role)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive);
+                    .FirstOrDefaultAsync(u => u.Email == request.Email);
 
                 if (user is null)
                 {

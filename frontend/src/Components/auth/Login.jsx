@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
- // <-- import du contexte
+import { useNavigate } from "react-router-dom";
 import loginImage from "../images/Login/Login2.png";
 import './Login.css';
 
@@ -9,14 +9,13 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate(); // Hook de React Router
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     try {
-      await login(email, password);
-      // Rediriger vers dashboard ou autre
-      window.location.href = "/redirect"; // À adapter selon ton routing
+      await login(email, password); // Fonction d'authentification
+      navigate("/redirect"); // Redirection sans rechargement
     } catch (err) {
       setError("Email ou mot de passe incorrect.");
     }

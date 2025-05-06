@@ -121,6 +121,9 @@ namespace authentication_system.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PasswordDefault")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -148,9 +151,6 @@ namespace authentication_system.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
                         .IsRequired()
