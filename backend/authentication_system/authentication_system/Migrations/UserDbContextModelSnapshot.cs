@@ -32,6 +32,9 @@ namespace authentication_system.Migrations
                     b.Property<int>("GraduationYear")
                         .HasColumnType("integer");
 
+                    b.Property<string>("PasswordDefault")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -98,6 +101,9 @@ namespace authentication_system.Migrations
 
                     b.Property<string>("Filiere")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordDefault")
                         .HasColumnType("text");
 
                     b.Property<Guid>("UserId")

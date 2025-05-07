@@ -8,16 +8,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace authentication_system.Services;
 
-public class StudentAdminService(UserDbContext db)
+public class StudentAdminService
 {
-    public async Task<(StudentResponseDTO?, string?, string?)> CreateAsync(StudentCreateDTO dto)
+    private readonly UserDbContext _db;
+
+    public StudentAdminService(UserDbContext db)
+    {
+        _db = db;
+    }
+
+    // ✅ CREATE : retourne l'étudiant avec son mot de passe par défaut
+    public async Task<(StudentResponseDTO? Student, string? RawPassword, string? Error)> CreateAsync(StudentCreateDTO dto)
     {
         var email = $"{dto.FirstName.ToLower()}.{dto.LastName.ToLower()}@etu.uae.ac.ma";
 
-        if (await db.Users.AnyAsync(u => u.Email == email))
+        if (await _db.Users.AnyAsync(u => u.Email == email))
             return (null, null, "Un utilisateur avec cet email existe déjà.");
 
-        var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Étudiant");
+        var role = await _db.Roles.FirstOrDefaultAsync(r => r.Name == "Étudiant");
         if (role == null) return (null, null, "Rôle Étudiant non trouvé.");
 
         var rawPassword = PasswordHelper.GenerateSecurePassword();
@@ -37,37 +45,42 @@ public class StudentAdminService(UserDbContext db)
         {
             Id = Guid.NewGuid(),
             UserId = user.Id,
-            Filiere = dto.Filiere
+            Filiere = dto.Filiere,
+            PasswordDefault = rawPassword // Mot de passe par défaut
         };
 
-        db.Users.Add(user);
-        db.StudentProfiles.Add(studentProfile);
-        await db.SaveChangesAsync();
+        _db.Users.Add(user);
+        _db.StudentProfiles.Add(studentProfile);
+        await _db.SaveChangesAsync();
 
         return (ToDto(user, studentProfile), rawPassword, null);
     }
 
-    public async Task<IEnumerable<StudentResponseDTO>> GetAllAsync()
+    // ✅ READ ALL
+    public async Task<List<StudentResponseDTO>> GetAllAsync()
     {
-        return await db.Users
+        var students = await _db.Users
             .Include(u => u.StudentProfile)
             .Where(u => u.Role!.Name == "Étudiant")
-            .Select(u => ToDto(u, u.StudentProfile!))
             .ToListAsync();
+
+        return students.Select(u => ToDto(u, u.StudentProfile!)).ToList();
     }
 
+    // ✅ READ BY ID
     public async Task<StudentResponseDTO?> GetAsync(Guid id)
     {
-        var user = await db.Users
+        var user = await _db.Users
             .Include(u => u.StudentProfile)
             .FirstOrDefaultAsync(u => u.Id == id && u.Role!.Name == "Étudiant");
 
         return user is null ? null : ToDto(user, user.StudentProfile!);
     }
 
-    public async Task<(bool, string?)> UpdateAsync(Guid id, StudentUpdateDTO dto)
+    // ✅ UPDATE
+    public async Task<(bool Success, string? Error)> UpdateAsync(Guid id, StudentUpdateDTO dto)
     {
-        var user = await db.Users
+        var user = await _db.Users
             .Include(u => u.StudentProfile)
             .FirstOrDefaultAsync(u => u.Id == id && u.Role!.Name == "Étudiant");
 
@@ -78,26 +91,29 @@ public class StudentAdminService(UserDbContext db)
 
         user.StudentProfile!.Filiere = dto.Filiere;
 
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
         return (true, null);
     }
 
+    // ✅ DELETE
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role!.Name == "Étudiant");
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role!.Name == "Étudiant");
         if (user == null) return false;
-        db.Users.Remove(user);
-        await db.SaveChangesAsync();
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
         return true;
     }
 
+    // ✅ DTO Mapping : retourne uniquement le mot de passe par défaut si demandé
     private static StudentResponseDTO ToDto(User u, StudentProfile profile) => new()
     {
         Id = u.Id,
         FirstName = u.FirstName,
         LastName = u.LastName,
         Email = u.Email,
-
-        Filiere = profile.Filiere
+        Filiere = profile.Filiere,
+        PasswordDefault = profile.PasswordDefault // Retourne le mot de passe par défaut
     };
 }
