@@ -8,13 +8,28 @@ import Admin from "./Components/Dashboard/Admin";
 import Students from "./Components/Dashboard/Students";
 import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
+<<<<<<< HEAD
 import FormationList from './Components/Dashboard/FormationList';
 import ModuleList from './Components/Dashboard/ModuleList';
 
+=======
+import { AuthProvider } from './context/AuthContext.jsx';
+import PrivateRoute from './Components/auth/PrivateRoute';
+import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
+import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
+>>>>>>> 87aa1fcdcf020aebdc1cf809be2480de633c2db0
 export default function App() {
   return (
-    <Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forget" element={<Forget />} />
+          <Route path="/reset" element={<Reset />} />
+          <Route path="/redirect" element={<FirstLoginRedirect />} />
 
+<<<<<<< HEAD
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/login" element={<Login/>}/>
@@ -30,5 +45,38 @@ export default function App() {
       </Routes>
 
     </Router>
+=======
+          {/* 🔐 Routes protégées */}
+          <Route path="/admin" element={
+            <PrivateRoute>
+              <Admin />
+            </PrivateRoute>
+          } />
+           <Route path="/ProfileCompletion" element={
+            <PrivateRoute>
+              <ProfileCompletion />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/etud" element={
+            <PrivateRoute>
+              <Students />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/ens" element={
+            <PrivateRoute>
+              <Enseignants />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/pro" element={
+            <PrivateRoute>
+              <Pro />
+            </PrivateRoute>
+          } />
+        
+        
+        </Routes>
+      </Router>
+    </AuthProvider>
+>>>>>>> 87aa1fcdcf020aebdc1cf809be2480de633c2db0
   );
 }
