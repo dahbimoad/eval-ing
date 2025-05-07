@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTrash, FaUserEdit, FaPlus, FaCopy } from "react-icons/fa";
 import { IoFilterOutline } from "react-icons/io5";
 import Sidebar from "./Sidebar";
