@@ -3,8 +3,12 @@ using Catalog.API.Data.Repositories;
 using Catalog.API.Data.Repositories.Interfaces;
 using Catalog.API.Services;
 using Catalog.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Polly;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,12 +28,31 @@ builder.Services.AddCors(options =>
 // Add resilient HTTP Client
 builder.Services.AddHttpClient<IAuthServiceClient, AuthServiceClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["AuthService:BaseUrl"]);
+    client.BaseAddress = new Uri(builder.Configuration["AuthService:BaseUrl"]!);
 })
 .AddPolicyHandler(Policy<HttpResponseMessage>
     .Handle<HttpRequestException>()
     .OrResult(x => !x.IsSuccessStatusCode)
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+// Configure JWT Authentication (needed for Swagger)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false // For testing only
+    };
+});
 
 // Other services
 builder.Services.AddControllers()
@@ -49,21 +72,61 @@ builder.Services.AddScoped<IFormationService, FormationService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
 builder.Services.AddAutoMapper(typeof(Program));
 
-// Swagger
+// Configure Swagger with JWT support
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Catalog API", Version = "v1" });
+    
+    // Add JWT Auth to Swagger UI
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => 
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog API V1");
+        
+        // Enable the "Authorize" button in Swagger UI
+        c.OAuthClientId("swagger-ui");
+        c.OAuthAppName("Swagger UI");
+    });
 }
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+
+// Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 // Apply migrations
