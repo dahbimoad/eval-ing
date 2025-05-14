@@ -24,7 +24,7 @@ export default function App() {
           <Route path="/reset" element={<Reset />} />
           <Route path="/redirect" element={<FirstLoginRedirect />} />
 
-          {/* 🔐 Routes protégées */}
+          {/* 🔐 Routes protégées - Commentées pour le développement sans backend
           <Route path="/admin" element={
             <PrivateRoute>
               <Admin />
@@ -55,6 +55,16 @@ export default function App() {
               <Statistics />
             </PrivateRoute>
           } />
+          */}
+          
+          {/* 🚨 Routes temporairement publiques pour le développement sans backend
+               À remplacer par les routes protégées ci-dessus avant déploiement */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/ProfileCompletion" element={<ProfileCompletion />} />
+          <Route path="/admin/etud" element={<Students />} />
+          <Route path="/admin/ens" element={<Enseignants />} />
+          <Route path="/admin/pro" element={<Pro />} />
+          <Route path="/admin/statistics" element={<Statistics />} />
         
         </Routes>
       </Router>
