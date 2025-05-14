@@ -32,19 +32,22 @@ const mockStats = {
     { filiere: "Cyber-2", rating: 4.2 },
     { filiere: "Cyber-3", rating: 4.4 },
   ],
-  // Sample ratings by question type
+  // Sample ratings by question type with filière
   ratingQuestions: [
-    { id: 1, question: "Qualité globale des cours", average: 4.2 },
-    { id: 2, question: "Clarté des explications par les enseignants", average: 3.8 },
-    { id: 3, question: "Adéquation entre le contenu des cours et les besoins professionnels", average: 3.7 },
-    { id: 4, question: "Qualité des supports pédagogiques", average: 3.9 },
-    { id: 5, question: "Disponibilité des enseignants hors cours", average: 4.5 },
+    { id: 1, question: "Qualité globale des cours", average: 4.2, filiere: "GINF-2" },
+    { id: 2, question: "Clarté des explications par les enseignants", average: 3.8, filiere: "GINF-3" },
+    { id: 3, question: "Adéquation entre le contenu des cours et les besoins professionnels", average: 3.7, filiere: "GIL-2" },
+    { id: 4, question: "Qualité des supports pédagogiques", average: 3.9, filiere: "GSEA-2" },
+    { id: 5, question: "Disponibilité des enseignants hors cours", average: 4.5, filiere: "G2I-2" },
+    { id: 6, question: "Pertinence des méthodes d'évaluation", average: 4.1, filiere: "Cyber-2" },
+    { id: 7, question: "Organisation des examens", average: 3.5, filiere: "GSR-2" },
   ],
   agreeDisagreeQuestions: [
-    { id: 1, question: "Le contenu du cours correspond aux objectifs annoncés", agree: 85, disagree: 15 },
-    { id: 2, question: "Les compétences acquises sont applicables dans un contexte professionnel", agree: 78, disagree: 22 },
-    { id: 3, question: "Les méthodes d'évaluation sont équitables", agree: 65, disagree: 35 },
-    { id: 4, question: "Le volume horaire est suffisant", agree: 45, disagree: 55 },
+    { id: 1, question: "Le contenu du cours correspond aux objectifs annoncés", agree: 85, disagree: 15, filiere: "GINF-2" },
+    { id: 2, question: "Les compétences acquises sont applicables dans un contexte professionnel", agree: 78, disagree: 22, filiere: "GIL-3" },
+    { id: 3, question: "Les méthodes d'évaluation sont équitables", agree: 65, disagree: 35, filiere: "GSEA-3" },
+    { id: 4, question: "Le volume horaire est suffisant", agree: 45, disagree: 55, filiere: "G2I-3" },
+    { id: 5, question: "Les supports de cours sont à jour", agree: 70, disagree: 30, filiere: "Cyber-3" },
   ],
   // Sample student data with their evaluation scores
   studentResponses: [
@@ -59,13 +62,13 @@ const mockStats = {
   ],
   // Sample professional data with their evaluation scores
   professionalResponses: [
-    { id: 1, name: "Omar Kadiri", company: "OCP Group", graduationYear: 2018, averageRating: 4.2, responsesCount: 15 },
-    { id: 2, name: "Nadia Chaoui", company: "Maroc Telecom", graduationYear: 2015, averageRating: 3.9, responsesCount: 12 },
-    { id: 3, name: "Hassan Mansouri", company: "Royal Air Maroc", graduationYear: 2010, averageRating: 4.5, responsesCount: 18 },
-    { id: 4, name: "Samira Benjelloun", company: "Capgemini", graduationYear: 2019, averageRating: 3.7, responsesCount: 14 },
-    { id: 5, name: "Rachid El Fakir", company: "Société Générale", graduationYear: 2017, averageRating: 4.0, responsesCount: 16 },
+    { id: 1, name: "Omar Kadiri", company: "OCP Group", graduationYear: 2018, averageRating: 4.2, responsesCount: 15, filiere: "GINF-3" },
+    { id: 2, name: "Nadia Chaoui", company: "Maroc Telecom", graduationYear: 2015, averageRating: 3.9, responsesCount: 12, filiere: "GIL-3" },
+    { id: 3, name: "Hassan Mansouri", company: "Royal Air Maroc", graduationYear: 2010, averageRating: 4.5, responsesCount: 18, filiere: "GSEA-2" },
+    { id: 4, name: "Samira Benjelloun", company: "Capgemini", graduationYear: 2019, averageRating: 3.7, responsesCount: 14, filiere: "G2I-2" },
+    { id: 5, name: "Rachid El Fakir", company: "Société Générale", graduationYear: 2017, averageRating: 4.0, responsesCount: 16, filiere: "Cyber-2" },
   ],
-  // Sample text responses (anonymized)
+  // Sample text responses (anonymized) with filière
   textResponses: [
     { 
       id: 1, 
@@ -75,7 +78,8 @@ const mockStats = {
         "Mise à jour des technologies enseignées",
         "Plus d'intervenants du monde professionnel",
         "Renforcement des modules de langues étrangères"
-      ]
+      ],
+      filiere: "GINF-2"
     },
     { 
       id: 2, 
@@ -85,7 +89,28 @@ const mockStats = {
         "Les stages pratiques",
         "La diversité des modules techniques",
         "L'accompagnement des enseignants"
-      ]
+      ],
+      filiere: "GIL-2"
+    },
+    {
+      id: 3,
+      question: "Comment améliorer l'organisation des examens?",
+      responses: [
+        "Mieux répartir les évaluations dans le semestre",
+        "Fournir plus de détails sur le format des examens",
+        "Organiser des séances de révision"
+      ],
+      filiere: "GSEA-3"
+    },
+    {
+      id: 4,
+      question: "Quelles ressources supplémentaires seraient utiles?",
+      responses: [
+        "Accès à plus de bases de données scientifiques",
+        "Licences pour des logiciels professionnels",
+        "Livres électroniques pour chaque module"
+      ],
+      filiere: "Cyber-2"
     }
   ]
 };
@@ -149,9 +174,26 @@ function Statistics() {
     return matchesSearch && matchesFiliere;
   });
 
-  // Filter professionals based on search term
+  // Filter professionals based on search term and selected filiere
   const filteredProfessionals = mockStats.professionalResponses.filter(professional => {
-    return professional.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = professional.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFiliere = selectedFiliere === "" || professional.filiere === selectedFiliere;
+    return matchesSearch && matchesFiliere;
+  });
+
+  // Filter rating questions based on selected filiere
+  const filteredRatingQuestions = mockStats.ratingQuestions.filter(question => {
+    return selectedFiliere === "" || question.filiere === selectedFiliere;
+  });
+
+  // Filter agree/disagree questions based on selected filiere
+  const filteredAgreeDisagreeQuestions = mockStats.agreeDisagreeQuestions.filter(question => {
+    return selectedFiliere === "" || question.filiere === selectedFiliere;
+  });
+
+  // Filter text responses based on selected filiere
+  const filteredTextResponses = mockStats.textResponses.filter(item => {
+    return selectedFiliere === "" || item.filiere === selectedFiliere;
   });
   
   const renderContent = () => {
@@ -276,37 +318,111 @@ function Statistics() {
       case "ratings":
         return (
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold mb-4">Questions à notation (1-5)</h3>
+            <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 space-y-4 md:space-y-0">
+              <h3 className="text-xl font-bold">Questions à notation (1-5)</h3>
+              
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5"
+                value={selectedFiliere}
+                onChange={(e) => setSelectedFiliere(e.target.value)}
+              >
+                <option value="">Toutes les filières</option>
+                {mockStats.filieres.map((filiere) => (
+                  <option key={filiere} value={filiere}>{filiere}</option>
+                ))}
+              </select>
+            </div>
+            
             <p className="text-sm text-gray-600 mb-4">
               Évaluation moyenne pour les questions de type notation sur une échelle de 1 à 5
             </p>
-            <div className="space-y-4 mt-6">
-              {mockStats.ratingQuestions.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{item.question}</span>
-                    <span className="text-sm font-medium">{item.average.toFixed(1)}/5.0</span>
+            
+            {filteredRatingQuestions.length > 0 ? (
+              <div className="space-y-4 mt-6">
+                {filteredRatingQuestions.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm">
+                        <span className="font-medium">{item.question}</span>
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span>Filière: {item.filiere}</span>
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium">{item.average.toFixed(1)}/5.0</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-yellow-400 h-2.5 rounded-full" 
+                        style={{ width: `${(item.average / 5) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-yellow-400 h-2.5 rounded-full" 
-                      style={{ width: `${(item.average / 5) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Aucune question ne correspond à la filière sélectionnée.
+              </div>
+            )}
           </div>
         );
       
       case "agreeDisagree":
         return (
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold mb-4">Questions d'accord/pas d'accord</h3>
+            <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 space-y-4 md:space-y-0">
+              <h3 className="text-xl font-bold">Questions d'accord/pas d'accord</h3>
+              
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5"
+                value={selectedFiliere}
+                onChange={(e) => setSelectedFiliere(e.target.value)}
+              >
+                <option value="">Toutes les filières</option>
+                {mockStats.filieres.map((filiere) => (
+                  <option key={filiere} value={filiere}>{filiere}</option>
+                ))}
+              </select>
+            </div>
+            
             <p className="text-sm text-gray-600 mb-4">
               Répartition des réponses pour les questions de type d'accord/pas d'accord
             </p>
-            {renderAgreeDisagreeChart(mockStats.agreeDisagreeQuestions)}
+            
+            {filteredAgreeDisagreeQuestions.length > 0 ? (
+              <div className="space-y-6 mt-4">
+                {filteredAgreeDisagreeQuestions.map((item) => (
+                  <div key={item.id} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm">
+                        <p className="font-medium">{item.question}</p>
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span>Filière: {item.filiere}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-8 w-full bg-gray-200 rounded-lg overflow-hidden flex">
+                      <div 
+                        className="bg-green-500 h-full flex items-center justify-center text-white text-xs"
+                        style={{ width: `${item.agree}%` }}
+                      >
+                        {item.agree}% D'accord
+                      </div>
+                      <div 
+                        className="bg-red-500 h-full flex items-center justify-center text-white text-xs"
+                        style={{ width: `${item.disagree}%` }}
+                      >
+                        {item.disagree}% Pas d'accord
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Aucune question ne correspond à la filière sélectionnée.
+              </div>
+            )}
           </div>
         );
       
@@ -317,7 +433,7 @@ function Statistics() {
               <h3 className="text-xl font-bold">Réponses des étudiants</h3>
               
               <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
-                <div className="relative">
+                <div className="relative w-full md:w-64">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <FaSearch className="text-gray-400" />
                   </div>
@@ -331,7 +447,7 @@ function Statistics() {
                 </div>
                 
                 <select
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5"
                   value={selectedFiliere}
                   onChange={(e) => setSelectedFiliere(e.target.value)}
                 >
@@ -404,17 +520,30 @@ function Statistics() {
             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 space-y-4 md:space-y-0">
               <h3 className="text-xl font-bold">Réponses des professionnels</h3>
               
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaSearch className="text-gray-400" />
+              <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                <div className="relative w-full md:w-64">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <FaSearch className="text-gray-400" />
+                  </div>
+                  <input 
+                    type="text" 
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                    placeholder="Rechercher un professionnel..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
-                  placeholder="Rechercher un professionnel..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                
+                <select
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5"
+                  value={selectedFiliere}
+                  onChange={(e) => setSelectedFiliere(e.target.value)}
+                >
+                  <option value="">Toutes les filières</option>
+                  {mockStats.filieres.map((filiere) => (
+                    <option key={filiere} value={filiere}>{filiere}</option>
+                  ))}
+                </select>
               </div>
             </div>
             
@@ -427,6 +556,9 @@ function Statistics() {
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Entreprise
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Filière
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Année d'obtention
@@ -447,6 +579,9 @@ function Statistics() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{professional.company}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{professional.filiere}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{professional.graduationYear}</div>
@@ -482,18 +617,46 @@ function Statistics() {
       case "text":
         return (
           <div className="space-y-6">
-            {mockStats.textResponses.map((item) => (
-              <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold mb-4">{item.question}</h3>
-                <ul className="space-y-3">
-                  {item.responses.map((response, index) => (
-                    <li key={index} className="p-3 bg-gray-50 rounded-lg">
-                      "{response}"
-                    </li>
+            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+              <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 space-y-4 md:space-y-0">
+                <h3 className="text-xl font-bold">Commentaires et suggestions</h3>
+                
+                <select
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5"
+                  value={selectedFiliere}
+                  onChange={(e) => setSelectedFiliere(e.target.value)}
+                >
+                  <option value="">Toutes les filières</option>
+                  {mockStats.filieres.map((filiere) => (
+                    <option key={filiere} value={filiere}>{filiere}</option>
                   ))}
-                </ul>
+                </select>
               </div>
-            ))}
+            </div>
+            
+            {filteredTextResponses.length > 0 ? (
+              filteredTextResponses.map((item) => (
+                <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold">{item.question}</h3>
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span>Filière: {item.filiere}</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3">
+                    {item.responses.map((response, index) => (
+                      <li key={index} className="p-3 bg-gray-50 rounded-lg">
+                        "{response}"
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500 bg-white p-6 rounded-lg shadow-md">
+                Aucun commentaire ne correspond à la filière sélectionnée.
+              </div>
+            )}
           </div>
         );
       
@@ -516,7 +679,7 @@ function Statistics() {
             </p>
           </div>
           
-          {/* Navigation */}
+          {/* Navigation - Reordered tabs as requested */}
           <div className="flex flex-wrap space-x-1 rounded-xl bg-gray-200 p-1 mb-8">
             <button
               className={`flex-1 rounded-lg py-2.5 text-sm font-medium ${
@@ -550,6 +713,16 @@ function Statistics() {
             </button>
             <button
               className={`flex-1 rounded-lg py-2.5 text-sm font-medium ${
+                activeTab === "text" 
+                  ? "bg-white text-blue-700 shadow" 
+                  : "text-gray-700 hover:bg-white/50"
+              }`}
+              onClick={() => setActiveTab("text")}
+            >
+              Commentaires
+            </button>
+            <button
+              className={`flex-1 rounded-lg py-2.5 text-sm font-medium ${
                 activeTab === "students" 
                   ? "bg-white text-blue-700 shadow" 
                   : "text-gray-700 hover:bg-white/50"
@@ -567,16 +740,6 @@ function Statistics() {
               onClick={() => setActiveTab("professionals")}
             >
               Professionnels
-            </button>
-            <button
-              className={`flex-1 rounded-lg py-2.5 text-sm font-medium ${
-                activeTab === "text" 
-                  ? "bg-white text-blue-700 shadow" 
-                  : "text-gray-700 hover:bg-white/50"
-              }`}
-              onClick={() => setActiveTab("text")}
-            >
-              Commentaires
             </button>
           </div>
           
