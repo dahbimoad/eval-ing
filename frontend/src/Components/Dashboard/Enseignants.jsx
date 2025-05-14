@@ -206,60 +206,64 @@ function Enseignants() {
     }
   };
 
-  const handleUpdateTeacher = async (e) => {
-    e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.module) {
-      toast.error("Veuillez remplir tous les champs", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return;
-    }
+const handleUpdateTeacher = async (e) => {
+  e.preventDefault();
+  if (!formData.firstName || !formData.lastName || !formData.module) {
+    toast.error("Veuillez remplir tous les champs", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+    return;
+  }
 
-    try {
-      const response = await api.put(`/admin/teachers/${selectedTeacher.id}`, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        module: formData.module
-      });
-      
-      const updatedTeacher = response.data;
-      
-      // Update teachers list with animation
-      setTeachers(prev => 
-        prev.map(teacher => teacher.id === selectedTeacher.id ? updatedTeacher : teacher)
-      );
-      
-      setIsEditOpen(false);
-      
-      toast.success("Enseignant mis à jour avec succès", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        icon: "🔄",
-      });
-    } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Erreur lors de la mise à jour de l'enseignant", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    }
-  };
+  try {
+    const response = await api.put(`/admin/teachers/${selectedTeacher.id}`, {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      module: formData.module
+    });
+
+    const updatedTeacher = response.data;
+
+    setTeachers(prev =>
+      prev.map(teacher => teacher.id === selectedTeacher.id ? updatedTeacher : teacher)
+    );
+
+    setIsEditOpen(false);
+
+    toast.success("Enseignant mis à jour avec succès", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      icon: "🔄",
+    });
+
+    // Recharger la page
+    window.location.reload();
+
+  } catch (error) {
+    console.error("Erreur:", error);
+    toast.error("Erreur lors de la mise à jour de l'enseignant", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  }
+};
+
 
   const openDeleteModal = (teacher) => {
     setTeacherToDelete(teacher);
