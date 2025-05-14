@@ -8,6 +8,7 @@ import Admin from "./Components/Dashboard/Admin";
 import Students from "./Components/Dashboard/Students";
 import Enseignants from "./Components/Dashboard/Enseignants";
 import Pro from "./Components/Dashboard/Pro";
+import Statistics from "./Components/Dashboard/Statistics";
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './Components/auth/PrivateRoute';
 import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
@@ -49,7 +50,11 @@ export default function App() {
               <Pro />
             </PrivateRoute>
           } />
-        
+          <Route path="/admin/statistics" element={
+            <PrivateRoute>
+              <Statistics />
+            </PrivateRoute>
+          } />
         
         </Routes>
       </Router>
