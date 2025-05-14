@@ -16,7 +16,7 @@ public class AdminStudentsController(StudentAdminService svc) : ControllerBase
     {
         var (student, pwd, err) = await svc.CreateAsync(dto);
         if (student == null) return BadRequest(new { message = err });
-        return Ok(new { student, password = pwd });
+        return Ok(new { student });
     }
 
     [HttpGet]

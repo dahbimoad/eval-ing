@@ -7,4 +7,6 @@ public class ProfessionalProfile
     public User User { get; set; } = null!;
 
     public int GraduationYear { get; set; } // année d'obtention du diplôme
+
+    public string? PasswordDefault { get; set; } // ⚠️ à protéger côté API
 }
