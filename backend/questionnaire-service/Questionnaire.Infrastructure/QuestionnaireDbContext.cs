@@ -95,19 +95,23 @@ namespace Questionnaire.Infrastructure
             #endregion
 
             #region Submission
-            modelBuilder.Entity<Submission>(e =>
-            {
-                e.ToTable("submission");
-                e.HasKey(x => x.Id);
-                e.Property(x => x.Id).ValueGeneratedOnAdd(); // Automatically generate an integer value
-                e.Property(x => x.Status).HasConversion<short>();
-                e.HasIndex(x => new { x.PublicationId, x.UserId }).IsUnique(false);
+           modelBuilder.Entity<Submission>(e =>
+{
+    e.ToTable("submission");
+    e.HasKey(x => x.Id);
+    e.Property(x => x.Id).ValueGeneratedOnAdd();
+    e.Property(x => x.Status).HasConversion<short>();
 
-                e.HasMany(s => s.Answers)
-                 .WithOne(sa => sa.Submission)
-                 .HasForeignKey(sa => sa.SubmissionId)
-                 .OnDelete(DeleteBehavior.Cascade);
-            });
+    // UserId is Guid now, ensure no int assumptions are made
+    // If you have configurations depending on UserId type, update here
+
+    e.HasIndex(x => new { x.PublicationId, x.UserId }).IsUnique(false);
+
+    e.HasMany(s => s.Answers)
+     .WithOne(sa => sa.Submission)
+     .HasForeignKey(sa => sa.SubmissionId)
+     .OnDelete(DeleteBehavior.Cascade);
+});
             #endregion
 
             #region SubmissionAnswer

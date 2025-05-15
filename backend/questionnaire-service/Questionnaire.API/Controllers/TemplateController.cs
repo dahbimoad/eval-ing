@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Application.Services;
 using Questionnaire.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace Questionnaire.API.Controllers
 {

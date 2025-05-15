@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Questionnaire.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateToIntIds : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,8 +25,7 @@ namespace Questionnaire.Infrastructure.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,7 +89,7 @@ namespace Questionnaire.Infrastructure.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PublicationId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Status = table.Column<short>(type: "smallint", nullable: false),
                     SubmittedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -137,7 +136,6 @@ namespace Questionnaire.Infrastructure.Migrations
                     Type = table.Column<short>(type: "smallint", nullable: false),
                     Mandatory = table.Column<bool>(type: "boolean", nullable: false),
                     MaxLength = table.Column<int>(type: "integer", nullable: true),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     Options = table.Column<List<string>>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
@@ -192,10 +190,9 @@ namespace Questionnaire.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_question_SectionId_DisplayOrder",
+                name: "IX_question_SectionId",
                 table: "question",
-                columns: new[] { "SectionId", "DisplayOrder" },
-                unique: true);
+                column: "SectionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questionnaire_template_TemplateCode_Version",

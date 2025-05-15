@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Questionnaire.Application.Services;
 using Questionnaire.Infrastructure;
 using DotNetEnv;
@@ -22,6 +23,10 @@ builder.Services.AddScoped<TemplateService, TemplateService>();
 builder.Services.AddScoped<SectionService, SectionService>();
 // ✅ Register QuestionService here
 builder.Services.AddScoped<QuestionService, QuestionService>();
+// ✅ Register PublicationService here
+builder.Services.AddScoped<PublicationService, PublicationService>();
+builder.Services.AddScoped<ProfessorService, ProfessorService>();
+builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
 
 // JWT Authentication Configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

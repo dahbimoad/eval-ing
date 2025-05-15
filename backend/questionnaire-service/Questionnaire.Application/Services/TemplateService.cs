@@ -24,11 +24,13 @@ namespace Questionnaire.Application.Services
 
         // Get Template by ID
         public async Task<QuestionnaireTemplate?> GetTemplateByIdAsync(int id)
-        {
-            return await _context.Templates
-                                 .Include(t => t.Sections) // Include sections if needed
-                                 .FirstOrDefaultAsync(t => t.Id == id);
-        }
+{
+    return await _context.Templates
+        .Include(t => t.Sections)
+            .ThenInclude(s => s.Questions)
+        .FirstOrDefaultAsync(t => t.Id == id);
+}
+
 
         // Update Template
         public async Task<QuestionnaireTemplate?> UpdateTemplateAsync(int id, string? templateCode, int filiereId, string? role, string? title)
@@ -61,10 +63,12 @@ namespace Questionnaire.Application.Services
 
         // Get All Templates
         public async Task<List<QuestionnaireTemplate>> GetAllTemplatesAsync()
-        {
-            return await _context.Templates
-                                 .Include(t => t.Sections) // Include sections if needed
-                                 .ToListAsync();
-        }
+{
+    return await _context.Templates
+        .Include(t => t.Sections)
+            .ThenInclude(s => s.Questions)
+        .ToListAsync();
+}
+
     }
 }

@@ -13,8 +13,8 @@ using Questionnaire.Infrastructure;
 namespace Questionnaire.Infrastructure.Migrations
 {
     [DbContext(typeof(QuestionnaireDbContext))]
-    [Migration("20250512135456_UpdateToIntIds2")]
-    partial class UpdateToIntIds2
+    [Migration("20250515161705_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,9 +117,6 @@ namespace Questionnaire.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("Mandatory")
                         .HasColumnType("boolean");
 
@@ -142,8 +139,7 @@ namespace Questionnaire.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SectionId", "DisplayOrder")
-                        .IsUnique();
+                    b.HasIndex("SectionId");
 
                     b.ToTable("question", (string)null);
                 });
@@ -229,8 +225,8 @@ namespace Questionnaire.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("SubmittedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -271,24 +267,20 @@ namespace Questionnaire.Infrastructure.Migrations
 
             modelBuilder.Entity("Questionnaire.Domain.Entities.Question", b =>
                 {
-                    b.HasOne("Questionnaire.Domain.Entities.Section", "Section")
+                    b.HasOne("Questionnaire.Domain.Entities.Section", null)
                         .WithMany("Questions")
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Section");
                 });
 
             modelBuilder.Entity("Questionnaire.Domain.Entities.Section", b =>
                 {
-                    b.HasOne("Questionnaire.Domain.Entities.QuestionnaireTemplate", "Template")
+                    b.HasOne("Questionnaire.Domain.Entities.QuestionnaireTemplate", null)
                         .WithMany("Sections")
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("Questionnaire.Domain.Entities.Submission", b =>

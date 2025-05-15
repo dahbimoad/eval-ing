@@ -4,7 +4,7 @@ public sealed class Submission
 {
     private Submission() { }
 
-    public Submission(int publicationId, int userId)
+    public Submission(int publicationId, Guid userId)
     {
         PublicationId = publicationId;
         UserId        = userId;
@@ -14,8 +14,8 @@ public sealed class Submission
     public int           Id            { get; private set; }
     public int           PublicationId { get; private set; }
     public Publication      Publication   { get; private set; } = null!;
-    public int           UserId        { get; private set; }
-     public User User { get; set; }  // Navigation property to the User
+    public Guid           UserId        { get; private set; }
+   //  public User User { get; set; }  // Navigation property to the User
 
     public SubmissionStatus Status        { get; private set; }
     public DateTimeOffset?  SubmittedAt   { get; private set; }
