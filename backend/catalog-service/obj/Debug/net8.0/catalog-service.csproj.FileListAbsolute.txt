@@ -136,3 +136,16 @@ C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\refint
 C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\catalog-service.pdb
 C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\catalog-service.genruntimeconfig.cache
 C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\ref\catalog-service.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\catalog-service.staticwebassets.endpoints.json
+C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Projects\Evaluation_formation\backend\catalog-service\obj\Debug\net8.0\staticwebassets\msbuild.catalog-service.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\DotNetEnv.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\Sprache.dll
+C:\Projects\Evaluation_formation\backend\catalog-service\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
