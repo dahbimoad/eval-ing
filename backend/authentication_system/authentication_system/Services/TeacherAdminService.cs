@@ -119,6 +119,27 @@ public class TeacherAdminService
         if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.LastName))
             return (false, "Le prénom et le nom sont obligatoires.");
 
+        // Validation de l'email s'il est fourni
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            // Vérification du format de l'email
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(dto.Email);
+                if (addr.Address != dto.Email)
+                    return (false, "Le format de l'email est incorrect.");
+            }
+            catch
+            {
+                return (false, "Le format de l'email est incorrect.");
+            }
+
+            // Vérification que l'email n'est pas déjà utilisé par un autre utilisateur
+            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.Id != id);
+            if (existingUser != null)
+                return (false, "Un autre utilisateur utilise déjà cet email.");
+        }
+
         var teacher = await _db.TeacherProfiles
             .Include(tp => tp.User)
             .FirstOrDefaultAsync(tp => tp.UserId == id);
@@ -128,6 +149,11 @@ public class TeacherAdminService
         teacher.User.FirstName = dto.FirstName;
         teacher.User.LastName = dto.LastName;
 
+        // Mise à jour de l'email si fourni
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            teacher.User.Email = dto.Email;
+        }
 
         await _db.SaveChangesAsync();
         return (true, null);
