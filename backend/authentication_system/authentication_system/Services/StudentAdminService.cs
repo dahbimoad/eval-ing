@@ -1,5 +1,4 @@
-﻿
-using authentication_system.Data;
+﻿using authentication_system.Data;
 using authentication_system.Entities;
 using authentication_system.Services;
 using authentication_system.Models;
@@ -41,13 +40,25 @@ public class StudentAdminService
         if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.LastName))
             return (null, "Le prénom et le nom sont obligatoires.");
 
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return (null, "L'email est obligatoire.");
+
         if (string.IsNullOrWhiteSpace(dto.Filiere))
             return (null, "La filière est obligatoire.");
 
-        // Génération de l'email basé sur le prénom et le nom
-        var email = $"{dto.FirstName.ToLower().Normalize().Replace(" ", "")}.{dto.LastName.ToLower().Normalize().Replace(" ", "")}@etu.uae.ac.ma";
+        // Vérification du format de l'email
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(dto.Email);
+            if (addr.Address != dto.Email)
+                return (null, "Le format de l'email est incorrect.");
+        }
+        catch
+        {
+            return (null, "Le format de l'email est incorrect.");
+        }
 
-        if (await _db.Users.AnyAsync(u => u.Email == email))
+        if (await _db.Users.AnyAsync(u => u.Email == dto.Email))
             return (null, "Un utilisateur avec cet email existe déjà.");
 
         var studentRole = await _db.Roles.FirstOrDefaultAsync(r => r.Name == "Étudiant");
@@ -59,7 +70,7 @@ public class StudentAdminService
             Id = Guid.NewGuid(),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            Email = email,
+            Email = dto.Email,
             CreatedAt = DateTime.UtcNow,
             RoleId = studentRole.Id
             // Pas de mot de passe initial car nous allons envoyer un lien de réinitialisation
@@ -114,6 +125,27 @@ public class StudentAdminService
         if (string.IsNullOrWhiteSpace(dto.Filiere))
             return (false, "La filière est obligatoire.");
 
+        // Validation de l'email s'il est fourni
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            // Vérification du format de l'email
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(dto.Email);
+                if (addr.Address != dto.Email)
+                    return (false, "Le format de l'email est incorrect.");
+            }
+            catch
+            {
+                return (false, "Le format de l'email est incorrect.");
+            }
+
+            // Vérification que l'email n'est pas déjà utilisé par un autre utilisateur
+            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.Id != id);
+            if (existingUser != null)
+                return (false, "Un autre utilisateur utilise déjà cet email.");
+        }
+
         var student = await _db.StudentProfiles
             .Include(sp => sp.User)
             .FirstOrDefaultAsync(sp => sp.UserId == id);
@@ -124,16 +156,10 @@ public class StudentAdminService
         student.User.LastName = dto.LastName;
         student.Filiere = dto.Filiere;
 
-        // Mise à jour de l'email si le prénom ou le nom a changé
-        var newEmail = $"{dto.FirstName.ToLower().Normalize().Replace(" ", "")}.{dto.LastName.ToLower().Normalize().Replace(" ", "")}@etu.uae.ac.ma";
-        if (student.User.Email != newEmail)
+        // Mise à jour de l'email si fourni
+        if (!string.IsNullOrWhiteSpace(dto.Email))
         {
-            // Vérifier si le nouvel email n'est pas déjà utilisé
-            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Email == newEmail && u.Id != id);
-            if (existingUser != null)
-                return (false, "Un autre utilisateur utilise déjà cet email.");
-
-            student.User.Email = newEmail;
+            student.User.Email = dto.Email;
         }
 
         await _db.SaveChangesAsync();
@@ -192,7 +218,7 @@ public class StudentAdminService
         Filiere = profile.Filiere
     };
 
-    // Méthode pour importer des étudiants depuis un fichier Excel
+    // Méthode pour importer des étudiants depuis un fichier Excel - mise à jour pour inclure l'email
     public async Task<(int SuccessCount, int ErrorCount, List<string> Errors)> ImportStudentsFromExcelAsync(IFormFile file)
     {
         var extension = Path.GetExtension(file.FileName).ToLower();
@@ -218,8 +244,8 @@ public class StudentAdminService
                 if (sheet == null || sheet.LastRowNum == 0)
                     return (0, 1, new List<string> { "Le fichier Excel est vide ou ne contient pas de données valides." });
 
-                // Vérification des en-têtes
-                var headers = new List<string> { "Prénom", "Nom", "Filière" };
+                // Vérification des en-têtes (avec Email)
+                var headers = new List<string> { "Prénom", "Nom", "Email", "Filière" };
                 IRow headerRow = sheet.GetRow(0);
 
                 for (int col = 0; col < headers.Count; col++)
@@ -243,11 +269,19 @@ public class StudentAdminService
                     {
                         string firstName = GetCellValueAsString(row.GetCell(0));
                         string lastName = GetCellValueAsString(row.GetCell(1));
-                        string filiere = GetCellValueAsString(row.GetCell(2));
+                        string email = GetCellValueAsString(row.GetCell(2));
+                        string filiere = GetCellValueAsString(row.GetCell(3));
 
                         if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
                         {
                             errors.Add($"Ligne {i + 1}: Le prénom ou le nom est manquant.");
+                            errorCount++;
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(email))
+                        {
+                            errors.Add($"Ligne {i + 1}: L'email est manquant.");
                             errorCount++;
                             continue;
                         }
@@ -263,6 +297,7 @@ public class StudentAdminService
                         {
                             FirstName = firstName,
                             LastName = lastName,
+                            Email = email,
                             Filiere = filiere
                         };
 
