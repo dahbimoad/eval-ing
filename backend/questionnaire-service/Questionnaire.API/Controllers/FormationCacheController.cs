@@ -1,0 +1,32 @@
+using Microsoft.AspNetCore.Mvc;
+using Questionnaire.Application.Services;
+using Questionnaire.Application.DTOs;
+
+namespace Questionnaire.API.Controllers
+{
+    [ApiController]
+    [Route("api/formation-cache")]
+    public class FormationCacheController : ControllerBase
+    {
+        private readonly FormationCacheService _formationCacheService;
+
+        public FormationCacheController(FormationCacheService formationCacheService)
+        {
+            _formationCacheService = formationCacheService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddFormationToCache([FromBody] FormationDto formationDto)
+        {
+            try
+            {
+                await _formationCacheService.AddFormationAsync(formationDto);
+                return Ok(new { message = "Formation added to cache successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+    }
+}
