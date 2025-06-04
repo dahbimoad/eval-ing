@@ -1,4 +1,4 @@
-﻿// Models/StudentResponseDTO.cs
+﻿
 namespace authentication_system.Models;
 public class StudentResponseDTO
 {
@@ -8,6 +8,6 @@ public class StudentResponseDTO
     public string Email { get; set; } = string.Empty;
     public string Filiere { get; set; } = string.Empty;
 
-    public string? PasswordDefault { get; set; }
+
 
 }

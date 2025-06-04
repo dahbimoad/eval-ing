@@ -9,5 +9,5 @@ public class StudentProfile
     public string Filiere { get; set; } = string.Empty;
 
 
-    public string? PasswordDefault { get; set; } // ⚠️ à protéger côté API
+
 }

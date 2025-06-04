@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
 using authentication_system.Services.Interfaces;
+using authentication_system.Services.Auth;
 
 
 
@@ -65,6 +66,10 @@ builder.Services.AddScoped<TeacherAdminService>();
 builder.Services.AddScoped<ProfessionalAdminService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+
+
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Récupérer les variables d'environnement pour JWT
 var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
