@@ -3,10 +3,11 @@
     // Models/TeacherUpdateDTO.cs
     public class TeacherUpdateDTO
     {
-        public string FirstName { get; set; } = null!;
-        public string LastName { get; set; } = null!;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
-        public string Module { get; set; } = null!;
+
     }
 
 }
