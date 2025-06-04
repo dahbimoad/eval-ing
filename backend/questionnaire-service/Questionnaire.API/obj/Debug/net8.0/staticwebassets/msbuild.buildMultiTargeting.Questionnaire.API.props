@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Questionnaire.API.props" />
+</Project>

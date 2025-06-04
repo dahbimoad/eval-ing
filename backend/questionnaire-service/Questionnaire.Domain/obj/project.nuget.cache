@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "bK/6YP4NIb4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\utente\\OneDrive\\Desktop\\Evaluatio_formation\\backend\\questionnaire-service\\Questionnaire.Domain\\Questionnaire.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\utente\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.15\\microsoft.netcore.app.ref.8.0.15.nupkg.sha512",
+    "C:\\Users\\utente\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.15\\microsoft.windowsdesktop.app.ref.8.0.15.nupkg.sha512",
+    "C:\\Users\\utente\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.15\\microsoft.aspnetcore.app.ref.8.0.15.nupkg.sha512"
+  ],
+  "logs": []
+}
