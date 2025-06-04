@@ -2,6 +2,7 @@
 using authentication_system.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace authentication_system.Controllers;
 
@@ -11,10 +12,12 @@ namespace authentication_system.Controllers;
 public class AdminTeachersController : ControllerBase
 {
     private readonly TeacherAdminService _service;
+    private readonly ILogger<AdminTeachersController> _logger;
 
-    public AdminTeachersController(TeacherAdminService service)
+    public AdminTeachersController(TeacherAdminService service, ILogger<AdminTeachersController> logger)
     {
         _service = service;
+        _logger = logger;
     }
 
     /// <summary>
@@ -26,7 +29,6 @@ public class AdminTeachersController : ControllerBase
         var (teacher, err) = await _service.CreateAsync(dto);
         if (teacher == null)
             return BadRequest(new { message = err });
-
         return Ok(new { teacher });
     }
 
@@ -51,7 +53,7 @@ public class AdminTeachersController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour les informations d’un enseignant.
+    /// Met à jour les informations d'un enseignant.
     /// </summary>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] TeacherUpdateDTO dto)
@@ -68,5 +70,31 @@ public class AdminTeachersController : ControllerBase
     {
         var deleted = await _service.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Importe des enseignants depuis un fichier Excel.
+    /// </summary>
+    [HttpPost("import-excel")]
+    public async Task<IActionResult> ImportFromExcel(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Aucun fichier n'a été fourni.");
+
+        try
+        {
+            var (successCount, errorCount, errors) = await _service.ImportTeachersFromExcelAsync(file);
+            return Ok(new
+            {
+                SuccessCount = successCount,
+                ErrorCount = errorCount,
+                Errors = errors
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Une erreur est survenue lors de l'importation du fichier Excel.");
+            return StatusCode(500, "Une erreur est survenue lors du traitement du fichier. Veuillez réessayer.");
+        }
     }
 }

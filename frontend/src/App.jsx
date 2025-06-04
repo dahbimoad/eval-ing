@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forget" element={<Forget />} />
-          <Route path="/reset" element={<Reset />} />
+        <Route path="/reset-password" element={<Reset />} /> {/* Add this line for the Reset component */}
           <Route path="/redirect" element={<FirstLoginRedirect />} />
 
           {/* 🔐 Routes protégées */}

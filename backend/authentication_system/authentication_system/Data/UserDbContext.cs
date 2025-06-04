@@ -13,6 +13,7 @@ namespace authentication_system.Data
         public DbSet<StudentProfile> StudentProfiles { get; set; }
         public DbSet<TeacherProfile> TeacherProfiles { get; set; }
         public DbSet<ProfessionalProfile> ProfessionalProfiles { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } // Ajout de cette ligne
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,6 +71,22 @@ namespace authentication_system.Data
                 entity.Property(e => e.Id).HasColumnType("uuid");
                 entity.HasIndex(p => p.UserId).IsUnique();
             });
+
+
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.Token)
+                    .IsUnique();
+            });
+
+
 
             modelBuilder.Entity<StudentProfile>(entity =>
             {

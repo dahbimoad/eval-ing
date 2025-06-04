@@ -7,4 +7,7 @@ public class StudentProfile
     public User User { get; set; } = null!;
 
     public string Filiere { get; set; } = string.Empty;
+
+
+
 }
