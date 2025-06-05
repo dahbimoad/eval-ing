@@ -2,11 +2,13 @@ using Catalog.API.DTOs;
 using Catalog.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
 namespace Catalog.API.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class ModuleController : ControllerBase
     {
