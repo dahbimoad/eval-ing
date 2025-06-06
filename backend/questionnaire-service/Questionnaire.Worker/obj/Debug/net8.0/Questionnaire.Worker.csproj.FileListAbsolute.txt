@@ -58,9 +58,6 @@ C:\Users\utente\OneDrive\Desktop\questionnaire-service\Questionnaire.Worker\obj\
 C:\Users\utente\OneDrive\Desktop\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.pdb
 C:\Users\utente\OneDrive\Desktop\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.genruntimeconfig.cache
 C:\Users\utente\OneDrive\Desktop\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\ref\Questionnaire.Worker.dll
-C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.dll
-C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\refint\Questionnaire.Worker.dll
-C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.pdb
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\bin\Debug\net8.0\appsettings.json
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\bin\Debug\net8.0\Questionnaire.Worker.exe
@@ -117,5 +114,8 @@ C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-servi
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.csproj.CoreCompileInputs.cache
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.sourcelink.json
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Question.5F627FBD.Up2Date
+C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.dll
+C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\refint\Questionnaire.Worker.dll
+C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.pdb
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\Questionnaire.Worker.genruntimeconfig.cache
 C:\Users\utente\OneDrive\Desktop\Evaluatio_formation\backend\questionnaire-service\Questionnaire.Worker\obj\Debug\net8.0\ref\Questionnaire.Worker.dll

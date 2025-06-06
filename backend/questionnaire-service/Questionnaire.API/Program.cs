@@ -28,6 +28,8 @@ builder.Services.AddScoped<PublicationService, PublicationService>();
 builder.Services.AddScoped<ProfessorService, ProfessorService>();
 builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
 builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
+builder.Services.AddScoped<SubmissionExportService, SubmissionExportService>();
+builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
 
 // JWT Authentication Configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
