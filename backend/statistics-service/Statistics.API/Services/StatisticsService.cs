@@ -260,13 +260,24 @@ namespace Statistics.API.Services
 
         private double CalculateAverageRating(List<SubmissionExportDto> submissions)
         {
-            var allNumericAnswers = submissions
+            var likertAnswers = submissions
                 .SelectMany(s => s.Sections)
                 .SelectMany(sec => sec.Answers)
-                .Where(a => a.Type == 1 && a.ValueNumber.HasValue) // Only Likert scale questions
+                .Where(a => a.Type == 1 && a.ValueNumber.HasValue) // Likert scale questions
                 .Select(a => (double)a.ValueNumber!.Value);
 
-            return allNumericAnswers.Any() ? Math.Round(allNumericAnswers.Average(), 1) : 0.0;
+            var binaryAnswers = submissions
+                .SelectMany(s => s.Sections)
+                .SelectMany(sec => sec.Answers)
+                .Where(a => a.Type == 2 && a.ValueNumber.HasValue) // Binary questions
+                .GroupBy(a => new { a.QuestionId })
+                .Select(g => {
+                    var yesPercentage = (double)g.Count(a => a.ValueNumber == 1) / g.Count();
+                    return yesPercentage * 5; // Convert to 5-point scale
+                });
+
+            var allScores = likertAnswers.Concat(binaryAnswers);
+            return allScores.Any() ? Math.Round(allScores.Average(), 1) : 0.0;
         }
 
         private List<SectionStatisticsDto> CalculateSectionStatistics(List<SubmissionExportDto> submissions)
@@ -332,15 +343,22 @@ namespace Statistics.API.Services
 
                     case 2: // Binary
                         var binaryAnswers = questionGroup.Where(a => a.ValueNumber.HasValue).Select(a => a.ValueNumber!.Value);
-                        questionStat.AnswerDistribution = binaryAnswers
-                            .GroupBy(v => v)
-                            .Select(g => new AnswerDistributionDto
-                            {
-                                AnswerValue = g.Key == 1 ? "Oui" : "Non",
-                                Count = g.Count(),
-                                Percentage = (double)g.Count() / questionGroup.Count() * 100
-                            })
-                            .ToList();
+                        if (binaryAnswers.Any())
+                        {
+                            // Calculate score as percentage of "Yes" responses (converted to 5-point scale)
+                            var yesPercentage = (double)binaryAnswers.Count(v => v == 1) / binaryAnswers.Count();
+                            questionStat.AverageScore = Math.Round(yesPercentage * 5, 2); // Convert to 5-point scale
+                            
+                            questionStat.AnswerDistribution = binaryAnswers
+                                .GroupBy(v => v)
+                                .Select(g => new AnswerDistributionDto
+                                {
+                                    AnswerValue = g.Key == 1 ? "Oui" : "Non",
+                                    Count = g.Count(),
+                                    Percentage = (double)g.Count() / questionGroup.Count() * 100
+                                })
+                                .ToList();
+                        }
                         break;
 
                     case 3: // Text

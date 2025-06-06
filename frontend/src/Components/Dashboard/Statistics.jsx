@@ -1,18 +1,20 @@
 // frontend/src/Components/Dashboard/Statistics.jsx
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import { FaChartBar, FaUsers, FaClipboardList, FaPercentage } from 'react-icons/fa';
+import { FaChartBar, FaUsers, FaClipboardList, FaPercentage, FaInfoCircle } from 'react-icons/fa';
 import { statisticsService } from '../../services/statisticsApi';
 import StatsCard from './StatisticsComponents/StatsCard';
 import FormationStats from './StatisticsComponents/FormationStats';
 import QuestionnaireDetails from './StatisticsComponents/QuestionnaireDetails';
 import ExportButton from './StatisticsComponents/ExportButton';
+import ScoringExplanation from './StatisticsComponents/ScoringExplanation';
 
 function Statistics() {
     const [overallStats, setOverallStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
+    const [showScoringExplanation, setShowScoringExplanation] = useState(false);
 
     useEffect(() => {
         loadOverallStatistics();
@@ -95,17 +97,28 @@ function Statistics() {
                             </p>
                         </div>
                         
-                        {/* Export Button */}
-                        {!isDataEmpty() && (
-                            <div className="flex items-center space-x-4">
+                        {/* Action Buttons */}
+                        <div className="flex items-center space-x-4">
+                            {/* Scoring Explanation Button */}
+                            <button
+                                onClick={() => setShowScoringExplanation(true)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
+                                title="Comprendre le système de notation"
+                            >
+                                <FaInfoCircle className="text-lg" />
+                                <span className="font-medium">Guide des Scores</span>
+                            </button>
+                            
+                            {/* Export Button */}
+                            {!isDataEmpty() && (
                                 <ExportButton 
                                     type="overall" 
                                     title="📥 Exporter les Statistiques"
                                     size="lg"
                                     variant="primary"
                                 />
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Tabs */}
@@ -166,8 +179,11 @@ function Statistics() {
                                         </div>
                                         
                                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 max-w-md mx-auto">
-                                            <p className="text-sm font-medium">
+                                            <p className="text-sm font-medium mb-3">
                                                 💡 Une fois les premières réponses collectées, cette page affichera des métriques détaillées sur les performances de vos formations.
+                                            </p>
+                                            <p className="text-xs text-blue-100">
+                                                📊 Utilisez le bouton "Guide des Scores" ci-dessus pour comprendre notre système de notation unifié.
                                             </p>
                                         </div>
                                     </div>
@@ -202,6 +218,31 @@ function Statistics() {
                                         />
                                     </div>
 
+                                    {/* Scoring Info Banner */}
+                                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border border-indigo-200 dark:border-gray-700 rounded-lg p-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-full">
+                                                    <FaInfoCircle className="text-indigo-600 dark:text-indigo-400" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">
+                                                        Système de Notation Unifié
+                                                    </h4>
+                                                    <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                                                        Tous les scores utilisent une échelle de 0 à 5 pour une comparaison cohérente
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowScoringExplanation(true)}
+                                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                            >
+                                                En savoir plus
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Formation Statistics */}
                                     <FormationStats formationStatistics={overallStats?.formationStatistics} />
                                 </>
@@ -222,6 +263,12 @@ function Statistics() {
                     )}
                 </div>
             </div>
+            
+            {/* Scoring Explanation Modal */}
+            <ScoringExplanation 
+                isOpen={showScoringExplanation}
+                onClose={() => setShowScoringExplanation(false)}
+            />
         </div>
     );
 }
