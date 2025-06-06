@@ -65,8 +65,9 @@ namespace Statistics.API.Services
 
         public async Task<QuestionnaireStatisticsDto> GetQuestionnaireStatisticsAsync(int publicationId)
         {
-            // Get publication info from questionnaire service
-            var publicationInfo = await GetPublicationInfoAsync(publicationId);
+            // Get publication info from the all publications endpoint
+            var allPublications = await GetAllPublicationsAsync();
+            var publicationInfo = allPublications.FirstOrDefault(p => p.Id == publicationId);
             var submissions = await GetSubmissionsByPublicationAsync(publicationId);
             
             if (!submissions.Any())
@@ -98,7 +99,7 @@ namespace Statistics.API.Services
 
         public async Task<OverallStatisticsDto> GetOverallStatisticsAsync()
         {
-            _logger.LogInformation("Calculating overall statistics from questionnaire service - NO MOCK DATA");
+            _logger.LogInformation("Calculating overall statistics from questionnaire service");
 
             // Get all publications from the questionnaire service
             var allPublications = await GetAllPublicationsAsync();
@@ -150,7 +151,7 @@ namespace Statistics.API.Services
                 FormationStatistics = formationStats
             };
 
-            _logger.LogInformation("Real overall statistics calculated: {TotalQuestionnaires} questionnaires, {TotalSubmissions} submissions", 
+            _logger.LogInformation("Overall statistics calculated: {TotalQuestionnaires} questionnaires, {TotalSubmissions} submissions", 
                 overallStats.TotalQuestionnaires, overallStats.TotalSubmissions);
 
             return overallStats;
