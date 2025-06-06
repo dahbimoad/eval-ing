@@ -84,6 +84,28 @@ services:
       - microservices-network
     restart: unless-stopped
 
+
+  # api gateway
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+      - auth-service
+      - catalog-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+    
   # Catalog service
   catalog-service:
     build:
@@ -121,6 +143,7 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    
 
   # Example: add your questionnaire-service, api-gateway, etc.
   # Make sure to attach them to 'microservices-network'
