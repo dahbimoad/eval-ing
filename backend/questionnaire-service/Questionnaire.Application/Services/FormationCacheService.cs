@@ -1,43 +1,31 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Questionnaire.Application.DTOs;
-using Questionnaire.Domain.Entities;
-using Questionnaire.Infrastructure;          // QuestionnaireDbContext
-
 namespace Questionnaire.Application.Services;
 
-/// <summary>
-/// Keeps a local cache of formations in sync with the Formation micro-service.
-/// </summary>
-public sealed class FormationCacheService
+using Questionnaire.Infrastructure;
+using Questionnaire.Application.DTOs;
+using Questionnaire.Domain.Entities;
+
+public class FormationCacheService
 {
     private readonly QuestionnaireDbContext _context;
 
-    public FormationCacheService(QuestionnaireDbContext context) =>
-        _context = context;
-
-    /// Inserts or updates a single formation row keyed by Code.
-    public async Task AddOrUpdateAsync(FormationDto dto)
+    public FormationCacheService(QuestionnaireDbContext context)
     {
-        var cache = await _context.Formations
-                                  .FirstOrDefaultAsync(f => f.Code == dto.Code);
+        _context = context;
+    }
 
-        if (cache is null)
+    public async Task AddFormationAsync(FormationDto formationDto)
+    {
+        var formationCache = new FormationCache
         {
-            cache = new FormationCache
-            {
-                Code      = dto.Code,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Formations.Add(cache);
-        }
+            Title = formationDto.Title,
+            Description = formationDto.Description,
+            Code = formationDto.Code,
+            Credits = formationDto.Credits,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
 
-        cache.Title       = dto.Title;
-        cache.Description = dto.Description;
-        cache.Credits     = dto.Credits;
-        cache.UpdatedAt   = DateTime.UtcNow;
-
+        _context.Formations.Add(formationCache);
         await _context.SaveChangesAsync();
     }
 }
