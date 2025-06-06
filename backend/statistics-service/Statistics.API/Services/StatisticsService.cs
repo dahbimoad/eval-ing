@@ -142,12 +142,15 @@ namespace Statistics.API.Services
                 }
             }
 
+            // Since we only track completed submissions, completion rate is always 100%
+            // In a real scenario, you would track started vs completed submissions
+            var overallCompletionRate = validPublications > 0 ? 100.0 : 0.0;
+
             var overallStats = new OverallStatisticsDto
             {
                 TotalQuestionnaires = validPublications,
                 TotalSubmissions = totalSubmissions,
-                OverallCompletionRate = validPublications > 0 ? 
-                    Math.Round((double)totalSubmissions / validPublications * 10, 1) : 0,
+                OverallCompletionRate = overallCompletionRate,
                 FormationStatistics = formationStats
             };
 

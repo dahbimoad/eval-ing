@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaEye, FaChartLine, FaUsers, FaClock, FaPercent, FaChartBar, FaStar } from 'react-icons/fa';
+import { FaSearch, FaEye, FaChartLine, FaUsers, FaClock, FaPercent, FaChartBar, FaStar, FaExpand, FaCompress, FaComments } from 'react-icons/fa';
 import { statisticsService } from '../../../services/statisticsApi';
 
 const EnhancedQuestionnaireDetails = () => {
@@ -10,6 +10,7 @@ const EnhancedQuestionnaireDetails = () => {
   const [loadingPublications, setLoadingPublications] = useState(true);
   const [error, setError] = useState('');
   const [selectedView, setSelectedView] = useState('summary');
+  const [expandedTextAnswers, setExpandedTextAnswers] = useState({});
 
   useEffect(() => {
     loadAvailablePublications();
@@ -86,6 +87,15 @@ const EnhancedQuestionnaireDetails = () => {
     if (rate >= 80) return 'from-green-500 to-green-600';
     if (rate >= 60) return 'from-yellow-500 to-yellow-600';
     return 'from-red-500 to-red-600';
+  };
+
+  // Toggle expanded text answers for a specific question
+  const toggleTextAnswers = (sectionIndex, questionIndex) => {
+    const key = `${sectionIndex}-${questionIndex}`;
+    setExpandedTextAnswers(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   return (
@@ -531,24 +541,76 @@ const EnhancedQuestionnaireDetails = () => {
                           )}
 
                           {question.textAnswers && question.textAnswers.length > 0 && (
-                            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-800 mt-6">
-                              <h6 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                                💬 Réponses Textuelles 
-                                <span className="ml-2 text-sm bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">
-                                  {question.textAnswers.length}
-                                </span>
-                              </h6>
-                              <div className="max-h-48 overflow-y-auto space-y-3">
-                                {question.textAnswers.slice(0, 5).map((text, textIndex) => (
-                                  <div key={textIndex} className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-amber-400 shadow-sm">
-                                    <p className="text-gray-700 dark:text-gray-300 italic">
-                                      "{text}"
-                                    </p>
+                            <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 dark:from-emerald-900/20 dark:to-cyan-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800 mt-6 overflow-hidden shadow-lg">
+                              <div className="bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/40 p-5 border-b border-emerald-200 dark:border-emerald-800">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <FaComments className="text-emerald-600 dark:text-emerald-400 mr-3 text-lg" />
+                                    <h6 className="text-lg font-bold text-gray-900 dark:text-white">
+                                      Commentaires et Suggestions
+                                    </h6>
+                                    <span className="ml-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm px-3 py-1 rounded-full font-medium">
+                                      {question.textAnswers.length}
+                                    </span>
                                   </div>
-                                ))}
-                                {question.textAnswers.length > 5 && (
-                                  <div className="text-center text-amber-600 dark:text-amber-400 font-medium">
-                                    ... et {question.textAnswers.length - 5} autres réponses
+                                  {question.textAnswers.length > 4 && (
+                                    <button
+                                      onClick={() => toggleTextAnswers(sectionIndex, questionIndex)}
+                                      className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center text-sm font-medium transition-all duration-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 px-3 py-1 rounded-lg"
+                                    >
+                                      {expandedTextAnswers[`${sectionIndex}-${questionIndex}`] ? (
+                                        <>
+                                          <FaCompress className="mr-2" />
+                                          Réduire
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FaExpand className="mr-2" />
+                                          Tout afficher ({question.textAnswers.length})
+                                        </>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="p-6">
+                                <div className="grid gap-4 max-h-80 overflow-y-auto">
+                                  {(expandedTextAnswers[`${sectionIndex}-${questionIndex}`] 
+                                    ? question.textAnswers 
+                                    : question.textAnswers.slice(0, 4)
+                                  ).map((text, textIndex) => (
+                                    <div key={textIndex} className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-emerald-400 shadow-sm hover:shadow-md transition-all duration-200 group">
+                                      <div className="flex items-start space-x-4">
+                                        <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                                          {textIndex + 1}
+                                        </div>
+                                        <div className="flex-1">
+                                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                                            "{text}"
+                                          </p>
+                                          <div className="flex items-center mt-3 space-x-2">
+                                            <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-medium">
+                                              Réponse #{textIndex + 1}
+                                            </span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                              {text.length} caractères
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                {question.textAnswers.length > 4 && !expandedTextAnswers[`${sectionIndex}-${questionIndex}`] && (
+                                  <div className="mt-6 text-center">
+                                    <button
+                                      onClick={() => toggleTextAnswers(sectionIndex, questionIndex)}
+                                      className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-emerald-600 hover:via-cyan-600 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                    >
+                                      📖 Découvrir {question.textAnswers.length - 4} autre{question.textAnswers.length - 4 > 1 ? 's' : ''} commentaire{question.textAnswers.length - 4 > 1 ? 's' : ''} détaillé{question.textAnswers.length - 4 > 1 ? 's' : ''}
+                                    </button>
                                   </div>
                                 )}
                               </div>
