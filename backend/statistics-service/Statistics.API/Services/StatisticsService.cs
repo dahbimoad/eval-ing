@@ -192,9 +192,11 @@ namespace Statistics.API.Services
 
         private double CalculateOverallRating(List<SectionStatisticsDto> sections)
         {
+            // Calculate overall rating as average of all question scores
+            // Only includes Likert and Binary questions (Text questions have no score)
             var averageScores = sections
                 .SelectMany(s => s.QuestionStatistics)
-                .Where(q => q.AverageScore.HasValue)
+                .Where(q => q.AverageScore.HasValue) // Excludes text questions
                 .Select(q => q.AverageScore!.Value);
 
             return averageScores.Any() ? Math.Round(averageScores.Average(), 1) : 0.0;
@@ -260,24 +262,53 @@ namespace Statistics.API.Services
 
         private double CalculateAverageRating(List<SubmissionExportDto> submissions)
         {
-            var likertAnswers = submissions
+            var allQuestions = submissions
                 .SelectMany(s => s.Sections)
                 .SelectMany(sec => sec.Answers)
-                .Where(a => a.Type == 1 && a.ValueNumber.HasValue) // Likert scale questions
-                .Select(a => (double)a.ValueNumber!.Value);
+                .GroupBy(a => new { a.QuestionId, a.Type });
 
-            var binaryAnswers = submissions
-                .SelectMany(s => s.Sections)
-                .SelectMany(sec => sec.Answers)
-                .Where(a => a.Type == 2 && a.ValueNumber.HasValue) // Binary questions
-                .GroupBy(a => new { a.QuestionId })
-                .Select(g => {
-                    var yesPercentage = (double)g.Count(a => a.ValueNumber == 1) / g.Count();
-                    return yesPercentage * 5; // Convert to 5-point scale
-                });
+            var questionScores = new List<double>();
 
-            var allScores = likertAnswers.Concat(binaryAnswers);
-            return allScores.Any() ? Math.Round(allScores.Average(), 1) : 0.0;
+            foreach (var questionGroup in allQuestions)
+            {
+                var answers = questionGroup.ToList();
+                
+                switch (questionGroup.Key.Type)
+                {
+                    case 1: // Likert scale questions (1-5)
+                        var likertValues = answers
+                            .Where(a => a.ValueNumber.HasValue)
+                            .Select(a => (double)a.ValueNumber!.Value);
+                        
+                        if (likertValues.Any())
+                        {
+                            // Score = Average of responses (Σ(réponses) ÷ N)
+                            var likertScore = likertValues.Average();
+                            questionScores.Add(likertScore);
+                        }
+                        break;
+
+                    case 2: // Binary questions (Yes/No)
+                        var binaryValues = answers
+                            .Where(a => a.ValueNumber.HasValue)
+                            .Select(a => a.ValueNumber!.Value);
+                        
+                        if (binaryValues.Any())
+                        {
+                            // Score = (% of Yes responses) × 5
+                            var yesPercentage = (double)binaryValues.Count(v => v == 1) / binaryValues.Count();
+                            var binaryScore = yesPercentage * 5;
+                            questionScores.Add(binaryScore);
+                        }
+                        break;
+                        
+                    case 3: // Text questions - no scoring
+                        // Text questions don't contribute to numeric score
+                        break;
+                }
+            }
+
+            return questionScores.Any() ? Math.Round(questionScores.Average(), 1) : 0.0;
         }
 
         private List<SectionStatisticsDto> CalculateSectionStatistics(List<SubmissionExportDto> submissions)
@@ -323,31 +354,34 @@ namespace Statistics.API.Services
                 // Calculate statistics based on question type
                 switch (firstAnswer.Type)
                 {
-                    case 1: // Likert
+                    case 1: // Likert Scale Questions (1-5) - As defined in ScoringExplanation.jsx
                         var numericAnswers = questionGroup.Where(a => a.ValueNumber.HasValue).Select(a => a.ValueNumber!.Value);
                         if (numericAnswers.Any())
                         {
-                            questionStat.AverageScore = (double)numericAnswers.Average();
+                            // Score = Average of responses (Σ(réponses) ÷ N)
+                            // Direct scoring: 1=1.0, 2=2.0, 3=3.0, 4=4.0, 5=5.0
+                            questionStat.AverageScore = Math.Round((double)numericAnswers.Average(), 2);
                             questionStat.AnswerDistribution = numericAnswers
                                 .GroupBy(v => v)
                                 .Select(g => new AnswerDistributionDto
                                 {
                                     AnswerValue = g.Key.ToString(),
                                     Count = g.Count(),
-                                    Percentage = (double)g.Count() / questionGroup.Count() * 100
+                                    Percentage = Math.Round((double)g.Count() / questionGroup.Count() * 100, 1)
                                 })
                                 .OrderBy(d => decimal.Parse(d.AnswerValue))
                                 .ToList();
                         }
                         break;
 
-                    case 2: // Binary
+                    case 2: // Binary Questions (Yes/No) - As defined in ScoringExplanation.jsx
                         var binaryAnswers = questionGroup.Where(a => a.ValueNumber.HasValue).Select(a => a.ValueNumber!.Value);
                         if (binaryAnswers.Any())
                         {
-                            // Calculate score as percentage of "Yes" responses (converted to 5-point scale)
+                            // Score = (% of Yes responses) × 5
+                            // Yes=1, No=0 → converted to 0-5 scale based on approval percentage
                             var yesPercentage = (double)binaryAnswers.Count(v => v == 1) / binaryAnswers.Count();
-                            questionStat.AverageScore = Math.Round(yesPercentage * 5, 2); // Convert to 5-point scale
+                            questionStat.AverageScore = Math.Round(yesPercentage * 5, 2);
                             
                             questionStat.AnswerDistribution = binaryAnswers
                                 .GroupBy(v => v)
@@ -355,17 +389,20 @@ namespace Statistics.API.Services
                                 {
                                     AnswerValue = g.Key == 1 ? "Oui" : "Non",
                                     Count = g.Count(),
-                                    Percentage = (double)g.Count() / questionGroup.Count() * 100
+                                    Percentage = Math.Round((double)g.Count() / questionGroup.Count() * 100, 1)
                                 })
+                                .OrderBy(d => d.AnswerValue == "Oui" ? 0 : 1) // Show "Oui" first
                                 .ToList();
                         }
                         break;
 
-                    case 3: // Text
+                    case 3: // Text Questions - As defined in ScoringExplanation.jsx
+                        // No numeric scoring - qualitative analysis only
                         questionStat.TextAnswers = questionGroup
                             .Where(a => !string.IsNullOrEmpty(a.ValueText))
                             .Select(a => a.ValueText!)
                             .ToList();
+                        // AverageScore remains null for text questions
                         break;
                 }
 

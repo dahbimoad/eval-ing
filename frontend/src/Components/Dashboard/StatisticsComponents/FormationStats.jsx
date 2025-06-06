@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaGraduationCap, FaChartLine } from 'react-icons/fa';
+import { getScoreColorClasses, formatScore } from '../../../utils/scoringUtils';
 
 const FormationStats = ({ formationStatistics }) => {
   if (!formationStatistics || formationStatistics.length === 0) {
@@ -66,16 +67,10 @@ const FormationStats = ({ formationStatistics }) => {
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                   <span 
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-help ${
-                      formation.averageRating >= 4 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                        : formation.averageRating >= 3
-                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
-                        : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                    }`}
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-help ${getScoreColorClasses(formation.averageRating, 'background')}`}
                     title="Score unifié sur 5 points : Questions Likert (moyenne directe) + Questions Oui/Non (% de Oui × 5). Cliquez sur 'Guide des Scores' pour plus de détails."
                   >
-                    {formation.averageRating.toFixed(1)}/5
+                    {formatScore(formation.averageRating)}
                   </span>
                 </td>
               </tr>
