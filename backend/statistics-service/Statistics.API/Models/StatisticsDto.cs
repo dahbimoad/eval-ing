@@ -11,6 +11,15 @@ namespace Statistics.API.Models
         public DateTime EndDate { get; set; }
     }
 
+    public class QuestionnaireStatisticsSummaryDto
+    {
+        public int PublicationId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public int TotalSubmissions { get; set; }
+        public double CompletionRate { get; set; }
+        public double AverageRating { get; set; }
+    }
+
     public class SectionStatisticsDto
     {
         public int SectionId { get; set; }
@@ -51,16 +60,30 @@ namespace Statistics.API.Models
         public int SubmissionCount { get; set; }
         public double AverageRating { get; set; }
     }
-    public class PublicationSummaryDto
-{
-    public int Id { get; set; }
-    public string TemplateCode { get; set; } = string.Empty;
-    public int FiliereId { get; set; }
-}
 
-public class FormationInfoDto
-{
-    public string Code { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-}
+    public class PublicationSummaryDto
+    {
+        public int Id { get; set; }
+        public string TemplateCode { get; set; } = string.Empty;
+        public int FiliereId { get; set; }
+    }
+
+    public class FormationInfoDto
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+    }
+
+    // DTOs for fetching real data from questionnaire service
+    public class PublicationInfoDto
+    {
+        public int Id { get; set; }
+        public string? Title { get; set; }
+        public string? TemplateCode { get; set; }
+        public int? FiliereId { get; set; }
+        public string? FormationCode { get; set; }
+        public string? FormationTitle { get; set; }
+        public DateTime? StartAt { get; set; }
+        public DateTime? EndAt { get; set; }
+    }
 }

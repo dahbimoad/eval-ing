@@ -65,6 +65,8 @@ namespace Statistics.API.Services
 
         public async Task<QuestionnaireStatisticsDto> GetQuestionnaireStatisticsAsync(int publicationId)
         {
+            // Get publication info from questionnaire service
+            var publicationInfo = await GetPublicationInfoAsync(publicationId);
             var submissions = await GetSubmissionsByPublicationAsync(publicationId);
             
             if (!submissions.Any())
@@ -72,7 +74,7 @@ namespace Statistics.API.Services
                 return new QuestionnaireStatisticsDto 
                 { 
                     PublicationId = publicationId,
-                    Title = "No Data Available",
+                    Title = publicationInfo?.Title ?? "No Data Available",
                     TotalSubmissions = 0,
                     CompletionRate = 0,
                     StartDate = DateTime.UtcNow,
@@ -83,7 +85,7 @@ namespace Statistics.API.Services
             var stats = new QuestionnaireStatisticsDto
             {
                 PublicationId = publicationId,
-                Title = $"Questionnaire {publicationId}",
+                Title = publicationInfo?.Title ?? $"Publication {publicationId}",
                 TotalSubmissions = submissions.Count,
                 CompletionRate = 100.0, // All retrieved submissions are complete
                 SectionStatistics = CalculateSectionStatistics(submissions),
@@ -95,129 +97,174 @@ namespace Statistics.API.Services
         }
 
         public async Task<OverallStatisticsDto> GetOverallStatisticsAsync()
-{
-    try
-    {
-        _logger.LogInformation("Calculating real overall statistics from questionnaire service");
-
-        // Get all publications from the questionnaire service
-        var allPublications = await GetAllPublicationsAsync();
-        
-        var totalSubmissions = 0;
-        var formationStats = new List<FormationStatisticsDto>();
-        var validPublications = 0;
-
-        // For each publication, get its submissions and calculate stats
-        foreach (var publicationId in allPublications)
         {
-            var submissions = await GetSubmissionsByPublicationAsync(publicationId);
-            if (submissions.Any())
-            {
-                totalSubmissions += submissions.Count;
-                validPublications++;
+            _logger.LogInformation("Calculating overall statistics from questionnaire service - NO MOCK DATA");
 
-                // Calculate average rating for this publication
-                var averageRating = CalculateAverageRating(submissions);
-                
-                // Get formation info based on your seeded data
-                var formationInfo = GetFormationInfoFromId(publicationId);
-                
-                formationStats.Add(new FormationStatisticsDto
+            // Get all publications from the questionnaire service
+            var allPublications = await GetAllPublicationsAsync();
+            
+            if (!allPublications.Any())
+            {
+                _logger.LogWarning("No publications found from questionnaire service");
+                return new OverallStatisticsDto
                 {
-                    FormationCode = formationInfo.Code,
-                    FormationTitle = formationInfo.Title,
-                    SubmissionCount = submissions.Count,
-                    AverageRating = averageRating
+                    TotalQuestionnaires = 0,
+                    TotalSubmissions = 0,
+                    OverallCompletionRate = 0,
+                    FormationStatistics = new List<FormationStatisticsDto>()
+                };
+            }
+            
+            var totalSubmissions = 0;
+            var formationStats = new List<FormationStatisticsDto>();
+            var validPublications = 0;
+
+            // For each publication, get its submissions and calculate stats
+            foreach (var publication in allPublications)
+            {
+                var submissions = await GetSubmissionsByPublicationAsync(publication.Id);
+                if (submissions.Any())
+                {
+                    totalSubmissions += submissions.Count;
+                    validPublications++;
+
+                    // Calculate average rating for this publication
+                    var averageRating = CalculateAverageRating(submissions);
+                    
+                    formationStats.Add(new FormationStatisticsDto
+                    {
+                        FormationCode = publication.FormationCode ?? $"FORM_{publication.Id}",
+                        FormationTitle = publication.FormationTitle ?? $"Formation {publication.Id}",
+                        SubmissionCount = submissions.Count,
+                        AverageRating = averageRating
+                    });
+                }
+            }
+
+            var overallStats = new OverallStatisticsDto
+            {
+                TotalQuestionnaires = validPublications,
+                TotalSubmissions = totalSubmissions,
+                OverallCompletionRate = validPublications > 0 ? 
+                    Math.Round((double)totalSubmissions / validPublications * 10, 1) : 0,
+                FormationStatistics = formationStats
+            };
+
+            _logger.LogInformation("Real overall statistics calculated: {TotalQuestionnaires} questionnaires, {TotalSubmissions} submissions", 
+                overallStats.TotalQuestionnaires, overallStats.TotalSubmissions);
+
+            return overallStats;
+        }
+
+        public async Task<List<QuestionnaireStatisticsSummaryDto>> GetPublicationsSummaryAsync(List<int> publicationIds)
+        {
+            var summaries = new List<QuestionnaireStatisticsSummaryDto>();
+            
+            foreach (var publicationId in publicationIds)
+            {
+                try
+                {
+                    var stats = await GetQuestionnaireStatisticsAsync(publicationId);
+                    if (stats != null)
+                    {
+                        summaries.Add(new QuestionnaireStatisticsSummaryDto
+                        {
+                            PublicationId = stats.PublicationId,
+                            Title = stats.Title,
+                            TotalSubmissions = stats.TotalSubmissions,
+                            CompletionRate = stats.CompletionRate,
+                            AverageRating = CalculateOverallRating(stats.SectionStatistics)
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting summary for publication {PublicationId}", publicationId);
+                }
+            }
+
+            return summaries;
+        }
+
+        private double CalculateOverallRating(List<SectionStatisticsDto> sections)
+        {
+            var averageScores = sections
+                .SelectMany(s => s.QuestionStatistics)
+                .Where(q => q.AverageScore.HasValue)
+                .Select(q => q.AverageScore!.Value);
+
+            return averageScores.Any() ? Math.Round(averageScores.Average(), 1) : 0.0;
+        }
+
+        private async Task<List<PublicationInfoDto>> GetAllPublicationsAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching all publications from questionnaire service");
+                var response = await _httpClient.GetAsync($"{_questionnaireServiceUrl}/api/publications");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch publications. Status: {StatusCode}", response.StatusCode);
+                    return new List<PublicationInfoDto>();
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var publications = JsonSerializer.Deserialize<List<PublicationInfoDto>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
                 });
+
+                _logger.LogInformation("Successfully fetched {Count} publications", publications?.Count ?? 0);
+                return publications ?? new List<PublicationInfoDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all publications from questionnaire service");
+                return new List<PublicationInfoDto>();
             }
         }
 
-        var overallStats = new OverallStatisticsDto
+        private async Task<PublicationInfoDto?> GetPublicationInfoAsync(int publicationId)
         {
-            TotalQuestionnaires = validPublications,
-            TotalSubmissions = totalSubmissions,
-            OverallCompletionRate = validPublications > 0 ? 
-                Math.Round((double)totalSubmissions / validPublications * 10, 1) : 0, // Average submissions per publication * 10
-            FormationStatistics = formationStats
-        };
-
-        _logger.LogInformation("Real overall statistics calculated: {TotalQuestionnaires} questionnaires, {TotalSubmissions} submissions", 
-            overallStats.TotalQuestionnaires, overallStats.TotalSubmissions);
-
-        return overallStats;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error calculating real overall statistics, falling back to mock data");
-        
-        // Fallback to mock data only if there's an error
-        return new OverallStatisticsDto
-        {
-            TotalQuestionnaires = 5,
-            TotalSubmissions = 150,
-            OverallCompletionRate = 85.5,
-            FormationStatistics = new List<FormationStatisticsDto>
+            try
             {
-                new() { FormationCode = "GINF1", FormationTitle = "Génie Informatique 1ère année", SubmissionCount = 45, AverageRating = 4.2 },
-                new() { FormationCode = "GINF2", FormationTitle = "Génie Informatique 2ème année", SubmissionCount = 38, AverageRating = 4.1 },
-                new() { FormationCode = "GSTR", FormationTitle = "Génie STR", SubmissionCount = 32, AverageRating = 3.9 }
+                _logger.LogInformation("Fetching publication info for {PublicationId}", publicationId);
+                var response = await _httpClient.GetAsync($"{_questionnaireServiceUrl}/api/publications/{publicationId}");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Failed to fetch publication info for {PublicationId}. Status: {StatusCode}", 
+                        publicationId, response.StatusCode);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var publication = JsonSerializer.Deserialize<PublicationInfoDto>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return publication;
             }
-        };
-    }
-}
-
-// Add these helper methods to your StatisticsService:
-
-private async Task<List<int>> GetAllPublicationsAsync()
-{
-    try
-    {
-        var response = await _httpClient.GetAsync($"{_questionnaireServiceUrl}/api/publications");
-        if (response.IsSuccessStatusCode)
-        {
-            var json = await response.Content.ReadAsStringAsync();
-            var publications = JsonSerializer.Deserialize<List<PublicationSummaryDto>>(json, new JsonSerializerOptions
+            catch (Exception ex)
             {
-                PropertyNameCaseInsensitive = true
-            });
-            return publications?.Select(p => p.Id).ToList() ?? new List<int>();
+                _logger.LogError(ex, "Error fetching publication info for {PublicationId}", publicationId);
+                return null;
+            }
         }
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error fetching all publications");
-    }
-    
-    // If service is not available, manually test with your seeded publication IDs
-    return new List<int> { 1, 2, 3, 4, 5, 6 }; // Based on your seeded data
-}
 
-private (string Code, string Title) GetFormationInfoFromId(int publicationId)
-{
-    return publicationId switch
-    {
-        1 => ("Ginf", "Génie Informatique"),
-        2 => ("GINF1", "Génie Informatique 1ère année"),
-        3 => ("GINF2", "Génie Informatique 2ème année"),
-        4 => ("GSTR", "Génie STR"),
-        5 => ("GIND", "Génie Industriel"),
-        6 => ("AP1", "Classe Préparatoire 1ère année"),
-        _ => ($"PUB_{publicationId}", $"Publication {publicationId}")
-    };
-}
+        private double CalculateAverageRating(List<SubmissionExportDto> submissions)
+        {
+            var allNumericAnswers = submissions
+                .SelectMany(s => s.Sections)
+                .SelectMany(sec => sec.Answers)
+                .Where(a => a.Type == 1 && a.ValueNumber.HasValue) // Only Likert scale questions
+                .Select(a => (double)a.ValueNumber!.Value);
 
-private double CalculateAverageRating(List<SubmissionExportDto> submissions)
-{
-    var allNumericAnswers = submissions
-        .SelectMany(s => s.Sections)
-        .SelectMany(sec => sec.Answers)
-        .Where(a => a.Type == 1 && a.ValueNumber.HasValue) // Only Likert scale questions
-        .Select(a => (double)a.ValueNumber!.Value);
+            return allNumericAnswers.Any() ? Math.Round(allNumericAnswers.Average(), 1) : 0.0;
+        }
 
-    return allNumericAnswers.Any() ? Math.Round(allNumericAnswers.Average(), 1) : 0.0;
-}
-
-        // ... rest of your existing methods remain the same ...
         private List<SectionStatisticsDto> CalculateSectionStatistics(List<SubmissionExportDto> submissions)
         {
             var sectionStats = new List<SectionStatisticsDto>();

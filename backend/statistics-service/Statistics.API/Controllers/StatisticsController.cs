@@ -35,6 +35,11 @@ namespace Statistics.API.Controllers
         [HttpGet("questionnaire/{publicationId}")]
         public async Task<ActionResult<QuestionnaireStatisticsDto>> GetQuestionnaireStatistics(int publicationId)
         {
+            if (publicationId <= 0)
+            {
+                return BadRequest("Publication ID must be greater than 0");
+            }
+
             var stats = await _statisticsService.GetQuestionnaireStatisticsAsync(publicationId);
             return Ok(stats);
         }
@@ -45,6 +50,11 @@ namespace Statistics.API.Controllers
         [HttpGet("submissions/{publicationId}")]
         public async Task<ActionResult<List<SubmissionExportDto>>> GetSubmissions(int publicationId)
         {
+            if (publicationId <= 0)
+            {
+                return BadRequest("Publication ID must be greater than 0");
+            }
+
             var submissions = await _statisticsService.GetSubmissionsByPublicationAsync(publicationId);
             return Ok(submissions);
         }
@@ -57,6 +67,29 @@ namespace Statistics.API.Controllers
         {
             var stats = await _statisticsService.GetOverallStatisticsAsync();
             return Ok(stats);
+        }
+
+        /// <summary>
+        /// Get statistics summary for multiple publications
+        /// </summary>
+        [HttpPost("publications/summary")]
+        public async Task<ActionResult<List<QuestionnaireStatisticsSummaryDto>>> GetPublicationsSummary(
+            [FromBody] List<int> publicationIds)
+        {
+            try
+            {
+                if (publicationIds == null || !publicationIds.Any())
+                {
+                    return BadRequest("Publication IDs list cannot be empty");
+                }
+
+                var summaries = await _statisticsService.GetPublicationsSummaryAsync(publicationIds);
+                return Ok(summaries);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error getting publications summary: {ex.Message}");
+            }
         }
     }
 }

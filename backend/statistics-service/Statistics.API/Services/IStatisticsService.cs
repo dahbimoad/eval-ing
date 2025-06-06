@@ -7,5 +7,6 @@ namespace Statistics.API.Services
         Task<List<SubmissionExportDto>> GetSubmissionsByPublicationAsync(int publicationId);
         Task<QuestionnaireStatisticsDto> GetQuestionnaireStatisticsAsync(int publicationId);
         Task<OverallStatisticsDto> GetOverallStatisticsAsync();
+        Task<List<QuestionnaireStatisticsSummaryDto>> GetPublicationsSummaryAsync(List<int> publicationIds);
     }
 }
