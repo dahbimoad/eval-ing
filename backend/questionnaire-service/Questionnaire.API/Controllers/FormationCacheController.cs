@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Application.Services;
 using Questionnaire.Application.DTOs;
+using Questionnaire.Domain.Entities.Events;
 
 namespace Questionnaire.API.Controllers
 {
@@ -16,11 +17,11 @@ namespace Questionnaire.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFormationToCache([FromBody] FormationDto formationDto)
+        public async Task<IActionResult> AddFormationToCache([FromBody] FormationCreatedEvent formationDto)
         {
             try
             {
-                await _formationCacheService.AddFormationAsync(formationDto);
+                await _formationCacheService.AddOrUpdateFormationAsync(formationDto);
                 return Ok(new { message = "Formation added to cache successfully." });
             }
             catch (Exception ex)
@@ -28,5 +29,6 @@ namespace Questionnaire.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        
     }
 }

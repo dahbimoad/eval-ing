@@ -1,3 +1,5 @@
+using Questionnaire.Domain.Entities; // Pour FormationCacheDto
+using Questionnaire.Domain.Entities.Events; 
 namespace Questionnaire.Application.Services
 {
     public interface IFormationCacheService

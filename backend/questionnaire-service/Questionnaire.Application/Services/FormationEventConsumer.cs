@@ -1,96 +1,93 @@
 using Confluent.Kafka;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using Questionnaire.Domain.Entities.Events;
 
 namespace Questionnaire.Application.Services
 {
     public class FormationEventConsumer : BackgroundService
     {
-        private readonly IConsumer<string, string> _consumer;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<FormationEventConsumer> _logger;
-        private readonly string _topic;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
+        private readonly IConsumer<string, string> _consumer;
 
         public FormationEventConsumer(
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger<FormationEventConsumer> logger)
         {
+            _configuration = configuration;
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _topic = configuration["Kafka:Consumer:Topics:FormationEvents"]!;
 
             var config = new ConsumerConfig
             {
-                BootstrapServers = configuration["Kafka:BootstrapServers"],
-                GroupId = configuration["Kafka:Consumer:GroupId"],
+                GroupId = "questionnaire-service-group",
+                BootstrapServers = _configuration.GetConnectionString("Kafka") ?? "localhost:9092",
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = false,
-                SessionTimeoutMs = 6000,
-                MaxPollIntervalMs = 300000
+                EnableAutoCommit = true
             };
 
-            _consumer = new ConsumerBuilder<string, string>(config)
-                .SetErrorHandler((_, e) => _logger.LogError("Consumer error: {Error}", e.Reason))
-                .Build();
+            _consumer = new ConsumerBuilder<string, string>(config).Build();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _consumer.Subscribe(_topic);
-            _logger.LogInformation("Started consuming messages from topic: {Topic}", _topic);
+{
+    _logger.LogInformation("Kafka consumer starting...");
+    _consumer.Subscribe("formation-events");
+    _logger.LogInformation("Subscribed to topic 'formation-events'");
 
+    // Let the rest of the app finish starting before blocking loop
+    await Task.Yield(); // ✅ Let host startup complete
+
+    try
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
             try
             {
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        var consumeResult = _consumer.Consume(stoppingToken);
+                var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(1));
 
-                        if (consumeResult?.Message?.Value != null)
-                        {
-                            await ProcessMessageAsync(consumeResult);
-                            _consumer.Commit(consumeResult);
-                        }
-                    }
-                    catch (ConsumeException ex)
-                    {
-                        _logger.LogError(ex, "Error consuming message: {Error}", ex.Error.Reason);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Unexpected error in consumer loop");
-                        await Task.Delay(1000, stoppingToken); // Brief pause before retrying
-                    }
+                if (consumeResult?.Message?.Value != null)
+                {
+                    _logger.LogInformation("Received Kafka message — Key: {Key}, Value: {Value}",
+                        consumeResult.Message.Key, consumeResult.Message.Value);
+
+                    await ProcessMessageAsync(consumeResult.Message.Value);
                 }
             }
-            catch (OperationCanceledException)
+            catch (ConsumeException ex)
             {
-                // Expected when cancellation is requested
-            }
-            finally
-            {
-                _consumer.Close();
-                _logger.LogInformation("Consumer closed");
+                _logger.LogError(ex, "Error consuming message from Kafka");
             }
         }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Unexpected error in FormationEventConsumer");
+    }
+    finally
+    {
+        _consumer.Close();
+        _logger.LogInformation("Kafka consumer closed");
+    }
+}
 
-        private async Task ProcessMessageAsync(ConsumeResult<string, string> consumeResult)
+
+        private async Task ProcessMessageAsync(string message)
         {
             try
             {
-                _logger.LogInformation("Processing message from partition {Partition}, offset {Offset}",
-                    consumeResult.Partition, consumeResult.Offset);
+                var formationEvent = JsonSerializer.Deserialize<FormationCreatedEvent>(message, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
 
-                var formationEvent = JsonSerializer.Deserialize<FormationCreatedEvent>(
-                    consumeResult.Message.Value,
-                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
-                if (formationEvent != null && formationEvent.EventType == "FormationCreated")
+                if (formationEvent != null)
                 {
                     using var scope = _serviceProvider.CreateScope();
                     var formationCacheService = scope.ServiceProvider.GetRequiredService<IFormationCacheService>();
@@ -101,24 +98,33 @@ namespace Questionnaire.Application.Services
                 }
                 else
                 {
-                    _logger.LogWarning("Received invalid or unknown event type: {EventType}", formationEvent?.EventType);
+                    _logger.LogWarning("Received null formation event from message: {Message}", message);
                 }
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Failed to deserialize message: {Message}", consumeResult.Message.Value);
+                _logger.LogError(ex, "Failed to deserialize formation event message: {Message}", message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to process formation event: {Message}", consumeResult.Message.Value);
-                throw; // Re-throw to prevent commit
+                _logger.LogError(ex, "Failed to process formation event message: {Message}", message);
             }
         }
 
         public override void Dispose()
         {
-            _consumer?.Dispose();
-            base.Dispose();
+            try
+            {
+                _consumer?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error disposing consumer");
+            }
+            finally
+            {
+                base.Dispose();
+            }
         }
     }
 }

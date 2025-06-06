@@ -51,7 +51,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddHttpClient();
 
 // Add formation cache service
-builder.Services.AddSingleton<IFormationCacheService, FormationCacheService>();
+builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
+
 
 // Add Kafka consumer as hosted service
 builder.Services.AddHostedService<FormationEventConsumer>();
