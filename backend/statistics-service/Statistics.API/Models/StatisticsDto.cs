@@ -51,4 +51,16 @@ namespace Statistics.API.Models
         public int SubmissionCount { get; set; }
         public double AverageRating { get; set; }
     }
+    public class PublicationSummaryDto
+{
+    public int Id { get; set; }
+    public string TemplateCode { get; set; } = string.Empty;
+    public int FiliereId { get; set; }
+}
+
+public class FormationInfoDto
+{
+    public string Code { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+}
 }

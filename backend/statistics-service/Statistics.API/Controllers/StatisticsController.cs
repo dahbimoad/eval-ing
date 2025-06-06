@@ -16,6 +16,20 @@ namespace Statistics.API.Controllers
         }
 
         /// <summary>
+        /// Health check endpoint
+        /// </summary>
+        [HttpGet("health")]
+        public ActionResult Health()
+        {
+            return Ok(new { 
+                status = "healthy", 
+                service = "statistics-api", 
+                timestamp = DateTime.UtcNow,
+                questionnaireServiceUrl = Environment.GetEnvironmentVariable("QUESTIONNAIRE_SERVICE_URL") ?? "http://localhost:5138"
+            });
+        }
+
+        /// <summary>
         /// Get detailed statistics for a specific questionnaire publication
         /// </summary>
         [HttpGet("questionnaire/{publicationId}")]
