@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Service d'authentification
+  auth-service:
+    build:
+      context: ./backend/authentication_system/authentication_system
+      dockerfile: Dockerfile
+    container_name: authentication-service
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=UserDb
+      - DB_USER=postgres
+      - DB_PASSWORD=Imad2002
+      - JWT_TOKEN=MySuperSecureAndRandomKeyThatLooksJustAwesomeAndNeedsToBeVeryVeryLong!!!111oneeleven
+      - JWT_ISSUER=auth-service
+      - JWT_AUDIENCE=formation-evaluation-app
+      - EMAIL_SENDER=imade17ma@gmail.com
+      - EMAIL_SENDER_NAME=Imad
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_ENABLE_SSL=true
+      - SMTP_USERNAME=imade17ma@gmail.com
+      - SMTP_PASSWORD=fsrpmqhytbeoacnc
+    depends_on:
+      - postgres
+    volumes:
+      - ./uploads:/app/wwwroot/uploads/profiles
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: auth-postgres
+    environment:
+      - POSTGRES_DB=UserDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Imad2002
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Exemple d'autres microservices (à adapter selon vos besoins)
+  # api-gateway:
+  #   image: your-api-gateway:latest
+  #   ports:
+  #     - "5000:80"
+  #   networks:
+  #     - microservices-network
+  #   depends_on:
+  #     - auth-service
+
+  # user-service:
+  #   image: your-user-service:latest
+  #   ports:
+  #     - "5002:80"
+  #   networks:
+  #     - microservices-network
+  #   depends_on:
+  #     - auth-service
+
+  # formation-service:
+  #   image: your-formation-service:latest
+  #   ports:
+  #     - "5003:80"
+  #   networks:
+  #     - microservices-network
+
+# Configuration du réseau partagé entre microservices
+networks:
+  microservices-network:
+    driver: bridge
+    name: microservices-net
+
+# Volumes persistants
+volumes:
+  postgres_data:
+    driver: local
