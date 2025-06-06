@@ -1,4 +1,4 @@
-using System;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace authentication_system.Models
@@ -13,7 +13,7 @@ namespace authentication_system.Models
         public string? ProfilePictureUrl { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime? BirthDate { get; set; }  // nullable + sans l'heure
+        public DateTime? BirthDate { get; set; }
 
         public string? Address { get; set; }
 

@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using DotNetEnv;
 using authentication_system.Services.Interfaces;
 using authentication_system.Services.Auth;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 
 
@@ -18,6 +20,16 @@ Env.Load();
 
 // Add controllers
 builder.Services.AddControllers();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<StudentUpdateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TeacherUpdateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProfessionalUpdateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UserProfileCreateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UserProfileUpdateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TeacherCreateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<StudentCreateDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProfessionalCreateDTOValidator>();
 
 // Add Swagger and configure JWT security for Swagger UI
 builder.Services.AddEndpointsApiExplorer();
@@ -44,7 +56,7 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
-// Configuration de la base de données avec les variables d'environnement
+// Configuration de la base de donnï¿½es avec les variables d'environnement
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
                        $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
                        $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
@@ -71,15 +83,15 @@ builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// Récupérer les variables d'environnement pour JWT
+// Rï¿½cupï¿½rer les variables d'environnement pour JWT
 var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
 var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
-// Vérifier que la clé JWT est définie
+// Vï¿½rifier que la clï¿½ JWT est dï¿½finie
 if (string.IsNullOrEmpty(jwtKey))
 {
-    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas définie. Vérifiez votre fichier .env.");
+    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas dï¿½finie. Vï¿½rifiez votre fichier .env.");
 }
 
 // Configure JWT Authentication
@@ -109,7 +121,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // utile si tu utilises des cookies ou des requêtes auth
+              .AllowCredentials(); // utile si tu utilises des cookies ou des requï¿½tes auth
     });
 });
 

@@ -1,6 +1,20 @@
+using System;
+using System.ComponentModel.DataAnnotations;
 
-// Models/UserProfileUpdateDTO.cs
-namespace authentication_system.Models;
+namespace authentication_system.Models
+{
+    public class UserProfileUpdateDTO
+    {
+        public string? PhoneNumber { get; set; }
 
-// Hérite pour éviter la duplication des propriétés
-public class UserProfileUpdateDTO : UserProfileCreateDTO { }
+        public string? CIN { get; set; }
+
+        public string? ProfilePictureUrl { get; set; }
+
+        public DateTime? BirthDate { get; set; }
+
+        public string? Address { get; set; }
+
+        public string? AdditionalInfos { get; set; }
+    }
+}
