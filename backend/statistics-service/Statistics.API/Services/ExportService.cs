@@ -117,6 +117,20 @@ namespace Statistics.API.Services
                 overviewSheet.Cells["A8"].Value = "Formations actives";
                 overviewSheet.Cells["B8"].Value = stats.FormationStatistics?.Count ?? 0;
 
+                // Add scoring system explanation
+                overviewSheet.Cells["A10"].Value = "Système de Notation";
+                overviewSheet.Cells["A10"].Style.Font.Bold = true;
+                overviewSheet.Cells["A10"].Style.Font.Size = 14;
+                
+                overviewSheet.Cells["A11"].Value = "Questions Likert";
+                overviewSheet.Cells["B11"].Value = "Score = Moyenne des réponses (1-5)";
+                
+                overviewSheet.Cells["A12"].Value = "Questions Oui/Non";
+                overviewSheet.Cells["B12"].Value = "Score = (% Oui) × 5";
+                
+                overviewSheet.Cells["A13"].Value = "Questions Texte";
+                overviewSheet.Cells["B13"].Value = "Pas de score numérique (analyse qualitative)";
+
                 // Formation statistics
                 if (stats.FormationStatistics?.Any() == true)
                 {
@@ -127,9 +141,10 @@ namespace Statistics.API.Services
                     formSheet.Cells["B1"].Value = "Nom de la Formation";
                     formSheet.Cells["C1"].Value = "Nombre de Soumissions";
                     formSheet.Cells["D1"].Value = "Note Moyenne";
+                    formSheet.Cells["E1"].Value = "Interprétation";
                     
                     // Header styling
-                    using var headerRange = formSheet.Cells["A1:D1"];
+                    using var headerRange = formSheet.Cells["A1:E1"];
                     headerRange.Style.Font.Bold = true;
                     headerRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                     headerRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
@@ -144,6 +159,51 @@ namespace Statistics.API.Services
                         formSheet.Cells[$"B{row}"].Value = formation.FormationTitle;
                         formSheet.Cells[$"C{row}"].Value = formation.SubmissionCount;
                         formSheet.Cells[$"D{row}"].Value = formation.AverageRating;
+                        
+                        // Add score interpretation
+                        string interpretation = formation.AverageRating switch
+                        {
+                            >= 0.0 and <= 1.0 => "Très Faible",
+                            > 1.0 and <= 2.0 => "Faible",
+                            > 2.0 and <= 3.0 => "Moyen",
+                            > 3.0 and <= 4.0 => "Bon",
+                            > 4.0 and <= 5.0 => "Excellent",
+                            _ => "N/A"
+                        };
+                        formSheet.Cells[$"E{row}"].Value = interpretation;
+                        
+                        // Color coding based on score
+                        var scoreCell = formSheet.Cells[$"D{row}"];
+                        var interpretationCell = formSheet.Cells[$"E{row}"];
+                        
+                        if (formation.AverageRating >= 4.0)
+                        {
+                            scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                            interpretationCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            interpretationCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                        }
+                        else if (formation.AverageRating >= 3.0)
+                        {
+                            scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                            interpretationCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            interpretationCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                        }
+                        else if (formation.AverageRating >= 2.0)
+                        {
+                            scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                            interpretationCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            interpretationCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                        }
+                        else
+                        {
+                            scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightCoral);
+                            interpretationCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            interpretationCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightCoral);
+                        }
                     }
                     
                     formSheet.Cells[formSheet.Dimension.Address].AutoFitColumns();
@@ -162,11 +222,12 @@ namespace Statistics.API.Services
                 var csv = new StringBuilder();
                 
                 // Header
-                csv.AppendLine("Rapport Statistiques Générales");
+                csv.AppendLine("📊 Rapport Statistiques Générales");
                 csv.AppendLine($"Généré le,{DateTime.Now:dd/MM/yyyy HH:mm}");
                 csv.AppendLine();
                 
                 // Overall stats
+                csv.AppendLine("=== MÉTRIQUES GÉNÉRALES ===");
                 csv.AppendLine("Métriques,Valeur");
                 csv.AppendLine($"Total des questionnaires,{stats.TotalQuestionnaires}");
                 csv.AppendLine($"Total des soumissions,{stats.TotalSubmissions}");
@@ -174,15 +235,43 @@ namespace Statistics.API.Services
                 csv.AppendLine($"Formations actives,{stats.FormationStatistics?.Count ?? 0}");
                 csv.AppendLine();
                 
+                // Scoring system explanation
+                csv.AppendLine("=== SYSTÈME DE NOTATION ===");
+                csv.AppendLine("Type de Question,Formule de Calcul");
+                csv.AppendLine("\"Questions Likert (1-5)\",\"Score = Moyenne des réponses (Σ(réponses) ÷ N)\"");
+                csv.AppendLine("\"Questions Oui/Non\",\"Score = (% de Oui) × 5\"");
+                csv.AppendLine("\"Questions Texte\",\"Pas de score numérique (analyse qualitative)\"");
+                csv.AppendLine();
+                
+                csv.AppendLine("=== INTERPRÉTATION DES SCORES ===");
+                csv.AppendLine("Plage,Interprétation");
+                csv.AppendLine("\"0.0 - 1.0\",\"Très Faible\"");
+                csv.AppendLine("\"1.1 - 2.0\",\"Faible\"");
+                csv.AppendLine("\"2.1 - 3.0\",\"Moyen\"");
+                csv.AppendLine("\"3.1 - 4.0\",\"Bon\"");
+                csv.AppendLine("\"4.1 - 5.0\",\"Excellent\"");
+                csv.AppendLine();
+                
                 // Formation statistics
                 if (stats.FormationStatistics?.Any() == true)
                 {
-                    csv.AppendLine("Statistiques par Formation");
-                    csv.AppendLine("Code Formation,Nom de la Formation,Nombre de Soumissions,Note Moyenne");
+                    csv.AppendLine("=== STATISTIQUES PAR FORMATION ===");
+                    csv.AppendLine("Code Formation,Nom de la Formation,Nombre de Soumissions,Note Moyenne,Interprétation");
                     
                     foreach (var formation in stats.FormationStatistics)
                     {
-                        csv.AppendLine($"{formation.FormationCode},{formation.FormationTitle},{formation.SubmissionCount},{formation.AverageRating:F1}");
+                        var formationTitle = formation.FormationTitle?.Replace(",", ";").Replace("\"", "\"\"");
+                        string interpretation = formation.AverageRating switch
+                        {
+                            >= 0.0 and <= 1.0 => "Très Faible",
+                            > 1.0 and <= 2.0 => "Faible",
+                            > 2.0 and <= 3.0 => "Moyen",
+                            > 3.0 and <= 4.0 => "Bon",
+                            > 4.0 and <= 5.0 => "Excellent",
+                            _ => "N/A"
+                        };
+                        
+                        csv.AppendLine($"{formation.FormationCode},\"{formationTitle}\",{formation.SubmissionCount},{formation.AverageRating:F1},{interpretation}");
                     }
                 }
                 
@@ -279,10 +368,94 @@ namespace Statistics.API.Services
                 summarySheet.Cells["A7"].Value = "Date fin";
                 summarySheet.Cells["B7"].Value = stats.EndDate.ToString("dd/MM/yyyy");
 
-                // Questions Sheet
+                // Detailed Section Analysis Sheet (matches PDF structure exactly)
                 if (stats.SectionStatistics?.Any() == true)
                 {
-                    var questionsSheet = package.Workbook.Worksheets.Add("Questions");
+                    var analysisSheet = package.Workbook.Worksheets.Add("Analyse par Section");
+                    
+                    analysisSheet.Cells["A1"].Value = "📊 Statistiques par Section";
+                    analysisSheet.Cells["A1"].Style.Font.Size = 16;
+                    analysisSheet.Cells["A1"].Style.Font.Bold = true;
+                    
+                    var currentRow = 3;
+                    
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        // Section Title (matches PDF structure)
+                        analysisSheet.Cells[$"A{currentRow}"].Value = section.SectionTitle;
+                        analysisSheet.Cells[$"A{currentRow}"].Style.Font.Size = 14;
+                        analysisSheet.Cells[$"A{currentRow}"].Style.Font.Bold = true;
+                        analysisSheet.Cells[$"A{currentRow}"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        analysisSheet.Cells[$"A{currentRow}"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                        
+                        // Merge cells for section title
+                        analysisSheet.Cells[$"A{currentRow}:E{currentRow}"].Merge = true;
+                        currentRow += 2;
+                        
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                // Question text (matches PDF: "Q: question text")
+                                analysisSheet.Cells[$"A{currentRow}"].Value = $"Q: {question.QuestionText}";
+                                analysisSheet.Cells[$"A{currentRow}"].Style.Font.Bold = true;
+                                analysisSheet.Cells[$"A{currentRow}:E{currentRow}"].Merge = true;
+                                analysisSheet.Cells[$"A{currentRow}"].Style.WrapText = true;
+                                currentRow++;
+                                
+                                // Question details (matches PDF: "   Type: X | Réponses: Y")
+                                analysisSheet.Cells[$"B{currentRow}"].Value = $"Type: {question.QuestionType}";
+                                analysisSheet.Cells[$"C{currentRow}"].Value = $"Réponses: {question.TotalAnswers}";
+                                
+                                if (question.AverageScore.HasValue)
+                                {
+                                    analysisSheet.Cells[$"D{currentRow}"].Value = $"Score moyen: {question.AverageScore:F2}/5";
+                                    
+                                    // Color code the score
+                                    var scoreCell = analysisSheet.Cells[$"D{currentRow}"];
+                                    if (question.AverageScore >= 4.0)
+                                    {
+                                        scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                                    }
+                                    else if (question.AverageScore >= 3.0)
+                                    {
+                                        scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                                    }
+                                    else if (question.AverageScore >= 2.0)
+                                    {
+                                        scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                                    }
+                                    else
+                                    {
+                                        scoreCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        scoreCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightCoral);
+                                    }
+                                }
+                                else
+                                {
+                                    analysisSheet.Cells[$"D{currentRow}"].Value = "Pas de score (Question texte)";
+                                }
+                                
+                                currentRow += 2; // Space between questions (matches PDF)
+                            }
+                        }
+                        
+                        currentRow += 1; // Extra space between sections (matches PDF)
+                    }
+                    
+                    analysisSheet.Cells[analysisSheet.Dimension.Address].AutoFitColumns();
+                    // Set reasonable column widths
+                    analysisSheet.Column(1).Width = 60; // For question text
+                    analysisSheet.Column(2).Width = 20;
+                    analysisSheet.Column(3).Width = 20;
+                    analysisSheet.Column(4).Width = 25;
+                    analysisSheet.Column(5).Width = 20;
+
+                    // Quick Overview Sheet (tabular format)
+                    var questionsSheet = package.Workbook.Worksheets.Add("Vue d'ensemble Questions");
                     
                     // Headers
                     questionsSheet.Cells["A1"].Value = "Section";
@@ -315,6 +488,97 @@ namespace Statistics.API.Services
                     }
                     
                     questionsSheet.Cells[questionsSheet.Dimension.Address].AutoFitColumns();
+
+                    // Answer Distribution Sheet
+                    var distributionSheet = package.Workbook.Worksheets.Add("Distribution des Réponses");
+                    
+                    distributionSheet.Cells["A1"].Value = "Distribution des Réponses par Question";
+                    distributionSheet.Cells["A1"].Style.Font.Size = 14;
+                    distributionSheet.Cells["A1"].Style.Font.Bold = true;
+                    
+                    // Headers for distribution
+                    distributionSheet.Cells["A3"].Value = "Section";
+                    distributionSheet.Cells["B3"].Value = "Question";
+                    distributionSheet.Cells["C3"].Value = "Type";
+                    distributionSheet.Cells["D3"].Value = "Réponse";
+                    distributionSheet.Cells["E3"].Value = "Nombre";
+                    distributionSheet.Cells["F3"].Value = "Pourcentage";
+                    
+                    // Header styling for distribution
+                    using var distHeaderRange = distributionSheet.Cells["A3:F3"];
+                    distHeaderRange.Style.Font.Bold = true;
+                    distHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    distHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                    
+                    var distRow = 4;
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                if (question.AnswerDistribution?.Any() == true)
+                                {
+                                    foreach (var answer in question.AnswerDistribution)
+                                    {
+                                        distributionSheet.Cells[$"A{distRow}"].Value = section.SectionTitle;
+                                        distributionSheet.Cells[$"B{distRow}"].Value = question.QuestionText;
+                                        distributionSheet.Cells[$"C{distRow}"].Value = question.QuestionType;
+                                        distributionSheet.Cells[$"D{distRow}"].Value = answer.AnswerValue;
+                                        distributionSheet.Cells[$"E{distRow}"].Value = answer.Count;
+                                        distributionSheet.Cells[$"F{distRow}"].Value = $"{answer.Percentage:F1}%";
+                                        distRow++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    distributionSheet.Cells[distributionSheet.Dimension.Address].AutoFitColumns();
+
+                    // Text Answers Sheet
+                    var textSheet = package.Workbook.Worksheets.Add("Réponses Texte");
+                    
+                    textSheet.Cells["A1"].Value = "Réponses aux Questions Ouvertes";
+                    textSheet.Cells["A1"].Style.Font.Size = 14;
+                    textSheet.Cells["A1"].Style.Font.Bold = true;
+                    
+                    // Headers for text answers
+                    textSheet.Cells["A3"].Value = "Section";
+                    textSheet.Cells["B3"].Value = "Question";
+                    textSheet.Cells["C3"].Value = "Réponse";
+                    
+                    // Header styling for text
+                    using var textHeaderRange = textSheet.Cells["A3:C3"];
+                    textHeaderRange.Style.Font.Bold = true;
+                    textHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    textHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightYellow);
+                    
+                    var textRow = 4;
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                if (question.TextAnswers?.Any() == true)
+                                {
+                                    foreach (var textAnswer in question.TextAnswers)
+                                    {
+                                        textSheet.Cells[$"A{textRow}"].Value = section.SectionTitle;
+                                        textSheet.Cells[$"B{textRow}"].Value = question.QuestionText;
+                                        textSheet.Cells[$"C{textRow}"].Value = textAnswer;
+                                        textSheet.Cells[$"C{textRow}"].Style.WrapText = true;
+                                        textRow++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    textSheet.Cells[textSheet.Dimension.Address].AutoFitColumns();
+                    // Set max width for text column to make it readable
+                    textSheet.Column(3).Width = Math.Min(textSheet.Column(3).Width, 50);
                 }
 
                 summarySheet.Cells[summarySheet.Dimension.Address].AutoFitColumns();
@@ -335,7 +599,7 @@ namespace Statistics.API.Services
                 csv.AppendLine();
                 
                 // Summary
-                csv.AppendLine("Résumé");
+                csv.AppendLine("=== RÉSUMÉ ===");
                 csv.AppendLine($"ID Publication,{stats.PublicationId}");
                 csv.AppendLine($"Total soumissions,{stats.TotalSubmissions}");
                 csv.AppendLine($"Taux de completion,{stats.CompletionRate:F1}%");
@@ -343,8 +607,52 @@ namespace Statistics.API.Services
                 csv.AppendLine($"Date fin,{stats.EndDate:dd/MM/yyyy}");
                 csv.AppendLine();
                 
-                // Questions
-                csv.AppendLine("Questions Détaillées");
+                // Detailed Section Analysis (matches PDF structure)
+                csv.AppendLine("=== ANALYSE DÉTAILLÉE PAR SECTION ===");
+                
+                if (stats.SectionStatistics?.Any() == true)
+                {
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        csv.AppendLine();
+                        csv.AppendLine($"SECTION: {section.SectionTitle}");
+                        csv.AppendLine("=" + new string('=', section.SectionTitle.Length + 9));
+                        
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                var questionText = question.QuestionText?.Replace(",", ";").Replace("\"", "\"\"");
+                                csv.AppendLine($"Q: {questionText}");
+                                csv.AppendLine($"   Type: {question.QuestionType} | Réponses: {question.TotalAnswers}");
+                                
+                                if (question.AverageScore.HasValue)
+                                {
+                                    string scoreInterpretation = question.AverageScore switch
+                                    {
+                                        >= 4.0 => "Excellent",
+                                        >= 3.0 => "Bon", 
+                                        >= 2.0 => "Moyen",
+                                        >= 1.0 => "Faible",
+                                        _ => "Très Faible"
+                                    };
+                                    csv.AppendLine($"   Score moyen: {question.AverageScore:F2}/5 ({scoreInterpretation})");
+                                }
+                                else
+                                {
+                                    csv.AppendLine("   Pas de score (Question texte)");
+                                }
+                                
+                                csv.AppendLine(); // Space between questions
+                            }
+                        }
+                    }
+                }
+                
+                csv.AppendLine();
+                
+                // Quick Overview Table
+                csv.AppendLine("=== VUE D'ENSEMBLE DES QUESTIONS ===");
                 csv.AppendLine("Section,Question,Type,Total Réponses,Score Moyen");
                 
                 if (stats.SectionStatistics?.Any() == true)
@@ -355,7 +663,64 @@ namespace Statistics.API.Services
                         {
                             foreach (var question in section.QuestionStatistics)
                             {
-                                csv.AppendLine($"{section.SectionTitle},{question.QuestionText},{question.QuestionType},{question.TotalAnswers},{question.AverageScore?.ToString("F2") ?? "N/A"}");
+                                var questionText = question.QuestionText?.Replace(",", ";").Replace("\"", "\"\"");
+                                csv.AppendLine($"\"{section.SectionTitle}\",\"{questionText}\",{question.QuestionType},{question.TotalAnswers},{question.AverageScore?.ToString("F2") ?? "N/A"}");
+                            }
+                        }
+                    }
+                }
+                
+                csv.AppendLine();
+                
+                // Answer Distribution
+                csv.AppendLine("=== DISTRIBUTION DES RÉPONSES ===");
+                csv.AppendLine("Section,Question,Type,Réponse,Nombre,Pourcentage");
+                
+                if (stats.SectionStatistics?.Any() == true)
+                {
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                if (question.AnswerDistribution?.Any() == true)
+                                {
+                                    foreach (var answer in question.AnswerDistribution)
+                                    {
+                                        var questionText = question.QuestionText?.Replace(",", ";").Replace("\"", "\"\"");
+                                        var answerValue = answer.AnswerValue?.Replace(",", ";").Replace("\"", "\"\"");
+                                        csv.AppendLine($"\"{section.SectionTitle}\",\"{questionText}\",{question.QuestionType},\"{answerValue}\",{answer.Count},{answer.Percentage:F1}%");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                csv.AppendLine();
+                
+                // Text Answers
+                csv.AppendLine("=== RÉPONSES TEXTE ===");
+                csv.AppendLine("Section,Question,Réponse");
+                
+                if (stats.SectionStatistics?.Any() == true)
+                {
+                    foreach (var section in stats.SectionStatistics)
+                    {
+                        if (section.QuestionStatistics?.Any() == true)
+                        {
+                            foreach (var question in section.QuestionStatistics)
+                            {
+                                if (question.TextAnswers?.Any() == true)
+                                {
+                                    foreach (var textAnswer in question.TextAnswers)
+                                    {
+                                        var questionText = question.QuestionText?.Replace(",", ";").Replace("\"", "\"\"");
+                                        var cleanTextAnswer = textAnswer?.Replace(",", ";").Replace("\"", "\"\"");
+                                        csv.AppendLine($"\"{section.SectionTitle}\",\"{questionText}\",\"{cleanTextAnswer}\"");
+                                    }
+                                }
                             }
                         }
                     }
