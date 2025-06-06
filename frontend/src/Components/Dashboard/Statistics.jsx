@@ -6,6 +6,7 @@ import { statisticsService } from '../../services/statisticsApi';
 import StatsCard from './StatisticsComponents/StatsCard';
 import FormationStats from './StatisticsComponents/FormationStats';
 import QuestionnaireDetails from './StatisticsComponents/QuestionnaireDetails';
+import ExportButton from './StatisticsComponents/ExportButton';
 
 function Statistics() {
     const [overallStats, setOverallStats] = useState(null);
@@ -84,13 +85,27 @@ function Statistics() {
             <div className="h-full w-full overflow-auto p-6">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                            📊 Tableau de Bord des Statistiques
-                        </h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Analyse des données d'évaluation des formations
-                        </p>
+                    <div className="mb-8 flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                📊 Tableau de Bord des Statistiques
+                            </h1>
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                Analyse des données d'évaluation des formations
+                            </p>
+                        </div>
+                        
+                        {/* Export Button */}
+                        {!isDataEmpty() && (
+                            <div className="flex items-center space-x-4">
+                                <ExportButton 
+                                    type="overall" 
+                                    title="📥 Exporter les Statistiques"
+                                    size="lg"
+                                    variant="primary"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Tabs */}

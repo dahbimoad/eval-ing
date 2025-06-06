@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaEye, FaChartLine, FaUsers, FaClock, FaPercent, FaExpand, FaCompress, FaComments } from 'react-icons/fa';
 import { statisticsService } from '../../../services/statisticsApi';
+import ExportButton from './ExportButton';
 
 const QuestionnaireDetails = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,14 +256,36 @@ const QuestionnaireDetails = () => {
             </div>
           </div>
 
-          {/* Questionnaire Title */}
+          {/* Questionnaire Title with Export */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              📋 {questionnaireStats.title}
-            </h4>
-            <p className="text-gray-600 dark:text-gray-400">
-              Analyse détaillée des réponses et des performances par section
-            </p>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  📋 {questionnaireStats.title}
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Analyse détaillée des réponses et des performances par section
+                </p>
+              </div>
+              
+              {/* Export Options */}
+              <div className="flex flex-col space-y-2 ml-4">
+                <ExportButton 
+                  type="questionnaire" 
+                  publicationId={questionnaireStats.publicationId}
+                  title="📊 Exporter l'Analyse"
+                  size="sm"
+                  variant="primary"
+                />
+                <ExportButton 
+                  type="submissions" 
+                  publicationId={questionnaireStats.publicationId}
+                  title="📁 Données Brutes"
+                  size="sm"
+                  variant="secondary"
+                />
+              </div>
+            </div>
           </div>
 
           {/* View Toggle */}

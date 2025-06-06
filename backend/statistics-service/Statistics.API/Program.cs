@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen(c =>
 // Add HttpClient for calling other services
 builder.Services.AddHttpClient<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 
 // CORS
 builder.Services.AddCors(options =>
