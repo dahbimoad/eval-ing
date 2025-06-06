@@ -142,11 +142,12 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // ─── Pipeline HTTP ─────────────────────────────────────────────────────────────
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(o =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
+    o.RoutePrefix = "docs"; // accessible via /docs
+});
 
 app.UseHttpsRedirection();
 

@@ -17,7 +17,7 @@ services:
       - DB_NAME=UserDb
       - DB_USER=postgres
       - DB_PASSWORD=Imad2002
-      - JWT_TOKEN=MySuperSecureAndRandomKeyThatLooksJustAwesomeAndNeedsToBeVeryVeryLong!!!111oneeleven
+      - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
       - JWT_ISSUER=auth-service
       - JWT_AUDIENCE=formation-evaluation-app
       - EMAIL_SENDER=imade17ma@gmail.com
@@ -35,7 +35,29 @@ services:
       - microservices-network
     restart: unless-stopped
 
-  # Base de données PostgreSQL
+  # Service de catalogue
+  catalog-service:
+    build:
+      context: ./backend/catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=catalog-postgres;Database=catalog_db;Username=postgres;Password=Imad2002
+      - Jwt__Token=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
+      - Jwt__Issuer=auth-service
+      - Jwt__Audience=formation-evaluation-app
+    depends_on:
+      - catalog-postgres
+      - auth-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Base de données PostgreSQL pour auth-service
   postgres:
     image: postgres:15-alpine
     container_name: auth-postgres
@@ -48,6 +70,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Base de données PostgreSQL pour catalog-service
+  catalog-postgres:
+    image: postgres:15-alpine
+    container_name: catalog-postgres
+    environment:
+      - POSTGRES_DB=catalog_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Imad2002
+    ports:
+      - "5433:5432"  # Port différent pour éviter les conflits
+    volumes:
+      - catalog_postgres_data:/var/lib/postgresql/data
     networks:
       - microservices-network
     restart: unless-stopped
@@ -71,10 +109,10 @@ services:
   #   depends_on:
   #     - auth-service
 
-  # formation-service:
-  #   image: your-formation-service:latest
+  # evaluation-service:
+  #   image: your-evaluation-service:latest
   #   ports:
-  #     - "5003:80"
+  #     - "5004:80"
   #   networks:
   #     - microservices-network
 
@@ -87,4 +125,6 @@ networks:
 # Volumes persistants
 volumes:
   postgres_data:
+    driver: local
+  catalog_postgres_data:
     driver: local
