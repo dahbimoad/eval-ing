@@ -28,6 +28,8 @@ builder.Services.AddScoped<PublicationService, PublicationService>();
 builder.Services.AddScoped<ProfessorService, ProfessorService>();
 builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
 builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
+builder.Services.AddScoped<SubmissionExportService, SubmissionExportService>();
+builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
 
 // JWT Authentication Configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -47,6 +49,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Add HTTP client for cache endpoint
+builder.Services.AddHttpClient();
+
+// Add formation cache service
+builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
+
+
+// Add Kafka consumer as hosted service
+builder.Services.AddHostedService<FormationEventConsumer>();
 // Register other services like controllers and Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -6,6 +6,7 @@ namespace Catalog.API.Services.Interfaces
 {
     public interface IFormationService
     {
+        
         Task<IEnumerable<FormationDto>> GetAllFormationsAsync();
         Task<FormationDto> GetFormationByIdAsync(int id);
         Task<FormationDto> CreateFormationAsync(CreateFormationDto formationDto);
