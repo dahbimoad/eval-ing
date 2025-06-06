@@ -197,7 +197,7 @@ namespace Statistics.API.Services
             return averageScores.Any() ? Math.Round(averageScores.Average(), 1) : 0.0;
         }
 
-        private async Task<List<PublicationInfoDto>> GetAllPublicationsAsync()
+        public async Task<List<PublicationInfoDto>> GetAllPublicationsAsync()
         {
             try
             {

@@ -8,5 +8,6 @@ namespace Statistics.API.Services
         Task<QuestionnaireStatisticsDto> GetQuestionnaireStatisticsAsync(int publicationId);
         Task<OverallStatisticsDto> GetOverallStatisticsAsync();
         Task<List<QuestionnaireStatisticsSummaryDto>> GetPublicationsSummaryAsync(List<int> publicationIds);
+        Task<List<PublicationInfoDto>> GetAllPublicationsAsync();
     }
 }

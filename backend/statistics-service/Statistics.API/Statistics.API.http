@@ -4,6 +4,10 @@
 GET {{Statistics.API_HostAddress}}/api/statistics/health
 Accept: application/json
 
+### Get all available publications (real data from questionnaire service)
+GET {{Statistics.API_HostAddress}}/api/statistics/publications
+Accept: application/json
+
 ### Get overall statistics (NO MOCK DATA - all from questionnaire service)
 GET {{Statistics.API_HostAddress}}/api/statistics/overall
 Accept: application/json

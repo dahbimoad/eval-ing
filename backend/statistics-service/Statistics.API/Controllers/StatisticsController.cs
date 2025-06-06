@@ -30,6 +30,23 @@ namespace Statistics.API.Controllers
         }
 
         /// <summary>
+        /// Get all available publications from questionnaire service
+        /// </summary>
+        [HttpGet("publications")]
+        public async Task<ActionResult<List<PublicationInfoDto>>> GetAllPublications()
+        {
+            try
+            {
+                var publications = await _statisticsService.GetAllPublicationsAsync();
+                return Ok(publications);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error getting publications: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Get detailed statistics for a specific questionnaire publication
         /// </summary>
         [HttpGet("questionnaire/{publicationId}")]
