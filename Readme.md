@@ -1,1 +1,0 @@
-Mr7baaa biikum
