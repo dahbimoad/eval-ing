@@ -1,64 +1,40 @@
 version: '3.8'
 
 services:
-  # Service d'authentification
-  auth-service:
-    build:
-      context: ./backend/authentication_system/authentication_system
-      dockerfile: Dockerfile
-    container_name: authentication-service
+  # Kafka setup
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: zookeeper
     ports:
-      - "5001:8080"
+      - "2181:2181"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=UserDb
-      - DB_USER=postgres
-      - DB_PASSWORD=Imad2002
-      - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
-      - JWT_ISSUER=auth-service
-      - JWT_AUDIENCE=formation-evaluation-app
-      - EMAIL_SENDER=imade17ma@gmail.com
-      - EMAIL_SENDER_NAME=Imad
-      - SMTP_SERVER=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_ENABLE_SSL=true
-      - SMTP_USERNAME=imade17ma@gmail.com
-      - SMTP_PASSWORD=fsrpmqhytbeoacnc
-    depends_on:
-      - postgres
-    volumes:
-      - ./uploads:/app/wwwroot/uploads/profiles
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     networks:
       - microservices-network
-    restart: unless-stopped
 
-  # Service de catalogue
-  catalog-service:
-    build:
-      context: ./backend/catalog-service
-      dockerfile: Dockerfile
-    container_name: catalog-service
-    ports:
-      - "5003:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=catalog-postgres;Database=catalog_db;Username=postgres;Password=Imad2002
-      - Jwt__Token=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
-      - Jwt__Issuer=auth-service
-      - Jwt__Audience=formation-evaluation-app
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka
+    container_name: kafka
     depends_on:
-      - catalog-postgres
-      - auth-service
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - microservices-network
-    restart: unless-stopped
 
   # Base de données PostgreSQL pour auth-service
-  postgres:
+  auth-postgres:
     image: postgres:15-alpine
     container_name: auth-postgres
     environment:
@@ -83,38 +59,127 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Imad2002
     ports:
-      - "5433:5432"  # Port différent pour éviter les conflits
+      - "5433:5432"
     volumes:
       - catalog_postgres_data:/var/lib/postgresql/data
     networks:
       - microservices-network
     restart: unless-stopped
 
-  # Exemple d'autres microservices (à adapter selon vos besoins)
-  # api-gateway:
-  #   image: your-api-gateway:latest
-  #   ports:
-  #     - "5000:80"
-  #   networks:
-  #     - microservices-network
-  #   depends_on:
-  #     - auth-service
+  # Base de données PostgreSQL pour questionnaire-service
+  questionnaire-postgres:
+    image: postgres:15-alpine
+    container_name: questionnaire-postgres
+    environment:
+      - POSTGRES_DB=evaling
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Imad2002
+    ports:
+      - "5434:5432"
+    volumes:
+      - questionnaire_postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+    restart: unless-stopped
 
-  # user-service:
-  #   image: your-user-service:latest
-  #   ports:
-  #     - "5002:80"
-  #   networks:
-  #     - microservices-network
-  #   depends_on:
-  #     - auth-service
+  # Authentication service
+  auth-service:
+    build:
+      context: ./backend/authentication_system/authentication_system
+      dockerfile: Dockerfile
+    container_name: authentication-service
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - DB_HOST=auth-postgres
+      - DB_PORT=5432
+      - DB_NAME=UserDb
+      - DB_USER=postgres
+      - DB_PASSWORD=Imad2002
+      - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
+      - JWT_ISSUER=auth-service
+      - JWT_AUDIENCE=formation-evaluation-app
+      - EMAIL_SENDER=imade17ma@gmail.com
+      - EMAIL_SENDER_NAME=Imad
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_ENABLE_SSL=true
+      - SMTP_USERNAME=imade17ma@gmail.com
+      - SMTP_PASSWORD=fsrpmqhytbeoacnc
+    depends_on:
+      - auth-postgres
+    volumes:
+      - ./uploads:/app/wwwroot/uploads/profiles
+    networks:
+      - microservices-network
+    restart: unless-stopped
 
-  # evaluation-service:
-  #   image: your-evaluation-service:latest
-  #   ports:
-  #     - "5004:80"
-  #   networks:
-  #     - microservices-network
+  # Catalog service
+  catalog-service:
+    build:
+      context: ./backend/catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=catalog-postgres;Database=catalog_db;Username=postgres;Password=Imad2002
+      - Jwt__Token=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
+      - Jwt__Issuer=auth-service
+      - Jwt__Audience=formation-evaluation-app
+    depends_on:
+      - catalog-postgres
+      - auth-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Service de questionnaire
+  questionnaire-service:
+    build:
+      context: ./backend/questionnaire-service
+      dockerfile: Dockerfile
+    container_name: questionnaire-service
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Postgres=Host=questionnaire-postgres;Port=5432;Username=postgres;Password=Imad2002;Database=evaling
+      - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
+      - JWT_ISSUER=auth-service
+      - JWT_AUDIENCE=formation-evaluation-app
+    depends_on:
+      - questionnaire-postgres
+      - auth-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+      - auth-service
+      - catalog-service
+      - questionnaire-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
 
 # Configuration du réseau partagé entre microservices
 networks:
@@ -122,9 +187,11 @@ networks:
     driver: bridge
     name: microservices-net
 
-# Volumes persistants
+# Persistent volumes
 volumes:
   postgres_data:
     driver: local
   catalog_postgres_data:
+    driver: local
+  questionnaire_postgres_data:
     driver: local
