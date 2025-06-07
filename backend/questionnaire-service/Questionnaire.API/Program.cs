@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.OpenApi.Models;
 using Questionnaire.Application.Services;
 using Questionnaire.Infrastructure;
 using DotNetEnv;
@@ -10,28 +10,51 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file
+// ──────────────────────────────────────────────────────────────────────
+// 1. Load environment variables from .env
+// ──────────────────────────────────────────────────────────────────────
 Env.Load();
 
-// Add services to the container.
+// ──────────────────────────────────────────────────────────────────────
+// 2. Database
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<QuestionnaireDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-// ✅ Register TemplateService here
+// ──────────────────────────────────────────────────────────────────────
+// 3. Dependency Injection for your application services
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<TemplateService, TemplateService>();
-// ✅ Register SectionService here
 builder.Services.AddScoped<SectionService, SectionService>();
-// ✅ Register QuestionService here
 builder.Services.AddScoped<QuestionService, QuestionService>();
-// ✅ Register PublicationService here
 builder.Services.AddScoped<PublicationService, PublicationService>();
 builder.Services.AddScoped<ProfessorService, ProfessorService>();
 builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
-builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
-builder.Services.AddScoped<SubmissionExportService, SubmissionExportService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
 builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
+builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
+builder.Services.AddScoped<StudentService, StudentService>();
 
-// JWT Authentication Configuration
+// ──────────────────────────────────────────────────────────────────────
+// 4. CORS – allow your Vite dev‐server origin
+// ──────────────────────────────────────────────────────────────────────
+const string AllowFrontend = "_allowFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowFrontend, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// 5. JWT Authentication
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -45,85 +68,107 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_TOKEN")))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_TOKEN") ?? "")
+            )
         };
     });
 
-// Add HTTP client for cache endpoint
-builder.Services.AddHttpClient();
-
-// Add formation cache service
-builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
-
-
-// Add Kafka consumer as hosted service
-builder.Services.AddHostedService<FormationEventConsumer>();
-// Register other services like controllers and Swagger
+// ──────────────────────────────────────────────────────────────────────
+// 6. Controllers & Swagger with JWT support
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Questionnaire API",
+        Version = "v1"
+    });
+
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Description = "Enter your JWT Bearer token below (e.g., Bearer eyJhbGci...)",
+
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    options.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
+});
 
 var app = builder.Build();
 
-// ✅ Apply migrations automatically at startup
-await ApplyMigrationsAsync(app);
-
-// Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI(o =>
+// ──────────────────────────────────────────────────────────────────────
+// 7. Configure HTTP pipeline
+// ──────────────────────────────────────────────────────────────────────
+if (app.Environment.IsDevelopment())
 {
-    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
-    o.RoutePrefix = "docs"; // accessible via /docs
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questionnaire API V1");
+        c.RoutePrefix = string.Empty;
+    });
+}
 
-app.UseAuthentication(); // Apply authentication middleware
-app.UseAuthorization();  // Apply authorization middleware
+// ★ CORS → Authentication → Authorization
+app.UseCors(AllowFrontend);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
 
-// Method to apply migrations automatically
+/// <summary>
+/// Optional helper to apply EF Core migrations on startup.
+/// </summary>
 static async Task ApplyMigrationsAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    
+
     try
     {
         var context = services.GetRequiredService<QuestionnaireDbContext>();
         var logger = services.GetRequiredService<ILogger<Program>>();
-        
+
         logger.LogInformation("Checking for pending migrations...");
-        
-        // Check if there are pending migrations
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        
-        if (pendingMigrations.Any())
+
+        var pending = await context.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
         {
-            logger.LogInformation($"Found {pendingMigrations.Count()} pending migration(s). Applying migrations...");
-            
-            // Apply pending migrations
+            logger.LogInformation($"Applying {pending.Count()} pending migrations...");
             await context.Database.MigrateAsync();
-            
-            logger.LogInformation("Migrations applied successfully!");
+            logger.LogInformation("Migrations applied.");
         }
         else
         {
-            logger.LogInformation("Database is up to date. No migrations needed.");
+            logger.LogInformation("No pending migrations.");
         }
-        
-        // Ensure database can connect
+
         await context.Database.CanConnectAsync();
-        logger.LogInformation("Database connection verified successfully.");
+        logger.LogInformation("Database connection OK.");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while applying migrations.");
-        
-        // You can choose to throw the exception to prevent app startup
-        // or handle it gracefully depending on your requirements
+        logger.LogError(ex, "Error applying migrations.");
         throw;
     }
 }

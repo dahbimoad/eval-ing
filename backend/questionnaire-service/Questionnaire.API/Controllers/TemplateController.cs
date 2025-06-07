@@ -8,7 +8,7 @@ namespace Questionnaire.API.Controllers
 {
     [ApiController]
     [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
+    [Route("api/template")]
     public class TemplateController : ControllerBase
     {
         private readonly TemplateService _templateService;

@@ -82,6 +82,29 @@ services:
       - microservices-network
     restart: unless-stopped
 
+  # pgAdmin - Database Management Interface
+  pgadmin:
+    image: dpage/pgadmin4:8.2
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
+    networks:
+      - microservices-network
+    depends_on:
+      - auth-postgres
+      - catalog-postgres
+      - questionnaire-postgres
+    restart: unless-stopped
+
   # Authentication service
   auth-service:
     build:
@@ -217,4 +240,6 @@ volumes:
   catalog_postgres_data:
     driver: local
   questionnaire_postgres_data:
+    driver: local
+  pgadmin_data:
     driver: local
