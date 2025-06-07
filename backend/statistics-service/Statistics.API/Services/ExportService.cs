@@ -18,59 +18,160 @@ namespace Statistics.API.Services
                 
                 document.Open();
 
-                // Title
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, new BaseColor(64, 64, 64));
+                // Title with enhanced styling
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, new BaseColor(0, 102, 153)); // Blue title
                 var title = new Paragraph("📊 Rapport Statistiques Générales", titleFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
-                    SpacingAfter = 20
+                    SpacingAfter = 15
                 };
                 document.Add(title);
 
-                // Generation date
+                // Generation date with improved styling
                 var dateFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, new BaseColor(128, 128, 128));
                 var date = new Paragraph($"Généré le: {DateTime.Now:dd/MM/yyyy HH:mm}", dateFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
-                    SpacingAfter = 30
+                    SpacingAfter = 25
                 };
                 document.Add(date);
 
-                // Overall Statistics
-                var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, new BaseColor(0, 0, 0));
-                var header = new Paragraph("Vue d'ensemble", headerFont) { SpacingAfter = 10 };
-                document.Add(header);
+                // Metrics section with colored background
+                var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, new BaseColor(255, 255, 255));
+                var headerBg = new Paragraph("Métriques Générales", headerFont) { SpacingAfter = 15 };
+                var headerTable = new PdfPTable(1) { WidthPercentage = 100 };
+                headerTable.AddCell(CreateCell("Métriques Générales", headerFont, new BaseColor(70, 130, 180))); // Steel blue
+                document.Add(headerTable);
 
+                // Enhanced metrics display
                 var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 11);
-                document.Add(new Paragraph($"• Total des questionnaires: {stats.TotalQuestionnaires}", normalFont));
-                document.Add(new Paragraph($"• Total des soumissions: {stats.TotalSubmissions}", normalFont));
-                document.Add(new Paragraph($"• Taux de completion: {stats.OverallCompletionRate:F1}%", normalFont));
-                document.Add(new Paragraph($"• Formations actives: {stats.FormationStatistics?.Count ?? 0}", normalFont) { SpacingAfter = 20 });
+                var metricsTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 20 };
+                metricsTable.SetWidths(new float[] { 60f, 40f });
+                
+                var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, new BaseColor(51, 51, 51));
+                var valueFont = FontFactory.GetFont(FontFactory.HELVETICA, 11, new BaseColor(0, 102, 153));
+                
+                metricsTable.AddCell(CreateCell("Total des questionnaires", labelFont, new BaseColor(248, 249, 250)));
+                metricsTable.AddCell(CreateCell(stats.TotalQuestionnaires.ToString(), valueFont, new BaseColor(248, 249, 250)));
+                metricsTable.AddCell(CreateCell("Total des soumissions", labelFont, new BaseColor(255, 255, 255)));
+                metricsTable.AddCell(CreateCell(stats.TotalSubmissions.ToString(), valueFont, new BaseColor(255, 255, 255)));
+                metricsTable.AddCell(CreateCell("Taux de completion", labelFont, new BaseColor(248, 249, 250)));
+                metricsTable.AddCell(CreateCell($"{stats.OverallCompletionRate:F1}%", valueFont, new BaseColor(248, 249, 250)));
+                metricsTable.AddCell(CreateCell("Formations actives", labelFont, new BaseColor(255, 255, 255)));
+                metricsTable.AddCell(CreateCell($"{stats.FormationStatistics?.Count ?? 0}", valueFont, new BaseColor(255, 255, 255)));
+                
+                document.Add(metricsTable);
 
-                // Formation Statistics Table
+                // Scoring system explanation with enhanced visuals
+                var scoringHeader = new PdfPTable(1) { WidthPercentage = 100 };
+                scoringHeader.AddCell(CreateCell("Système de Notation", headerFont, new BaseColor(70, 130, 180)));
+                document.Add(scoringHeader);
+
+                var scoringTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 20 };
+                scoringTable.SetWidths(new float[] { 40f, 60f });
+                
+                var scoringLabelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(51, 51, 51));
+                var scoringValueFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, new BaseColor(0, 102, 153));
+                
+                scoringTable.AddCell(CreateCell("Questions Likert (1-5)", scoringLabelFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Score = Moyenne des réponses (Σ(réponses) ÷ N)", scoringValueFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Questions Oui/Non", scoringLabelFont, new BaseColor(248, 249, 250)));
+                scoringTable.AddCell(CreateCell("Score = (% de Oui) × 5", scoringValueFont, new BaseColor(248, 249, 250)));
+                scoringTable.AddCell(CreateCell("Questions Texte", scoringLabelFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Pas de score numérique (analyse qualitative)", scoringValueFont, new BaseColor(230, 245, 255)));
+                
+                document.Add(scoringTable);
+
+                // Score interpretation legend
+                var legendHeader = new PdfPTable(1) { WidthPercentage = 100 };
+                legendHeader.AddCell(CreateCell("Interprétation des Scores", headerFont, new BaseColor(70, 130, 180)));
+                document.Add(legendHeader);
+
+                var legendTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 25 };
+                legendTable.SetWidths(new float[] { 30f, 70f });
+                
+                legendTable.AddCell(CreateCell("0.0 - 1.0", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(255, 255, 255)), new BaseColor(220, 53, 69))); // Red
+                legendTable.AddCell(CreateCell("Très Faible", normalFont, new BaseColor(248, 215, 218)));
+                legendTable.AddCell(CreateCell("1.1 - 2.0", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(255, 255, 255)), new BaseColor(253, 126, 20))); // Orange
+                legendTable.AddCell(CreateCell("Faible", normalFont, new BaseColor(254, 230, 206)));
+                legendTable.AddCell(CreateCell("2.1 - 3.0", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(0, 0, 0)), new BaseColor(255, 193, 7))); // Yellow
+                legendTable.AddCell(CreateCell("Moyen", normalFont, new BaseColor(255, 243, 205)));
+                legendTable.AddCell(CreateCell("3.1 - 4.0", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(255, 255, 255)), new BaseColor(0, 123, 255))); // Blue
+                legendTable.AddCell(CreateCell("Bon", normalFont, new BaseColor(204, 229, 255)));
+                legendTable.AddCell(CreateCell("4.1 - 5.0", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(255, 255, 255)), new BaseColor(40, 167, 69))); // Green
+                legendTable.AddCell(CreateCell("Excellent", normalFont, new BaseColor(212, 237, 218)));
+                
+                document.Add(legendTable);
+
+                // Enhanced Formation Statistics Table
                 if (stats.FormationStatistics?.Any() == true)
                 {
-                    var formHeader = new Paragraph("Statistiques par Formation", headerFont) { SpacingAfter = 10 };
-                    document.Add(formHeader);
+                    var formHeaderTable = new PdfPTable(1) { WidthPercentage = 100 };
+                    formHeaderTable.AddCell(CreateCell("Statistiques par Formation", headerFont, new BaseColor(70, 130, 180)));
+                    document.Add(formHeaderTable);
 
-                    var table = new PdfPTable(4) { WidthPercentage = 100 };
-                    table.SetWidths(new float[] { 15f, 45f, 20f, 20f });
+                    var table = new PdfPTable(5) { WidthPercentage = 100, SpacingAfter = 20 };
+                    table.SetWidths(new float[] { 15f, 35f, 15f, 15f, 20f });
 
-                    // Headers
+                    // Enhanced headers
                     var headerCellFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(255, 255, 255));
-                    table.AddCell(CreateCell("Code", headerCellFont, new BaseColor(64, 64, 64)));
-                    table.AddCell(CreateCell("Formation", headerCellFont, new BaseColor(64, 64, 64)));
-                    table.AddCell(CreateCell("Soumissions", headerCellFont, new BaseColor(64, 64, 64)));
-                    table.AddCell(CreateCell("Note Moyenne", headerCellFont, new BaseColor(64, 64, 64)));
+                    table.AddCell(CreateCell("Code", headerCellFont, new BaseColor(52, 58, 64)));
+                    table.AddCell(CreateCell("Formation", headerCellFont, new BaseColor(52, 58, 64)));
+                    table.AddCell(CreateCell("Soumissions", headerCellFont, new BaseColor(52, 58, 64)));
+                    table.AddCell(CreateCell("Note/5", headerCellFont, new BaseColor(52, 58, 64)));
+                    table.AddCell(CreateCell("Interprétation", headerCellFont, new BaseColor(52, 58, 64)));
 
-                    // Data rows
+                    // Enhanced data rows with color coding
                     var cellFont = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+                    var cellFontBold = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9);
+                    
                     foreach (var formation in stats.FormationStatistics)
                     {
+                        // Determine colors based on score
+                        BaseColor scoreColor, textColor, bgColor;
+                        string interpretation;
+                        
+                        if (formation.AverageRating >= 4.0)
+                        {
+                            scoreColor = new BaseColor(40, 167, 69); // Green
+                            bgColor = new BaseColor(212, 237, 218);
+                            textColor = new BaseColor(21, 87, 36);
+                            interpretation = "Excellent";
+                        }
+                        else if (formation.AverageRating >= 3.0)
+                        {
+                            scoreColor = new BaseColor(0, 123, 255); // Blue
+                            bgColor = new BaseColor(204, 229, 255);
+                            textColor = new BaseColor(0, 86, 179);
+                            interpretation = "Bon";
+                        }
+                        else if (formation.AverageRating >= 2.0)
+                        {
+                            scoreColor = new BaseColor(255, 193, 7); // Yellow
+                            bgColor = new BaseColor(255, 243, 205);
+                            textColor = new BaseColor(133, 100, 4);
+                            interpretation = "Moyen";
+                        }
+                        else if (formation.AverageRating >= 1.0)
+                        {
+                            scoreColor = new BaseColor(253, 126, 20); // Orange
+                            bgColor = new BaseColor(254, 230, 206);
+                            textColor = new BaseColor(138, 69, 11);
+                            interpretation = "Faible";
+                        }
+                        else
+                        {
+                            scoreColor = new BaseColor(220, 53, 69); // Red
+                            bgColor = new BaseColor(248, 215, 218);
+                            textColor = new BaseColor(114, 28, 36);
+                            interpretation = "Très Faible";
+                        }
+
                         table.AddCell(CreateCell(formation.FormationCode ?? "", cellFont, new BaseColor(255, 255, 255)));
                         table.AddCell(CreateCell(formation.FormationTitle ?? "", cellFont, new BaseColor(255, 255, 255)));
                         table.AddCell(CreateCell(formation.SubmissionCount.ToString(), cellFont, new BaseColor(255, 255, 255)));
-                        table.AddCell(CreateCell($"{formation.AverageRating:F1}/5", cellFont, new BaseColor(255, 255, 255)));
+                        table.AddCell(CreateCell($"{formation.AverageRating:F1}", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, textColor), bgColor));
+                        table.AddCell(CreateCell(interpretation, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, textColor), bgColor));
                     }
 
                     document.Add(table);
@@ -130,6 +231,19 @@ namespace Statistics.API.Services
                 
                 overviewSheet.Cells["A13"].Value = "Questions Texte";
                 overviewSheet.Cells["B13"].Value = "Pas de score numérique (analyse qualitative)";
+
+                // Add professional message directing to other sheets
+                overviewSheet.Cells["A15"].Value = "ℹ️ Pour une analyse détaillée par formation, consultez l'onglet 'Statistiques Formations'";
+                overviewSheet.Cells["A15"].Style.Font.Size = 14;
+                overviewSheet.Cells["A15"].Style.Font.Bold = true;
+                overviewSheet.Cells["A15"].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+                overviewSheet.Cells["A15:B15"].Merge = true;
+                overviewSheet.Cells["A15"].Style.WrapText = true;
+                
+                overviewSheet.Cells["A16"].Value = "• Statistiques Formations : Vue détaillée avec scores colorés et interprétations";
+                overviewSheet.Cells["A16"].Style.Font.Size = 11;
+                overviewSheet.Cells["A16"].Style.Font.Color.SetColor(System.Drawing.Color.DarkBlue);
+                overviewSheet.Cells["A16"].Style.WrapText = true;
 
                 // Formation statistics
                 if (stats.FormationStatistics?.Any() == true)
@@ -289,51 +403,157 @@ namespace Statistics.API.Services
                 
                 document.Open();
 
-                // Title
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, new BaseColor(64, 64, 64));
+                // Enhanced title with color
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, new BaseColor(0, 102, 153)); // Blue title
                 var title = new Paragraph($"📋 Analyse Détaillée: {stats.Title}", titleFont)
+                {
+                    Alignment = Element.ALIGN_CENTER,
+                    SpacingAfter = 15
+                };
+                document.Add(title);
+
+                // Generation date
+                var dateFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, new BaseColor(128, 128, 128));
+                var date = new Paragraph($"Généré le: {DateTime.Now:dd/MM/yyyy HH:mm}", dateFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
                     SpacingAfter = 20
                 };
-                document.Add(title);
+                document.Add(date);
 
-                // Basic info
-                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 11);
-                document.Add(new Paragraph($"• ID Publication: {stats.PublicationId}", normalFont));
-                document.Add(new Paragraph($"• Total soumissions: {stats.TotalSubmissions}", normalFont));
-                document.Add(new Paragraph($"• Taux de completion: {stats.CompletionRate:F1}%", normalFont));
-                document.Add(new Paragraph($"• Période: {stats.StartDate:dd/MM/yyyy} - {stats.EndDate:dd/MM/yyyy}", normalFont) { SpacingAfter = 20 });
+                // Enhanced basic info section
+                var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, new BaseColor(255, 255, 255));
+                var infoHeaderTable = new PdfPTable(1) { WidthPercentage = 100 };
+                infoHeaderTable.AddCell(CreateCell("Informations Générales", headerFont, new BaseColor(70, 130, 180)));
+                document.Add(infoHeaderTable);
 
-                // Section statistics
+                var infoTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 20 };
+                infoTable.SetWidths(new float[] { 40f, 60f });
+                
+                var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, new BaseColor(51, 51, 51));
+                var valueFont = FontFactory.GetFont(FontFactory.HELVETICA, 11, new BaseColor(0, 102, 153));
+                
+                infoTable.AddCell(CreateCell("ID Publication", labelFont, new BaseColor(248, 249, 250)));
+                infoTable.AddCell(CreateCell(stats.PublicationId.ToString(), valueFont, new BaseColor(248, 249, 250)));
+                infoTable.AddCell(CreateCell("Total soumissions", labelFont, new BaseColor(255, 255, 255)));
+                infoTable.AddCell(CreateCell(stats.TotalSubmissions.ToString(), valueFont, new BaseColor(255, 255, 255)));
+                infoTable.AddCell(CreateCell("Taux de completion", labelFont, new BaseColor(248, 249, 250)));
+                infoTable.AddCell(CreateCell($"{stats.CompletionRate:F1}%", valueFont, new BaseColor(248, 249, 250)));
+                infoTable.AddCell(CreateCell("Période d'analyse", labelFont, new BaseColor(255, 255, 255)));
+                infoTable.AddCell(CreateCell($"{stats.StartDate:dd/MM/yyyy} - {stats.EndDate:dd/MM/yyyy}", valueFont, new BaseColor(255, 255, 255)));
+                
+                document.Add(infoTable);
+
+                // Scoring system explanation
+                var scoringHeader = new PdfPTable(1) { WidthPercentage = 100 };
+                scoringHeader.AddCell(CreateCell("Système de Notation", headerFont, new BaseColor(70, 130, 180)));
+                document.Add(scoringHeader);
+
+                var scoringTable = new PdfPTable(2) { WidthPercentage = 100, SpacingAfter = 15 };
+                scoringTable.SetWidths(new float[] { 40f, 60f });
+                
+                var scoringLabelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(51, 51, 51));
+                var scoringValueFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, new BaseColor(0, 102, 153));
+                
+                scoringTable.AddCell(CreateCell("Questions Likert (1-5)", scoringLabelFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Score = Moyenne des réponses", scoringValueFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Questions Oui/Non", scoringLabelFont, new BaseColor(248, 249, 250)));
+                scoringTable.AddCell(CreateCell("Score = (% de Oui) × 5", scoringValueFont, new BaseColor(248, 249, 250)));
+                scoringTable.AddCell(CreateCell("Questions Texte", scoringLabelFont, new BaseColor(230, 245, 255)));
+                scoringTable.AddCell(CreateCell("Analyse qualitative uniquement", scoringValueFont, new BaseColor(230, 245, 255)));
+                
+                document.Add(scoringTable);
+
+                // Enhanced section statistics
                 if (stats.SectionStatistics?.Any() == true)
                 {
-                    var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, new BaseColor(0, 0, 0));
-                    var sectionHeader = new Paragraph("Statistiques par Section", headerFont) { SpacingAfter = 15 };
-                    document.Add(sectionHeader);
+                    var sectionHeaderTable = new PdfPTable(1) { WidthPercentage = 100 };
+                    sectionHeaderTable.AddCell(CreateCell("Analyse Détaillée par Section", headerFont, new BaseColor(70, 130, 180)));
+                    document.Add(sectionHeaderTable);
+                    document.Add(new Paragraph(" ", FontFactory.GetFont(FontFactory.HELVETICA, 8)) { SpacingAfter = 10 });
 
                     foreach (var section in stats.SectionStatistics)
                     {
-                        var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12, new BaseColor(64, 64, 64));
-                        document.Add(new Paragraph(section.SectionTitle, sectionFont) { SpacingAfter = 10 });
+                        // Enhanced section header with background
+                        var sectionHeaderBg = new PdfPTable(1) { WidthPercentage = 100, SpacingAfter = 10 };
+                        var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12, new BaseColor(255, 255, 255));
+                        sectionHeaderBg.AddCell(CreateCell(section.SectionTitle, sectionFont, new BaseColor(108, 117, 125)));
+                        document.Add(sectionHeaderBg);
 
                         if (section.QuestionStatistics?.Any() == true)
                         {
                             foreach (var question in section.QuestionStatistics)
                             {
-                                document.Add(new Paragraph($"Q: {question.QuestionText}", normalFont));
-                                document.Add(new Paragraph($"   Type: {question.QuestionType} | Réponses: {question.TotalAnswers}", normalFont));
+                                // Question text with enhanced styling
+                                var questionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, new BaseColor(33, 37, 41));
+                                var questionPara = new Paragraph($"Q: {question.QuestionText}", questionFont) { SpacingAfter = 5 };
+                                document.Add(questionPara);
+                                
+                                // Question details table
+                                var detailsTable = new PdfPTable(3) { WidthPercentage = 100, SpacingAfter = 10 };
+                                detailsTable.SetWidths(new float[] { 25f, 25f, 50f });
+                                
+                                var detailFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+                                var detailLabelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(73, 80, 87));
+                                
+                                detailsTable.AddCell(CreateCell($"Type: {question.QuestionType}", detailLabelFont, new BaseColor(248, 249, 250)));
+                                detailsTable.AddCell(CreateCell($"Réponses: {question.TotalAnswers}", detailLabelFont, new BaseColor(248, 249, 250)));
                                 
                                 if (question.AverageScore.HasValue)
                                 {
-                                    document.Add(new Paragraph($"   Score moyen: {question.AverageScore:F2}/5", normalFont));
+                                    // Color-coded score display
+                                    BaseColor scoreColor, scoreBgColor;
+                                    string interpretation;
+                                    
+                                    if (question.AverageScore >= 4.0)
+                                    {
+                                        scoreColor = new BaseColor(21, 87, 36);
+                                        scoreBgColor = new BaseColor(212, 237, 218);
+                                        interpretation = "Excellent";
+                                    }
+                                    else if (question.AverageScore >= 3.0)
+                                    {
+                                        scoreColor = new BaseColor(0, 86, 179);
+                                        scoreBgColor = new BaseColor(204, 229, 255);
+                                        interpretation = "Bon";
+                                    }
+                                    else if (question.AverageScore >= 2.0)
+                                    {
+                                        scoreColor = new BaseColor(133, 100, 4);
+                                        scoreBgColor = new BaseColor(255, 243, 205);
+                                        interpretation = "Moyen";
+                                    }
+                                    else if (question.AverageScore >= 1.0)
+                                    {
+                                        scoreColor = new BaseColor(138, 69, 11);
+                                        scoreBgColor = new BaseColor(254, 230, 206);
+                                        interpretation = "Faible";
+                                    }
+                                    else
+                                    {
+                                        scoreColor = new BaseColor(114, 28, 36);
+                                        scoreBgColor = new BaseColor(248, 215, 218);
+                                        interpretation = "Très Faible";
+                                    }
+                                    
+                                    var scoreFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, scoreColor);
+                                    detailsTable.AddCell(CreateCell($"Score: {question.AverageScore:F2}/5 ({interpretation})", scoreFont, scoreBgColor));
+                                }
+                                else
+                                {
+                                    var noScoreFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, Font.ITALIC, new BaseColor(108, 117, 125));
+                                    detailsTable.AddCell(CreateCell("Pas de score (Question texte)", noScoreFont, new BaseColor(233, 236, 239)));
                                 }
                                 
-                                document.Add(new Paragraph(" ", normalFont)); // Space
+                                document.Add(detailsTable);
+                                
+                                // Add some space between questions
+                                document.Add(new Paragraph(" ", FontFactory.GetFont(FontFactory.HELVETICA, 6)) { SpacingAfter = 8 });
                             }
                         }
                         
-                        document.Add(new Paragraph(" ", normalFont)); // Section separator
+                        // Section separator
+                        document.Add(new Paragraph(" ", FontFactory.GetFont(FontFactory.HELVETICA, 8)) { SpacingAfter = 15 });
                     }
                 }
 
@@ -367,6 +587,25 @@ namespace Statistics.API.Services
                 summarySheet.Cells["B6"].Value = stats.StartDate.ToString("dd/MM/yyyy");
                 summarySheet.Cells["A7"].Value = "Date fin";
                 summarySheet.Cells["B7"].Value = stats.EndDate.ToString("dd/MM/yyyy");
+
+                // Add professional message directing to other sheets
+                summarySheet.Cells["A9"].Value = "ℹ️ Pour une analyse complète et détaillée, consultez les autres onglets de ce fichier Excel";
+                summarySheet.Cells["A9"].Style.Font.Size = 14;
+                summarySheet.Cells["A9"].Style.Font.Bold = true;
+                summarySheet.Cells["A9"].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+                summarySheet.Cells["A9:B9"].Merge = true;
+                summarySheet.Cells["A9"].Style.WrapText = true;
+                
+                summarySheet.Cells["A10"].Value = "• Analyse par Section : Vue détaillée par section avec scores colorés";
+                summarySheet.Cells["A11"].Value = "• Vue d'ensemble Questions : Tableau récapitulatif de toutes les questions";
+                summarySheet.Cells["A12"].Value = "• Distribution des Réponses : Détail complet des réponses pour chaque question";
+                summarySheet.Cells["A13"].Value = "• Réponses Texte : Compilation des réponses aux questions ouvertes";
+                
+                // Style the bullet points
+                var bulletRange = summarySheet.Cells["A10:A13"];
+                bulletRange.Style.Font.Size = 11;
+                bulletRange.Style.Font.Color.SetColor(System.Drawing.Color.DarkBlue);
+                bulletRange.Style.WrapText = true;
 
                 // Detailed Section Analysis Sheet (matches PDF structure exactly)
                 if (stats.SectionStatistics?.Any() == true)
