@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using CatalogService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IFormationRepository, FormationRepository>();
 builder.Services.AddScoped<IModuleRepository, ModuleRepository>();
+builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 builder.Services.AddScoped<IFormationService, FormationService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
 
@@ -142,11 +144,12 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // ─── Pipeline HTTP ─────────────────────────────────────────────────────────────
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(o =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
+    o.RoutePrefix = "docs"; // accessible via /docs
+});
 
 app.UseHttpsRedirection();
 

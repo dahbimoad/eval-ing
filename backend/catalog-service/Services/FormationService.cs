@@ -6,6 +6,8 @@ using Catalog.API.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CatalogService.Services;
+using CatalogService.Models.Events;
 
 namespace Catalog.API.Services
 {
@@ -13,11 +15,19 @@ namespace Catalog.API.Services
     {
         private readonly IFormationRepository _formationRepository;
         private readonly IMapper _mapper;
+        private readonly IKafkaProducer _kafkaProducer;
+        private readonly ILogger<FormationService> _logger;
 
-        public FormationService(IFormationRepository formationRepository, IMapper mapper)
+        public FormationService(
+            IFormationRepository formationRepository, 
+            IMapper mapper,
+            IKafkaProducer kafkaProducer,
+            ILogger<FormationService> logger)
         {
             _formationRepository = formationRepository;
             _mapper = mapper;
+            _kafkaProducer = kafkaProducer;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<FormationDto>> GetAllFormationsAsync()
@@ -44,7 +54,30 @@ namespace Catalog.API.Services
             await _formationRepository.AddAsync(formation);
             await _formationRepository.SaveChangesAsync();
 
-            return _mapper.Map<FormationDto>(formation);
+            var result = _mapper.Map<FormationDto>(formation);
+
+            // Publish event to Kafka
+            try
+            {
+                var formationEvent = new FormationCreatedEvent
+                {
+                    Title = result.Title,
+                    Description = result.Description,
+                    Code = result.Code,
+                    Credits = result.Credits,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _kafkaProducer.PublishFormationCreatedAsync(formationEvent);
+                _logger.LogInformation("Formation created event published for formation {Code}", result.Code);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish formation created event for formation {Code}", result.Code);
+                // Don't fail the operation if event publishing fails
+            }
+
+            return result;
         }
 
         public async Task<FormationDto> UpdateFormationAsync(int id, UpdateFormationDto formationDto)
