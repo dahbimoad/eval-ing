@@ -27,8 +27,7 @@ wwwroot/
 **/wwwroot/
 node_modules/
 
-# Entity Framework
-**/Migrations/
+
 
 # Logs and test results
 *.log

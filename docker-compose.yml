@@ -57,6 +57,28 @@ services:
       - microservices-network
     restart: unless-stopped
 
+  # Service de questionnaire
+  questionnaire-service:
+    build:
+      context: ./backend/questionnaire-service
+      dockerfile: Dockerfile
+    container_name: questionnaire-service
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Postgres=Host=questionnaire-postgres;Port=5432;Username=postgres;Password=Imad2002;Database=evaling
+      - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
+      - JWT_ISSUER=auth-service
+      - JWT_AUDIENCE=formation-evaluation-app
+    depends_on:
+      - questionnaire-postgres
+      - auth-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
   # Base de données PostgreSQL pour auth-service
   postgres:
     image: postgres:15-alpine
@@ -90,6 +112,22 @@ services:
       - microservices-network
     restart: unless-stopped
 
+  # Base de données PostgreSQL pour questionnaire-service
+  questionnaire-postgres:
+    image: postgres:15-alpine
+    container_name: questionnaire-postgres
+    environment:
+      - POSTGRES_DB=evaling
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Imad2002
+    ports:
+      - "5434:5432"  # Port différent pour éviter les conflits
+    volumes:
+      - questionnaire_postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
   # Exemple d'autres microservices (à adapter selon vos besoins)
   # api-gateway:
   #   image: your-api-gateway:latest
@@ -109,13 +147,6 @@ services:
   #   depends_on:
   #     - auth-service
 
-  # evaluation-service:
-  #   image: your-evaluation-service:latest
-  #   ports:
-  #     - "5004:80"
-  #   networks:
-  #     - microservices-network
-
 # Configuration du réseau partagé entre microservices
 networks:
   microservices-network:
@@ -127,4 +158,6 @@ volumes:
   postgres_data:
     driver: local
   catalog_postgres_data:
+    driver: local
+  questionnaire_postgres_data:
     driver: local

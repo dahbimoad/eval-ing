@@ -56,16 +56,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// ✅ Apply migrations automatically at startup
+await ApplyMigrationsAsync(app);
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(o =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questionnaire API V1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
+    o.RoutePrefix = "docs"; // accessible via /docs
+});
 
 app.UseAuthentication(); // Apply authentication middleware
 app.UseAuthorization();  // Apply authorization middleware
@@ -73,3 +73,48 @@ app.UseAuthorization();  // Apply authorization middleware
 app.MapControllers();
 
 app.Run();
+
+// Method to apply migrations automatically
+static async Task ApplyMigrationsAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    
+    try
+    {
+        var context = services.GetRequiredService<QuestionnaireDbContext>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        
+        logger.LogInformation("Checking for pending migrations...");
+        
+        // Check if there are pending migrations
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation($"Found {pendingMigrations.Count()} pending migration(s). Applying migrations...");
+            
+            // Apply pending migrations
+            await context.Database.MigrateAsync();
+            
+            logger.LogInformation("Migrations applied successfully!");
+        }
+        else
+        {
+            logger.LogInformation("Database is up to date. No migrations needed.");
+        }
+        
+        // Ensure database can connect
+        await context.Database.CanConnectAsync();
+        logger.LogInformation("Database connection verified successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while applying migrations.");
+        
+        // You can choose to throw the exception to prevent app startup
+        // or handle it gracefully depending on your requirements
+        throw;
+    }
+}
