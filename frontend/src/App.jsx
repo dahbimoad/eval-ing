@@ -13,6 +13,9 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './Components/auth/PrivateRoute';
 import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
 import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
+import ProfessorQuestionnaires from "./Components/ProfessorQuestionnaires.jsx";
+import ProQuestionnaires from "./Components/ProQuestionnaires.jsx";
+
 export default function App() {
   return (
     <AuthProvider>
@@ -55,6 +58,17 @@ export default function App() {
               <Statistics />
             </PrivateRoute>
           } />
+          <Route path="/enseignant/dashboard" element={
+            <PrivateRoute>
+              <ProfessorQuestionnaires />
+            </PrivateRoute>
+          } />
+          <Route path="pro/dashboard" element={
+            <PrivateRoute>
+              <ProQuestionnaires />
+            </PrivateRoute>
+          } />
+          
         
         
         </Routes>
