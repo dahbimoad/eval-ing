@@ -78,8 +78,8 @@ namespace Statistics.API.Services
                     Title = publicationInfo?.Title ?? "No Data Available",
                     TotalSubmissions = 0,
                     CompletionRate = 0,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow
+                    StartDate = publicationInfo?.StartAt ?? DateTime.UtcNow,
+                    EndDate = publicationInfo?.EndAt ?? DateTime.UtcNow
                 };
             }
 
@@ -90,8 +90,8 @@ namespace Statistics.API.Services
                 TotalSubmissions = submissions.Count,
                 CompletionRate = 100.0, // All retrieved submissions are complete
                 SectionStatistics = CalculateSectionStatistics(submissions),
-                StartDate = submissions.Min(s => s.SubmittedAt),
-                EndDate = submissions.Max(s => s.SubmittedAt)
+                StartDate = publicationInfo?.StartAt ?? submissions.Min(s => s.SubmittedAt),
+                EndDate = publicationInfo?.EndAt ?? submissions.Max(s => s.SubmittedAt)
             };
 
             return stats;
