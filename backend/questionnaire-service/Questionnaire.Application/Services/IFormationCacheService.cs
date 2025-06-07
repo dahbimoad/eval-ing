@@ -7,5 +7,6 @@ namespace Questionnaire.Application.Services
         Task AddOrUpdateFormationAsync(FormationCreatedEvent formationEvent);
         Task<FormationCacheDto?> GetFormationAsync(string code);
         Task<IEnumerable<FormationCacheDto>> GetAllFormationsAsync();
+        Task<IEnumerable<FormationCacheDto>> GetAllFromDbAsync();
     }
 }

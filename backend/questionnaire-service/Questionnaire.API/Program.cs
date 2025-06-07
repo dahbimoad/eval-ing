@@ -23,13 +23,16 @@ builder.Services.AddDbContext<QuestionnaireDbContext>(options =>
 // ──────────────────────────────────────────────────────────────────────
 // 3. Dependency Injection for your application services
 // ──────────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<TemplateService,      TemplateService>();
-builder.Services.AddScoped<SectionService,       SectionService>();
-builder.Services.AddScoped<QuestionService,      QuestionService>();
-builder.Services.AddScoped<PublicationService,   PublicationService>();
-builder.Services.AddScoped<ProfessorService,     ProfessorService>();
-builder.Services.AddScoped<ProfessionalService,  ProfessionalService>();
-builder.Services.AddScoped<FormationCacheService,FormationCacheService>();
+// core services
+builder.Services.AddScoped<TemplateService, TemplateService>();
+builder.Services.AddScoped<SectionService, SectionService>();
+builder.Services.AddScoped<QuestionService, QuestionService>();
+builder.Services.AddScoped<PublicationService, PublicationService>();
+builder.Services.AddScoped<ProfessorService, ProfessorService>();
+builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
+// cache + HTTP client
+builder.Services.AddHttpClient();                                              // ← register IHttpClientFactory
+builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();   // ← inject via interface
 builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
 
 // ──────────────────────────────────────────────────────────────────────
@@ -107,7 +110,10 @@ app.MapControllers();
 
 app.Run();
 
-// Method to apply migrations automatically
+
+/// <summary>
+/// Optional helper to apply EF Core migrations on startup.
+/// </summary>
 static async Task ApplyMigrationsAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
@@ -120,34 +126,25 @@ static async Task ApplyMigrationsAsync(WebApplication app)
         
         logger.LogInformation("Checking for pending migrations...");
         
-        // Check if there are pending migrations
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        
-        if (pendingMigrations.Any())
+        var pending = await context.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
         {
-            logger.LogInformation($"Found {pendingMigrations.Count()} pending migration(s). Applying migrations...");
-            
-            // Apply pending migrations
+            logger.LogInformation($"Applying {pending.Count()} pending migrations...");
             await context.Database.MigrateAsync();
-            
-            logger.LogInformation("Migrations applied successfully!");
+            logger.LogInformation("Migrations applied.");
         }
         else
         {
-            logger.LogInformation("Database is up to date. No migrations needed.");
+            logger.LogInformation("No pending migrations.");
         }
         
-        // Ensure database can connect
         await context.Database.CanConnectAsync();
-        logger.LogInformation("Database connection verified successfully.");
+        logger.LogInformation("Database connection OK.");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while applying migrations.");
-        
-        // You can choose to throw the exception to prevent app startup
-        // or handle it gracefully depending on your requirements
+        logger.LogError(ex, "Error applying migrations.");
         throw;
     }
 }
