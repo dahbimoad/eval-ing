@@ -261,7 +261,7 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                 </div>
                                 
                                 <div className="mt-6 bg-white dark:bg-gray-800 p-4 rounded-lg border">
-                                    <h4 className="font-semibold mb-3">📊 Exemples de Conversion</h4>
+                                    <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">📊 Exemples de Conversion</h4>
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
                                         <div className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 p-2 rounded">
                                             <div className="font-bold">0% Oui</div>
