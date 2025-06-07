@@ -27,17 +27,31 @@ public sealed class FormationCacheService
         {
             cache = new FormationCache
             {
-                Code      = dto.Code,
+                Code = dto.Code,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Formations.Add(cache);
         }
 
-        cache.Title       = dto.Title;
+        cache.Title = dto.Title;
         cache.Description = dto.Description;
-        cache.Credits     = dto.Credits;
-        cache.UpdatedAt   = DateTime.UtcNow;
+        cache.Credits = dto.Credits;
+        cache.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
     }
+    // Questionnaire.Application/Services/FormationCacheService.cs
+public async Task<List<FormationDto>> GetAllAsync()
+{
+    return await _context.Formations
+        .Select(f => new FormationDto {
+            Id = f.Id,
+            Code = f.Code,
+            Title = f.Title,
+            Description = f.Description,
+            Credits = f.Credits
+        })
+        .ToListAsync();
+}
+
 }

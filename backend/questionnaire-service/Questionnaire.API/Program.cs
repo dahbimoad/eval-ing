@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Questionnaire.Application.Services;
 using Questionnaire.Infrastructure;
 using DotNetEnv;
@@ -10,53 +9,81 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file
+// ──────────────────────────────────────────────────────────────────────
+// 1. Load environment variables from .env
+// ──────────────────────────────────────────────────────────────────────
 Env.Load();
 
-// Add services to the container.
+// ──────────────────────────────────────────────────────────────────────
+// 2. Database
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<QuestionnaireDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-// ✅ Register TemplateService here
-builder.Services.AddScoped<TemplateService, TemplateService>();
-// ✅ Register SectionService here
-builder.Services.AddScoped<SectionService, SectionService>();
-// ✅ Register QuestionService here
-builder.Services.AddScoped<QuestionService, QuestionService>();
-// ✅ Register PublicationService here
-builder.Services.AddScoped<PublicationService, PublicationService>();
-builder.Services.AddScoped<ProfessorService, ProfessorService>();
-builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
-builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
-builder.Services.AddScoped<SubmissionExportService, SubmissionExportService>();
+// ──────────────────────────────────────────────────────────────────────
+// 3. Dependency Injection for your application services
+// ──────────────────────────────────────────────────────────────────────
+builder.Services.AddScoped<TemplateService,      TemplateService>();
+builder.Services.AddScoped<SectionService,       SectionService>();
+builder.Services.AddScoped<QuestionService,      QuestionService>();
+builder.Services.AddScoped<PublicationService,   PublicationService>();
+builder.Services.AddScoped<ProfessorService,     ProfessorService>();
+builder.Services.AddScoped<ProfessionalService,  ProfessionalService>();
+builder.Services.AddScoped<FormationCacheService,FormationCacheService>();
 builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
 
-// JWT Authentication Configuration
+// ──────────────────────────────────────────────────────────────────────
+// 4. CORS – allow your Vite dev‐server origin
+// ──────────────────────────────────────────────────────────────────────
+const string AllowFrontend = "_allowFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowFrontend, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")  // ← must exactly match your front-end
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// 5. JWT Authentication
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
+        options.SaveToken            = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            ValidIssuer   = Environment.GetEnvironmentVariable("JWT_ISSUER"),
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_TOKEN")))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    Environment.GetEnvironmentVariable("JWT_TOKEN") ?? ""
+                )
+            )
         };
     });
 
-// Register other services like controllers and Swagger
+// ──────────────────────────────────────────────────────────────────────
+// 6. Controllers & Swagger
+// ──────────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ──────────────────────────────────────────────────────────────────────
+// 7. Configure HTTP pipeline
+// ──────────────────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -67,8 +94,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseAuthentication(); // Apply authentication middleware
-app.UseAuthorization();  // Apply authorization middleware
+// ★ **CORS must come before** Authentication + Authorization
+app.UseCors(AllowFrontend);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

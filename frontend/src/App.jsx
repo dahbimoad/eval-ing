@@ -12,6 +12,8 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './Components/auth/PrivateRoute';
 import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.jsx';
 import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
+import Templates from "./Components/Dashboard/Templates.jsx";
+import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
 export default function App() {
   return (
     <AuthProvider>
@@ -49,6 +51,13 @@ export default function App() {
               <Pro />
             </PrivateRoute>
           } />
+       <Route path="/admin/questionnaire" element={
+  <PrivateRoute><Templates/></PrivateRoute>
+}/>
+<Route path="/admin/questionnaire/:id/edit" element={
+  <PrivateRoute><TemplateEditor/></PrivateRoute>
+}/>
+          
         
         
         </Routes>

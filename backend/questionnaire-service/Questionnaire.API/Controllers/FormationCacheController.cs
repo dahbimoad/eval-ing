@@ -28,4 +28,10 @@ public sealed class FormationCacheController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+    [HttpGet]
+    public async Task<IActionResult> GetAllFormations()
+    {
+        var list = await _svc.GetAllAsync();
+        return Ok(list);
+    }
 }
