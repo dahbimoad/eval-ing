@@ -1,10 +1,51 @@
 import React, { useState } from 'react';
-import { FaQuestionCircle, FaTimes, FaChartBar, FaToggleOn, FaComments, FaCalculator, FaInfoCircle } from 'react-icons/fa';
+import { FaQuestionCircle, FaTimes, FaChartBar, FaToggleOn, FaComments, FaCalculator, FaInfoCircle, FaDownload, FaCheckCircle, FaFilePdf } from 'react-icons/fa';
 
 const ScoringExplanation = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState('overview');
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadSuccess, setDownloadSuccess] = useState(false);
 
     if (!isOpen) return null;
+
+    const handleDownloadGuide = async () => {
+        try {
+            setIsDownloading(true);
+            setDownloadSuccess(false);
+            
+            // Call the backend endpoint
+            const response = await fetch('http://localhost:5246/api/export/scoring-guide');
+            
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            }
+            
+            // Create blob from response
+            const blob = await response.blob();
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Guide-Systeme-Evaluation-Formations.pdf';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            // Show success feedback
+            setDownloadSuccess(true);
+            setTimeout(() => setDownloadSuccess(false), 3000);
+            
+        } catch (error) {
+            console.error('Erreur lors du téléchargement:', error);
+            alert('Erreur lors du téléchargement du guide. Veuillez réessayer.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     const tabs = [
         { id: 'overview', label: 'Vue d\'ensemble', icon: <FaInfoCircle /> },
@@ -16,9 +57,9 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full h-[90vh] flex flex-col">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center flex-shrink-0">
                     <div className="flex items-center space-x-3">
                         <FaQuestionCircle className="text-2xl" />
                         <div>
@@ -35,7 +76,7 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
                     <nav className="flex overflow-x-auto">
                         {tabs.map((tab) => (
                             <button
@@ -54,8 +95,9 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                     </nav>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                {/* Content - Scrollable */}
+                <div className="flex-1 overflow-y-auto">
+                    <div className="p-6">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
@@ -438,21 +480,73 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                     )}
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900">
-                    <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                            💡 Ce guide est accessible à tout moment depuis l'icône d'information
+                <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full">
+                                <FaInfoCircle className="text-blue-600 dark:text-blue-300" />
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Ce guide est accessible à tout moment depuis l'icône d'information
+                            </div>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Fermer
-                        </button>
+                        
+                        <div className="flex space-x-3">
+                            {/* Download Button */}
+                            <button
+                                onClick={handleDownloadGuide}
+                                disabled={isDownloading}
+                                className={`
+                                    relative px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg
+                                    ${downloadSuccess 
+                                        ? 'bg-green-600 hover:bg-green-700' 
+                                        : isDownloading
+                                        ? 'bg-blue-500 cursor-not-allowed opacity-75'
+                                        : 'bg-green-500 hover:bg-green-600 hover:shadow-xl'
+                                    }
+                                `}
+                            >
+                                {downloadSuccess ? (
+                                    <>
+                                        <FaCheckCircle className="animate-bounce" />
+                                        <span>Téléchargé !</span>
+                                    </>
+                                ) : isDownloading ? (
+                                    <>
+                                        <FaDownload className="animate-pulse" />
+                                        <span>Téléchargement...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaFilePdf />
+                                        <span>Télécharger PDF</span>
+                                    </>
+                                )}
+                            </button>
+                            
+                            {/* Close Button */}
+                            <button
+                                onClick={onClose}
+                                className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 font-semibold shadow-lg hover:shadow-xl"
+                            >
+                                Fermer
+                            </button>
+                        </div>
                     </div>
+                    
+                    {/* Success Message */}
+                    {downloadSuccess && (
+                        <div className="mt-4 p-3 bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-700 rounded-lg flex items-center space-x-2 opacity-100 transition-opacity duration-500">
+                            <FaCheckCircle className="text-green-600 dark:text-green-300" />
+                            <span className="text-green-800 dark:text-green-200 text-sm font-medium">
+                                Guide téléchargé avec succès ! 🎉
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
