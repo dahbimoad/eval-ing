@@ -33,15 +33,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(o =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Statistics API V1");
-        c.RoutePrefix = string.Empty; // Swagger at root
-    });
-}
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
+    o.RoutePrefix = "docs"; // accessible via /docs
+});
+
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
