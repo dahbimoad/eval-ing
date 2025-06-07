@@ -156,24 +156,24 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex justify-between">
-                                                    <span>1 - Très insatisfait</span>
-                                                    <span className="font-bold text-red-600">1.0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">1 - Très insatisfait</span>
+                                                    <span className="font-bold text-red-600 dark:text-red-400">1.0</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span>2 - Insatisfait</span>
-                                                    <span className="font-bold text-orange-600">2.0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">2 - Insatisfait</span>
+                                                    <span className="font-bold text-orange-600 dark:text-orange-400">2.0</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span>3 - Neutre</span>
-                                                    <span className="font-bold text-yellow-600">3.0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">3 - Neutre</span>
+                                                    <span className="font-bold text-yellow-600 dark:text-yellow-400">3.0</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span>4 - Satisfait</span>
-                                                    <span className="font-bold text-blue-600">4.0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">4 - Satisfait</span>
+                                                    <span className="font-bold text-blue-600 dark:text-blue-400">4.0</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span>5 - Très satisfait</span>
-                                                    <span className="font-bold text-green-600">5.0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">5 - Très satisfait</span>
+                                                    <span className="font-bold text-green-600 dark:text-green-400">5.0</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -192,12 +192,12 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                             </div>
                                             
                                             <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                                <h5 className="font-semibold mb-2">Exemple:</h5>
+                                                <h5 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Exemple:</h5>
                                                 <div className="text-sm space-y-1">
-                                                    <div>Réponses: 5, 4, 5, 3, 4, 5</div>
-                                                    <div>Somme: 26</div>
-                                                    <div>Nombre: 6</div>
-                                                    <div className="font-bold text-green-600">Score: 26 ÷ 6 = 4.3/5</div>
+                                                    <div className="text-gray-900 dark:text-gray-100">Réponses: 5, 4, 5, 3, 4, 5</div>
+                                                    <div className="text-gray-900 dark:text-gray-100">Somme: 26</div>
+                                                    <div className="text-gray-900 dark:text-gray-100">Nombre: 6</div>
+                                                    <div className="font-bold text-green-600 dark:text-green-400">Score: 26 ÷ 6 = 4.3/5</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -225,12 +225,12 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
                                             <div className="space-y-3">
                                                 <div className="flex items-center justify-between">
-                                                    <span>🟢 Oui</span>
-                                                    <span className="font-bold text-green-600">Valeur: 1</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">🟢 Oui</span>
+                                                    <span className="font-bold text-green-600 dark:text-green-400">Valeur: 1</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span>🔴 Non</span>
-                                                    <span className="font-bold text-red-600">Valeur: 0</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">🔴 Non</span>
+                                                    <span className="font-bold text-red-600 dark:text-red-400">Valeur: 0</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -249,11 +249,11 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                             </div>
                                             
                                             <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                                <h5 className="font-semibold mb-2">Exemple:</h5>
+                                                <h5 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Exemple:</h5>
                                                 <div className="text-sm space-y-1">
-                                                    <div>Réponses: Oui, Oui, Non, Oui, Oui</div>
-                                                    <div>Oui: 4/5 = 80%</div>
-                                                    <div className="font-bold text-purple-600">Score: 0.8 × 5 = 4.0/5</div>
+                                                    <div className="text-gray-900 dark:text-gray-100">Réponses: Oui, Oui, Non, Oui, Oui</div>
+                                                    <div className="text-gray-900 dark:text-gray-100">Oui: 4/5 = 80%</div>
+                                                    <div className="font-bold text-purple-600 dark:text-purple-400">Score: 0.8 × 5 = 4.0/5</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -309,8 +309,8 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                                 <div className="flex items-center">
                                                     <span className="text-2xl mr-2">💭</span>
                                                     <div>
-                                                        <div className="font-semibold">Analyse Qualitative</div>
-                                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                        <div className="font-semibold text-gray-900 dark:text-gray-100">Analyse Qualitative</div>
+                                                        <div className="text-sm text-gray-600 dark:text-gray-300">
                                                             Contenu, sentiments, suggestions
                                                         </div>
                                                     </div>
@@ -318,8 +318,8 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                                 <div className="flex items-center">
                                                     <span className="text-2xl mr-2">📊</span>
                                                     <div>
-                                                        <div className="font-semibold">Métriques Quantitatives</div>
-                                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                        <div className="font-semibold text-gray-900 dark:text-gray-100">Métriques Quantitatives</div>
+                                                        <div className="text-sm text-gray-600 dark:text-gray-300">
                                                             Nombre de réponses, longueur
                                                         </div>
                                                     </div>
@@ -333,20 +333,20 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
                                             <div className="space-y-3 text-sm">
                                                 <div className="flex justify-between items-center">
-                                                    <span>📝 Nombre de réponses</span>
-                                                    <span className="font-bold">Participation</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">📝 Nombre de réponses</span>
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100">Participation</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span>📏 Longueur moyenne</span>
-                                                    <span className="font-bold">Engagement</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">📏 Longueur moyenne</span>
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100">Engagement</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span>🏷️ Mots-clés fréquents</span>
-                                                    <span className="font-bold">Thèmes</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">🏷️ Mots-clés fréquents</span>
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100">Thèmes</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span>😊 Sentiment général</span>
-                                                    <span className="font-bold">Satisfaction</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">😊 Sentiment général</span>
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100">Satisfaction</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -380,20 +380,20 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
                                             <h4 className="font-semibold mb-3 text-blue-800 dark:text-blue-200">📊 Score par Questionnaire</h4>
                                             <div className="space-y-2 text-sm">
-                                                <div>1. Calcul du score de chaque question</div>
-                                                <div>2. Moyenne des questions par section</div>
-                                                <div>3. Moyenne des sections</div>
-                                                <div className="font-bold text-blue-600">= Score final du questionnaire</div>
+                                                <div className="text-gray-900 dark:text-gray-100">1. Calcul du score de chaque question</div>
+                                                <div className="text-gray-900 dark:text-gray-100">2. Moyenne des questions par section</div>
+                                                <div className="text-gray-900 dark:text-gray-100">3. Moyenne des sections</div>
+                                                <div className="font-bold text-blue-600 dark:text-blue-400">= Score final du questionnaire</div>
                                             </div>
                                         </div>
                                         
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
                                             <h4 className="font-semibold mb-3 text-blue-800 dark:text-blue-200">🏫 Score par Formation</h4>
                                             <div className="space-y-2 text-sm">
-                                                <div>1. Score de chaque questionnaire</div>
-                                                <div>2. Moyenne pondérée par le nombre de réponses</div>
-                                                <div>3. Toutes les publications de la formation</div>
-                                                <div className="font-bold text-blue-600">= Score final de la formation</div>
+                                                <div className="text-gray-900 dark:text-gray-100">1. Score de chaque questionnaire</div>
+                                                <div className="text-gray-900 dark:text-gray-100">2. Moyenne pondérée par le nombre de réponses</div>
+                                                <div className="text-gray-900 dark:text-gray-100">3. Toutes les publications de la formation</div>
+                                                <div className="font-bold text-blue-600 dark:text-blue-400">= Score final de la formation</div>
                                             </div>
                                         </div>
                                     </div>
@@ -411,25 +411,25 @@ const ScoringExplanation = ({ isOpen, onClose }) => {
                                     </div>
                                     
                                     <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
-                                        <h4 className="font-semibold mb-3">⚖️ Exemple de Calcul Complet</h4>
+                                        <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">⚖️ Exemple de Calcul Complet</h4>
                                         <div className="text-sm space-y-3">
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div className="bg-green-100 dark:bg-green-900 p-3 rounded">
                                                     <div className="font-semibold text-green-800 dark:text-green-200">Formation A</div>
-                                                    <div>Q1: 4.2/5 (50 réponses)</div>
-                                                    <div>Q2: 3.8/5 (30 réponses)</div>
-                                                    <div className="font-bold">Moyenne: 4.0/5</div>
+                                                    <div className="text-green-700 dark:text-green-300">Q1: 4.2/5 (50 réponses)</div>
+                                                    <div className="text-green-700 dark:text-green-300">Q2: 3.8/5 (30 réponses)</div>
+                                                    <div className="font-bold text-green-800 dark:text-green-200">Moyenne: 4.0/5</div>
                                                 </div>
                                                 <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded">
                                                     <div className="font-semibold text-blue-800 dark:text-blue-200">Formation B</div>
-                                                    <div>Q1: 3.5/5 (40 réponses)</div>
-                                                    <div>Q2: 4.1/5 (25 réponses)</div>
-                                                    <div className="font-bold">Moyenne: 3.7/5</div>
+                                                    <div className="text-blue-700 dark:text-blue-300">Q1: 3.5/5 (40 réponses)</div>
+                                                    <div className="text-blue-700 dark:text-blue-300">Q2: 4.1/5 (25 réponses)</div>
+                                                    <div className="font-bold text-blue-800 dark:text-blue-200">Moyenne: 3.7/5</div>
                                                 </div>
                                                 <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded">
                                                     <div className="font-semibold text-purple-800 dark:text-purple-200">Score Global</div>
-                                                    <div>(4.0×80 + 3.7×65) ÷ 145</div>
-                                                    <div className="font-bold">= 3.9/5</div>
+                                                    <div className="text-purple-700 dark:text-purple-300">(4.0×80 + 3.7×65) ÷ 145</div>
+                                                    <div className="font-bold text-purple-800 dark:text-purple-200">= 3.9/5</div>
                                                 </div>
                                             </div>
                                         </div>
