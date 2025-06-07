@@ -217,6 +217,36 @@ namespace Statistics.API.Controllers
         }
 
         /// <summary>
+        /// Download the scoring system guide PDF
+        /// </summary>
+        [HttpGet("scoring-guide")]
+        public IActionResult DownloadScoringGuide()
+        {
+            try
+            {
+                var fileName = "Guide-Systeme-Evaluation-Formations.pdf";
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "documents", fileName);
+                
+                if (!System.IO.File.Exists(filePath))
+                {
+                    _logger.LogWarning("Scoring guide PDF not found at path: {FilePath}", filePath);
+                    return NotFound("Le guide du système de notation n'a pas été trouvé.");
+                }
+
+                var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                
+                _logger.LogInformation("Scoring guide PDF downloaded successfully");
+                
+                return File(fileBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading scoring guide PDF");
+                return StatusCode(500, $"Erreur lors du téléchargement du guide: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Get available export formats for a given data type
         /// </summary>
         [HttpGet("formats")]
