@@ -83,6 +83,7 @@ services:
     restart: unless-stopped
 
   # Authentication service
+  # Ajoutez aussi des health checks à vos autres services
   auth-service:
     build:
       context: ./backend/authentication_system/authentication_system
@@ -115,6 +116,12 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Catalog service
   catalog-service:
@@ -183,6 +190,7 @@ services:
     restart: unless-stopped
 
   # API Gateway
+  # API Gateway (section à remplacer dans votre docker-compose.yml)
   api-gateway:
     build:
       context: ./backend/api-gateway
@@ -195,14 +203,25 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
-      - kafka
-      - auth-service
-      - catalog-service
-      - questionnaire-service
-      - statistics-service
+      kafka:
+        condition: service_started
+      auth-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+      questionnaire-service:
+        condition: service_healthy
+      statistics-service:
+        condition: service_healthy
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 # Configuration du réseau partagé entre microservices
 networks:

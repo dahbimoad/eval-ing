@@ -17,13 +17,10 @@ Env.Load();
 builder.Services.AddDbContext<QuestionnaireDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-// ✅ Register TemplateService here
+// ✅ Register Application Services
 builder.Services.AddScoped<TemplateService, TemplateService>();
-// ✅ Register SectionService here
 builder.Services.AddScoped<SectionService, SectionService>();
-// ✅ Register QuestionService here
 builder.Services.AddScoped<QuestionService, QuestionService>();
-// ✅ Register PublicationService here
 builder.Services.AddScoped<PublicationService, PublicationService>();
 builder.Services.AddScoped<ProfessorService, ProfessorService>();
 builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
@@ -49,37 +46,41 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Add HTTP client for cache endpoint
+// Add HTTP client
 builder.Services.AddHttpClient();
-
-// Add formation cache service
 builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
 
-
-// Add Kafka consumer as hosted service
+// Kafka consumer
 builder.Services.AddHostedService<FormationEventConsumer>();
-// Register other services like controllers and Swagger
+
+// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ✅ Health checks
+builder.Services.AddHealthChecks(); // 🔥 Ajout ici
+
 var app = builder.Build();
 
-// ✅ Apply migrations automatically at startup
+// ✅ Apply migrations automatically
 await ApplyMigrationsAsync(app);
 
-// Configure the HTTP request pipeline.
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI(o =>
 {
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
-    o.RoutePrefix = "docs"; // accessible via /docs
+    o.RoutePrefix = "docs";
 });
 
-app.UseAuthentication(); // Apply authentication middleware
-app.UseAuthorization();  // Apply authorization middleware
+// Middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
+// Mapping routes
 app.MapControllers();
+app.MapHealthChecks("/health"); // 🔥 Ajout ici
 
 app.Run();
 
@@ -88,32 +89,27 @@ static async Task ApplyMigrationsAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    
+
     try
     {
         var context = services.GetRequiredService<QuestionnaireDbContext>();
         var logger = services.GetRequiredService<ILogger<Program>>();
-        
+
         logger.LogInformation("Checking for pending migrations...");
-        
-        // Check if there are pending migrations
+
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        
+
         if (pendingMigrations.Any())
         {
             logger.LogInformation($"Found {pendingMigrations.Count()} pending migration(s). Applying migrations...");
-            
-            // Apply pending migrations
             await context.Database.MigrateAsync();
-            
             logger.LogInformation("Migrations applied successfully!");
         }
         else
         {
             logger.LogInformation("Database is up to date. No migrations needed.");
         }
-        
-        // Ensure database can connect
+
         await context.Database.CanConnectAsync();
         logger.LogInformation("Database connection verified successfully.");
     }
@@ -121,9 +117,6 @@ static async Task ApplyMigrationsAsync(WebApplication app)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while applying migrations.");
-        
-        // You can choose to throw the exception to prevent app startup
-        // or handle it gracefully depending on your requirements
         throw;
     }
 }
