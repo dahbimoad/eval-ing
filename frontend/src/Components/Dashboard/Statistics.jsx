@@ -113,7 +113,7 @@ function Statistics() {
                             {!isDataEmpty() && (
                                 <ExportButton 
                                     type="overall" 
-                                    title="Exporter les Statistiques"
+                                    title="Exporter"
                                     size="lg"
                                     variant="primary"
                                 />
