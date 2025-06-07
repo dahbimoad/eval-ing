@@ -25,6 +25,10 @@ namespace authentication_system.Services
         private readonly ILogger<AuthService> _logger;
         private readonly IErrorHandler _errorHandler;
 
+        // Constantes pour les rôles et claims
+        private const string STUDENT_ROLE = "Étudiant";
+        private const string FILIERE_CLAIM_TYPE = "filiere";
+
         public AuthService(
             UserDbContext context,
             IConfiguration configuration,
@@ -47,8 +51,10 @@ namespace authentication_system.Services
                     return null;
                 }
 
+                // Inclusion des données nécessaires pour les étudiants
                 var user = await _context.Users
                     .Include(u => u.Role)
+                    .Include(u => u.StudentProfile) // Inclusion du profil étudiant si nécessaire
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == request.Email);
 
@@ -98,7 +104,7 @@ namespace authentication_system.Services
         {
             return await _errorHandler.HandleOperationAsync(async () =>
             {
-                var accessToken = CreateToken(user);
+                var accessToken = await CreateTokenAsync(user);
                 var refreshToken = await GenerateAndSaveRefreshTokenAsync(user);
                 int tokenExpiryMinutes = GetConfigValue("AppSettings:TokenExpiryMinutes", 15);
 
@@ -119,6 +125,7 @@ namespace authentication_system.Services
                 var token = await _context.RefreshTokens
                     .Include(rt => rt.User)
                     .ThenInclude(u => u.Role)
+                    .Include(rt => rt.User.StudentProfile) // Inclusion du profil étudiant
                     .AsNoTracking()
                     .FirstOrDefaultAsync(rt => rt.Token == refreshToken &&
                                              rt.ExpiresAt > DateTime.UtcNow &&
@@ -166,9 +173,9 @@ namespace authentication_system.Services
             "Erreur lors de la génération et sauvegarde du refresh token");
         }
 
-        private string CreateToken(User user)
+        private async Task<string> CreateTokenAsync(User user)
         {
-            return _errorHandler.HandleOperation(() =>
+            return await _errorHandler.HandleOperationAsync(async () =>
             {
                 var jwtKey = GetRequiredEnvironmentVariable("JWT_TOKEN");
                 var issuer = GetEnvironmentVariableOrDefault("JWT_ISSUER", "DefaultIssuer");
@@ -182,6 +189,9 @@ namespace authentication_system.Services
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
                     new Claim(ClaimTypes.Role, user.Role?.Name ?? "")
                 };
+
+                // Ajout conditionnel de la filière pour les étudiants
+                await AddStudentSpecificClaimsAsync(user, claims);
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
@@ -198,6 +208,108 @@ namespace authentication_system.Services
                 return new JwtSecurityTokenHandler().WriteToken(token);
             },
             "Erreur lors de la création du token JWT");
+        }
+
+        /// <summary>
+        /// Ajoute les claims spécifiques aux étudiants (filière, etc.)
+        /// </summary>
+        /// <param name="user">L'utilisateur pour lequel créer les claims</param>
+        /// <param name="claims">La liste des claims à enrichir</param>
+        private async Task AddStudentSpecificClaimsAsync(User user, List<Claim> claims)
+        {
+            try
+            {
+                // Vérification si l'utilisateur est un étudiant
+                if (user.Role?.Name?.Equals(STUDENT_ROLE, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    // Récupération de la filière de l'étudiant
+                    var studentFiliere = await GetStudentFiliereAsync(user.Id);
+
+                    if (!string.IsNullOrEmpty(studentFiliere))
+                    {
+                        claims.Add(new Claim(FILIERE_CLAIM_TYPE, studentFiliere));
+                        _logger.LogDebug("Added filière claim '{Filiere}' for student {Email}", studentFiliere, user.Email);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Student {Email} has no filière defined", user.Email);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while adding student-specific claims for user {Email}", user.Email);
+                // On continue sans interrompre la création du token
+            }
+        }
+
+        /// <summary>
+        /// Récupère la filière d'un étudiant par son ID utilisateur
+        /// </summary>
+        /// <param name="userId">L'ID de l'utilisateur</param>
+        /// <returns>Le nom de la filière ou null si non trouvée</returns>
+        private async Task<string?> GetStudentFiliereAsync(Guid userId)
+        {
+            try
+            {
+                // CORRECTION: Puisque Filiere est un string dans StudentProfile
+                var studentProfile = await _context.StudentProfiles
+                    .AsNoTracking()
+                    .Where(sp => sp.UserId == userId)
+                    .FirstOrDefaultAsync();
+
+                return studentProfile?.Filiere; // Directement le string, pas .Name
+
+                // Si vous avez une entité Filiere séparée, utilisez cette version à la place :
+                /*
+                var studentProfile = await _context.StudentProfiles
+                    .Include(sp => sp.Filiere)
+                    .AsNoTracking()
+                    .Where(sp => sp.UserId == userId)
+                    .FirstOrDefaultAsync();
+
+                return studentProfile?.Filiere?.Name;
+                */
+
+                // Option 2: Si vous avez une relation directe User -> Filiere
+                /*
+                var user = await _context.Users
+                    .Include(u => u.Filiere)
+                    .AsNoTracking()
+                    .Where(u => u.Id == userId)
+                    .FirstOrDefaultAsync();
+
+                return user?.Filiere?.Name;
+                */
+
+                // Option 3: Si vous avez une table de liaison User -> Inscription -> Filiere
+                /*
+                var inscription = await _context.Inscriptions
+                    .Include(i => i.Filiere)
+                    .AsNoTracking()
+                    .Where(i => i.UserId == userId && i.IsActive)
+                    .OrderByDescending(i => i.DateInscription)
+                    .FirstOrDefaultAsync();
+
+                return inscription?.Filiere?.Name;
+                */
+
+                // Option 4: Si la filière est directement dans l'entité User
+                /*
+                var userWithFiliere = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => u.Id == userId)
+                    .Select(u => u.Filiere)
+                    .FirstOrDefaultAsync();
+
+                return userWithFiliere;
+                */
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving filière for user {UserId}", userId);
+                return null;
+            }
         }
 
         private int GetConfigValue(string key, int defaultValue)
@@ -259,6 +371,5 @@ namespace authentication_system.Services
             },
             "Une erreur s'est produite lors de la déconnexion");
         }
-
     }
 }
