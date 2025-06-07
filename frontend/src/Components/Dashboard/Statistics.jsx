@@ -8,6 +8,7 @@ import FormationStats from './StatisticsComponents/FormationStats';
 import QuestionnaireDetails from './StatisticsComponents/QuestionnaireDetails';
 import ExportButton from './StatisticsComponents/ExportButton';
 import ScoringExplanation from './StatisticsComponents/ScoringExplanation';
+import ChartsSection from './StatisticsComponents/ChartsSection';
 
 function Statistics() {
     const [overallStats, setOverallStats] = useState(null);
@@ -217,6 +218,9 @@ function Statistics() {
                                             color="purple"
                                         />
                                     </div>
+
+                                    {/* Charts Section */}
+                                    <ChartsSection overallStats={overallStats} />
 
                                     {/* Scoring Info Banner */}
                                     <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border border-indigo-200 dark:border-gray-700 rounded-lg p-4">
