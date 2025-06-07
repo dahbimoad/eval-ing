@@ -242,9 +242,6 @@ function Statistics() {
                                             </button>
                                         </div>
                                     </div>
-
-                                    {/* Formation Statistics */}
-                                    <FormationStats formationStatistics={overallStats?.formationStatistics} />
                                 </>
                             )}
                         </div>
