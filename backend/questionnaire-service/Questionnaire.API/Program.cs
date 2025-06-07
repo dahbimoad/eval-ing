@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 using Questionnaire.Application.Services;
 using Questionnaire.Infrastructure;
 using DotNetEnv;
@@ -23,17 +24,17 @@ builder.Services.AddDbContext<QuestionnaireDbContext>(options =>
 // ──────────────────────────────────────────────────────────────────────
 // 3. Dependency Injection for your application services
 // ──────────────────────────────────────────────────────────────────────
-// core services
 builder.Services.AddScoped<TemplateService, TemplateService>();
 builder.Services.AddScoped<SectionService, SectionService>();
 builder.Services.AddScoped<QuestionService, QuestionService>();
 builder.Services.AddScoped<PublicationService, PublicationService>();
 builder.Services.AddScoped<ProfessorService, ProfessorService>();
 builder.Services.AddScoped<ProfessionalService, ProfessionalService>();
-// cache + HTTP client
-builder.Services.AddHttpClient();                                              // ← register IHttpClientFactory
-builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();   // ← inject via interface
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFormationCacheService, FormationCacheService>();
 builder.Services.AddScoped<ISubmissionExportService, SubmissionExportService>();
+builder.Services.AddScoped<FormationCacheService, FormationCacheService>();
+builder.Services.AddScoped<StudentService, StudentService>();
 
 // ──────────────────────────────────────────────────────────────────────
 // 4. CORS – allow your Vite dev‐server origin
@@ -44,7 +45,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: AllowFrontend, policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")  // ← must exactly match your front-end
+            .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -58,34 +59,58 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
-        options.SaveToken            = true;
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer           = true,
-            ValidateAudience         = true,
-            ValidateLifetime         = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer   = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    Environment.GetEnvironmentVariable("JWT_TOKEN") ?? ""
-                )
+                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_TOKEN") ?? "")
             )
         };
     });
 
 // ──────────────────────────────────────────────────────────────────────
-// 6. Controllers & Swagger
+// 6. Controllers & Swagger with JWT support
 // ──────────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Questionnaire API",
+        Version = "v1"
+    });
+
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Description = "Enter your JWT Bearer token below (e.g., Bearer eyJhbGci...)",
+
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    options.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
+});
 
 var app = builder.Build();
-
-// ✅ Apply migrations automatically at startup
-await ApplyMigrationsAsync(app);
 
 // ──────────────────────────────────────────────────────────────────────
 // 7. Configure HTTP pipeline
@@ -100,7 +125,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// ★ **CORS must come before** Authentication + Authorization
+// ★ CORS → Authentication → Authorization
 app.UseCors(AllowFrontend);
 
 app.UseAuthentication();
@@ -110,7 +135,6 @@ app.MapControllers();
 
 app.Run();
 
-
 /// <summary>
 /// Optional helper to apply EF Core migrations on startup.
 /// </summary>
@@ -118,14 +142,14 @@ static async Task ApplyMigrationsAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    
+
     try
     {
         var context = services.GetRequiredService<QuestionnaireDbContext>();
         var logger = services.GetRequiredService<ILogger<Program>>();
-        
+
         logger.LogInformation("Checking for pending migrations...");
-        
+
         var pending = await context.Database.GetPendingMigrationsAsync();
         if (pending.Any())
         {
@@ -137,7 +161,7 @@ static async Task ApplyMigrationsAsync(WebApplication app)
         {
             logger.LogInformation("No pending migrations.");
         }
-        
+
         await context.Database.CanConnectAsync();
         logger.LogInformation("Database connection OK.");
     }

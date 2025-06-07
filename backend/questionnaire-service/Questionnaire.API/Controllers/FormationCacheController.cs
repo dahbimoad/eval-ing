@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Application.Services;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.DTOs;
 using Questionnaire.Domain.Entities.Events;
 
 namespace Questionnaire.API.Controllers
@@ -11,55 +9,26 @@ namespace Questionnaire.API.Controllers
     [Route("api/formation-cache")]
     public class FormationCacheController : ControllerBase
     {
-        private readonly IFormationCacheService _svc;
+        private readonly FormationCacheService _formationCacheService;
 
-        public FormationCacheController(IFormationCacheService svc)
+        public FormationCacheController(FormationCacheService formationCacheService)
         {
-            _svc = svc;
+            _formationCacheService = formationCacheService;
         }
 
-        /// <summary>
-        /// Receive a FormationCreatedEvent and insert/update the cache.
-        /// POST /api/formation-cache/event
-        /// </summary>
-        [HttpPost("event")]
-        public async Task<IActionResult> UpsertFromEvent([FromBody] FormationCreatedEvent @event)
+        [HttpPost]
+        public async Task<IActionResult> AddFormationToCache([FromBody] FormationCreatedEvent formationDto)
         {
-            if (@event is null) return BadRequest("Event payload is required.");
-            await _svc.AddOrUpdateFormationAsync(@event);
-            return Ok(new { message = $"Filière '{@event.Code}' cached/updated." });
+            try
+            {
+                await _formationCacheService.AddOrUpdateFormationAsync(formationDto);
+                return Ok(new { message = "Formation added to cache successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
-
-        /// <summary>
-        /// Return all cached filières.
-        /// GET /api/formation-cache
-        /// </summary>
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<FormationCacheDto>>> GetAll()
-        {
-            var all = await _svc.GetAllFormationsAsync();
-            return Ok(all);
-        }
-
-        /// <summary>
-        /// Return a single filière by its Code.
-        /// GET /api/formation-cache/{code}
-        /// </summary>
-        [HttpGet("{code}")]
-        public async Task<ActionResult<FormationCacheDto>> GetByCode(string code)
-        {
-            if (string.IsNullOrWhiteSpace(code))
-                return BadRequest("Code is required.");
-
-            var dto = await _svc.GetFormationAsync(code);
-            if (dto is null) return NotFound();
-            return Ok(dto);
-        }
+        
     }
-     [HttpGet]
-        public async Task<ActionResult<IEnumerable<FormationCacheDto>>> GetAllFromDb()
-        {
-            var list = await _svc.GetAllFromDbAsync();
-            return Ok(list);
-        }
 }

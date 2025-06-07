@@ -9,8 +9,7 @@ using Questionnaire.Domain.Entities; // Pour FormationCacheDto
 using Questionnaire.Domain.Entities.Events;
 using Questionnaire.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Questionnaire.Application.Dtos; // Pour FormationDto
-// Pour FormationCreatedEvent
+ // Pour FormationCreatedEvent
 
 namespace Questionnaire.Application.Services
 {
@@ -33,42 +32,42 @@ namespace Questionnaire.Application.Services
         }
 
         public async Task AddOrUpdateFormationAsync(FormationCreatedEvent formationEvent)
+{
+    try
+    {
+        var existing = await _dbContext.Formations
+            .FirstOrDefaultAsync(f => f.Code == formationEvent.Code);
+
+        if (existing == null)
         {
-            try
+            var newEntity = new FormationCache
             {
-                var existing = await _dbContext.Formations
-                    .FirstOrDefaultAsync(f => f.Code == formationEvent.Code);
+                Code = formationEvent.Code,
+                Title = formationEvent.Title,
+                Description = formationEvent.Description,
+                Credits = formationEvent.Credits
+            };
 
-                if (existing == null)
-                {
-                    var newEntity = new FormationCache
-                    {
-                        Code = formationEvent.Code,
-                        Title = formationEvent.Title,
-                        Description = formationEvent.Description,
-                        Credits = formationEvent.Credits
-                    };
-
-                    await _dbContext.Formations.AddAsync(newEntity);
-                }
-                else
-                {
-                    existing.Title = formationEvent.Title;
-                    existing.Description = formationEvent.Description;
-                    existing.Credits = formationEvent.Credits;
-                    _dbContext.Formations.Update(existing);
-                }
-
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("Formation cache saved to DB for code: {Code}", formationEvent.Code);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving formation to DB for code: {Code}", formationEvent.Code);
-                throw;
-            }
+            await _dbContext.Formations.AddAsync(newEntity);
         }
+        else
+        {
+            existing.Title = formationEvent.Title;
+            existing.Description = formationEvent.Description;
+            existing.Credits = formationEvent.Credits;
+            _dbContext.Formations.Update(existing);
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Formation cache saved to DB for code: {Code}", formationEvent.Code);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error saving formation to DB for code: {Code}", formationEvent.Code);
+        throw;
+    }
+}
 
 
 
@@ -83,15 +82,15 @@ namespace Questionnaire.Application.Services
                 });
                 var content = new StringContent(json, Encoding.UTF8, new MediaTypeHeaderValue("application/json"));
 
-                var response = await httpClient.PostAsync("http://localhost:5138/api/formation-cache", content);
-
+                var response = await httpClient.PostAsync("http://localhost:5004/api/formation-cache", content);
+                
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Formation cache HTTP endpoint updated successfully for code: {Code}", formation.Code);
                 }
                 else
                 {
-                    _logger.LogWarning("Formation cache HTTP endpoint update failed with status: {StatusCode} for code: {Code}",
+                    _logger.LogWarning("Formation cache HTTP endpoint update failed with status: {StatusCode} for code: {Code}", 
                         response.StatusCode, formation.Code);
                 }
             }
@@ -111,19 +110,5 @@ namespace Questionnaire.Application.Services
         {
             return Task.FromResult(_cache.Values.AsEnumerable());
         }
-         public async Task<IEnumerable<FormationCacheDto>> GetAllFromDbAsync()
-        {
-            return await _dbContext.Formations
-                .Select(f => new FormationDto
-                {
-                    Id = f.Id,
-                    Code = f.Code,
-                    Title = f.Title,
-                    Description = f.Description,
-                    Credits = f.Credits
-                })
-                .ToListAsync();
-        }
     }
-    
 }
