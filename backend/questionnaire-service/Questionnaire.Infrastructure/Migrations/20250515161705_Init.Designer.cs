@@ -13,7 +13,7 @@ using Questionnaire.Infrastructure;
 namespace Questionnaire.Infrastructure.Migrations
 {
     [DbContext(typeof(QuestionnaireDbContext))]
-    [Migration("20250607004254_Init")]
+    [Migration("20250515161705_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -65,22 +65,9 @@ namespace Questionnaire.Infrastructure.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Credits")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
