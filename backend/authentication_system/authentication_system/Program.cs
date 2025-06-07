@@ -11,8 +11,6 @@ using authentication_system.Services.Auth;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Charger les variables d'environnement depuis le fichier .env
@@ -56,13 +54,12 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
-// Configuration de la base de donn�es avec les variables d'environnement
+// Configuration de la base de données avec les variables d'environnement
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
                        $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
                        $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
                        $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
                        $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};";
-
 
 // Configure PostgreSQL database context
 builder.Services.AddDbContext<UserDbContext>(opt =>
@@ -79,19 +76,17 @@ builder.Services.AddScoped<ProfessionalAdminService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
-
-
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// R�cup�rer les variables d'environnement pour JWT
+// Récupérer les variables d'environnement pour JWT
 var jwtKey = Environment.GetEnvironmentVariable("JWT_TOKEN");
 var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
-// V�rifier que la cl� JWT est d�finie
+// Vérifier que la clé JWT est définie
 if (string.IsNullOrEmpty(jwtKey))
 {
-    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas d�finie. V�rifiez votre fichier .env.");
+    throw new InvalidOperationException("La variable d'environnement JWT_TOKEN n'est pas définie. Vérifiez votre fichier .env.");
 }
 
 // Configure JWT Authentication
@@ -121,32 +116,70 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // utile si tu utilises des cookies ou des requ�tes auth
+              .AllowCredentials(); // utile si tu utilises des cookies ou des requêtes auth
     });
 });
 
-
-
 var app = builder.Build();
 
-// Swagger middleware (docs only in dev)
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(o =>
-    {
-        o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
-        o.RoutePrefix = "docs";
-    });
-}
-
-// Seed database (if needed)
+// Migration automatique et initialisation de la base de données
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<UserDbContext>();
-    await UserDbContext.SeedAsync(dbContext);
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        var dbContext = services.GetRequiredService<UserDbContext>();
+        
+        // Vérifier si la base de données peut être connectée
+        logger.LogInformation("Vérification de la connexion à la base de données...");
+        await dbContext.Database.CanConnectAsync();
+        logger.LogInformation("Connexion à la base de données réussie.");
+        
+        // Appliquer automatiquement les migrations
+        logger.LogInformation("Application des migrations...");
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation($"Migrations en attente détectées: {string.Join(", ", pendingMigrations)}");
+            await dbContext.Database.MigrateAsync();
+            logger.LogInformation("Migrations appliquées avec succès.");
+        }
+        else
+        {
+            logger.LogInformation("Aucune migration en attente.");
+        }
+        
+        // Seed database (if needed)
+        logger.LogInformation("Initialisation des données de base...");
+        await UserDbContext.SeedAsync(dbContext);
+        logger.LogInformation("Initialisation des données terminée.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Erreur lors de l'initialisation de la base de données: {Message}", ex.Message);
+        
+        // En développement, on peut choisir de continuer malgré l'erreur
+        // En production, il vaut mieux arrêter l'application
+        if (!app.Environment.IsDevelopment())
+        {
+            throw;
+        }
+        
+        logger.LogWarning("L'application continue malgré l'erreur de base de données (mode développement).");
+    }
 }
+
+// Swagger middleware (docs only in dev)
+// Swagger middleware (enabled always, including production)
+app.UseSwagger();
+app.UseSwaggerUI(o =>
+{
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
+    o.RoutePrefix = "docs"; // accessible via /docs
+});
 
 
 // Middleware order is important
