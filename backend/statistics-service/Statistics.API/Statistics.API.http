@@ -35,4 +35,20 @@ Content-Type: application/json
 GET {{Statistics.API_HostAddress}}/api/statistics/questionnaire/999
 Accept: application/json
 
+### Download scoring guide PDF
+GET {{Statistics.API_HostAddress}}/api/export/scoring-guide
+Accept: application/pdf
+
+### Export overall statistics as PDF
+GET {{Statistics.API_HostAddress}}/api/export/overall/pdf
+Accept: application/pdf
+
+### Export questionnaire statistics as PDF
+GET {{Statistics.API_HostAddress}}/api/export/questionnaire/1/pdf
+Accept: application/pdf
+
+### Get available export formats
+GET {{Statistics.API_HostAddress}}/api/export/formats
+Accept: application/json
+
 ###
