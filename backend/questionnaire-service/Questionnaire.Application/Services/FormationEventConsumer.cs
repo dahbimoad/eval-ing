@@ -27,7 +27,8 @@ namespace Questionnaire.Application.Services
             var config = new ConsumerConfig
             {
                 GroupId = "questionnaire-service-group",
-                BootstrapServers = _configuration.GetConnectionString("Kafka") ?? "localhost:9092",
+                BootstrapServers = _configuration["Kafka:BootstrapServers"] ?? "kafka:29092",
+
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnableAutoCommit = true
             };
