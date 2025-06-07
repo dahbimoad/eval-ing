@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUsers, FaClipboardList, FaComments } from 'react-icons/fa';
+import { FaUsers, FaClipboardList, FaComments, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import logo from "../images/HomePage/Eval.png";
 
@@ -33,6 +33,10 @@ function Sidebar(){
             <li className="flex items-center space-x-3 hover:opacity-80">
             <a className="text-yellow-400"><FaComments /></a>
                 <a href="/admin/retours">Les retours</a>
+            </li>
+            <li className="flex items-center space-x-3 hover:opacity-80">
+            <a className="text-yellow-400"><FaChartBar /></a>
+                <a href="/admin/statistics">Statistiques</a>
             </li>
             </ul>
 
