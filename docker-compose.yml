@@ -138,7 +138,7 @@ services:
       - microservices-network
     restart: unless-stopped
 
-  # Service de questionnaire
+  # Service de questionnaire (Evaluation Service)
   questionnaire-service:
     build:
       context: ./backend/questionnaire-service
@@ -160,6 +160,28 @@ services:
       - microservices-network
     restart: unless-stopped
 
+  # Statistics service
+  statistics-service:
+    build:
+      context: ./backend/statistics-service/Statistics.API
+      dockerfile: Dockerfile
+    container_name: statistics-service
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - QUESTIONNAIRE_SERVICE_URL=http://questionnaire-service:8080
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - CATALOG_SERVICE_URL=http://catalog-service:8080
+    depends_on:
+      - auth-service
+      - catalog-service
+      - questionnaire-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
   # API Gateway
   api-gateway:
     build:
@@ -177,6 +199,7 @@ services:
       - auth-service
       - catalog-service
       - questionnaire-service
+      - statistics-service
     networks:
       - microservices-network
     restart: unless-stopped
