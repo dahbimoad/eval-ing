@@ -19,6 +19,9 @@ builder.Services.AddHttpClient<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 
+// ✅ Health check service
+builder.Services.AddHealthChecks(); // ✅ Ajout ici
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -37,13 +40,14 @@ app.UseSwagger();
 app.UseSwaggerUI(o =>
 {
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
-    o.RoutePrefix = "docs"; // accessible via /docs
+    o.RoutePrefix = "docs";
 });
-
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
 app.MapControllers();
+app.MapHealthChecks("/health"); // ✅ Ajout ici
 
 app.Run();

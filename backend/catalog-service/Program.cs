@@ -50,26 +50,21 @@ builder.Services.AddScoped<IFormationService, FormationService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
 
 // ─── JWT Authentication Configuration ───────────────────────────────────────────
-// Lit la section "Jwt" dans appsettings.json
-try 
+try
 {
     var jwtSection = builder.Configuration.GetSection("Jwt");
     if (jwtSection == null)
-    {
         throw new Exception("JWT configuration section not found");
-    }
 
     var jwtToken = jwtSection["Token"];
     var jwtIssuer = jwtSection["Issuer"];
     var jwtAudience = jwtSection["Audience"];
 
-    // Log the configuration values (for debugging)
     var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
     logger.LogInformation("JWT Token exists: {JwtTokenExists}", !string.IsNullOrEmpty(jwtToken));
     logger.LogInformation("JWT Issuer: {JwtIssuer}", jwtIssuer);
     logger.LogInformation("JWT Audience: {JwtAudience}", jwtAudience);
 
-    // Validate JWT configuration
     if (string.IsNullOrEmpty(jwtToken))
         throw new Exception("Jwt:Token is missing or empty");
     if (string.IsNullOrEmpty(jwtIssuer))
@@ -96,12 +91,9 @@ try
 }
 catch (Exception ex)
 {
-    // Log the error
     var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
     logger.LogError(ex, "Error configuring JWT authentication");
-    
-    // Continue with a fallback configuration or rethrow based on your requirements
-    throw; // This will stop the application from starting with a clear error message
+    throw;
 }
 
 // ─── AutoMapper ────────────────────────────────────────────────────────────────
@@ -113,7 +105,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Catalog API", Version = "v1" });
 
-    // Définition du schéma de sécurité Bearer
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Entrez 'Bearer' + votre token JWT\nExemple : Bearer eyJhbGciOiJIUzI1NiIs...",
@@ -123,7 +114,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Exige que le schéma soit envoyé dans l'en‑tête
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -141,6 +131,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// ─── AJOUT Health Checks ───────────────────────────────────────────────────────
+builder.Services.AddHealthChecks(); // ✅ AJOUT ICI
+
 var app = builder.Build();
 
 // ─── Pipeline HTTP ─────────────────────────────────────────────────────────────
@@ -148,19 +141,18 @@ app.UseSwagger();
 app.UseSwaggerUI(o =>
 {
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
-    o.RoutePrefix = "docs"; // accessible via /docs
+    o.RoutePrefix = "docs";
 });
 
 app.UseHttpsRedirection();
-
 app.UseCors(MyAllowSpecificOrigins);
-
-app.UseAuthentication(); // <— Ajouté
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health"); // ✅ AJOUT ICI
 
-// ─── Apply migrations automatically ────────────────────────────────────────────
+// ─── Apply migrations automatiquement ────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var svc = scope.ServiceProvider;

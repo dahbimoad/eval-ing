@@ -110,28 +110,35 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// ──────────────────────────────────────────────────────────────────────
+// ✅ 7. HealthChecks
+// ──────────────────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks(); // ✅ AJOUT ICI
+
 var app = builder.Build();
 
 // ──────────────────────────────────────────────────────────────────────
-// 7. Configure HTTP pipeline
+// 8. Configure HTTP pipeline
 // ──────────────────────────────────────────────────────────────────────
+// 8. Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questionnaire API V1");
-        c.RoutePrefix = string.Empty;
+        c.RoutePrefix = "docs"; // 👈 Swagger disponible à /docs/index.html
     });
 }
 
+
 // ★ CORS → Authentication → Authorization
 app.UseCors(AllowFrontend);
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health"); // ✅ AJOUT ICI
 
 app.Run();
 
