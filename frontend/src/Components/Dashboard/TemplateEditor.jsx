@@ -37,9 +37,24 @@ export default function TemplateEditor() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishForm, setPublishForm] = useState({
     startDate: "",
-    endDate: "",
-    description: ""
+    endDate: ""
   });
+
+  // Set default dates when modal opens
+  useEffect(() => {
+    if (showPublishModal && !publishForm.startDate) {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const nextWeek = new Date(now);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      
+      setPublishForm({
+        startDate: tomorrow.toISOString().slice(0, 16), // Format for datetime-local
+        endDate: nextWeek.toISOString().slice(0, 16)
+      });
+    }
+  }, [showPublishModal]);
 
   /* initial data ----------------------------------------------------- */
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
@@ -57,7 +72,8 @@ export default function TemplateEditor() {
       try {
         const { data } = await getSections(tpl.id);
         setSections(data);
-      } catch {
+      } catch (error) {
+        console.error('❌ Error loading sections:', error);
         toast.error("Impossible de charger les sections");
       }
     })();
@@ -65,15 +81,33 @@ export default function TemplateEditor() {
 
   /* helpers ---------------------------------------------------------- */
   const addSection = async () => {
-    if (!newTitle.trim() || !tpl) return;
+    if (!newTitle.trim()) {
+      toast.error("Veuillez saisir un titre pour la section");
+      return;
+    }
+    if (!tpl) {
+      toast.error("Template introuvable");
+      return;
+    }
 
     const payload = { title: newTitle, displayOrder: sections.length + 1 };
+    console.log('🔧 Creating section with payload:', payload, 'for template:', tpl.id);
 
-    await createSection(tpl.id, payload)
-      .then(() => getSections(tpl.id).then(res => setSections(res.data)))
-      .catch(() => toast.error("Ajout de section impossible"));
-
-    setNewTitle("");
+    try {
+      const response = await createSection(tpl.id, payload);
+      console.log('✅ Section created:', response);
+      
+      // Refresh sections
+      const sectionsResponse = await getSections(tpl.id);
+      console.log('✅ Sections refreshed:', sectionsResponse.data);
+      setSections(sectionsResponse.data);
+      
+      setNewTitle("");
+      toast.success("Section ajoutée avec succès!");
+    } catch (error) {
+      console.error('❌ Error creating section:', error);
+      toast.error("Erreur lors de l'ajout de section: " + (error.response?.data?.message || error.message));
+    }
   };
 
   const removeSection = async (sectionId) => {
@@ -91,6 +125,8 @@ export default function TemplateEditor() {
 
     const newSections = [...sections];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // Swap sections
     [newSections[index], newSections[targetIndex]] = [newSections[targetIndex], newSections[index]];
     
     // Update display orders
@@ -98,22 +134,76 @@ export default function TemplateEditor() {
       section.displayOrder = idx + 1;
     });
     
+    // Update frontend immediately
     setSections(newSections);
     
-    // Update in backend
+    // Update backend sequentially to avoid constraint violations
     try {
-      await updateSection(tpl.id, sectionId, { displayOrder: newSections[index].displayOrder });
-      await updateSection(tpl.id, newSections[targetIndex].id, { displayOrder: newSections[targetIndex].displayOrder });
-    } catch {
+      // Use a temporary high value first to avoid constraint conflicts
+      const tempDisplayOrder = 9999;
+      
+      // Step 1: Set first section to temporary value
+      await updateSection(tpl.id, newSections[index].id, { 
+        title: newSections[index].title, 
+        displayOrder: tempDisplayOrder 
+      });
+      
+      // Step 2: Update second section to its final position
+      await updateSection(tpl.id, newSections[targetIndex].id, { 
+        title: newSections[targetIndex].title, 
+        displayOrder: newSections[targetIndex].displayOrder 
+      });
+      
+      // Step 3: Update first section to its final position
+      await updateSection(tpl.id, newSections[index].id, { 
+        title: newSections[index].title, 
+        displayOrder: newSections[index].displayOrder 
+      });
+      
+      toast.success("Ordre des sections mis à jour");
+    } catch (error) {
+      console.error("❌ Error updating section order:", error);
       toast.error("Erreur lors de la mise à jour de l'ordre");
+      // Revert the frontend changes
+      refreshSection();
     }
   };
 
   const addQuestion = async (sectionId, q) => {
     if (!tpl) return;
-    await createQuestion(tpl.id, sectionId, q)
-      .then(() => refreshSection(sectionId))
-      .catch(() => toast.error("Ajout de question impossible"));
+    
+    // Map frontend form data to backend DTO format
+    const questionRequest = {
+      Wording: q.wording,
+      Type: mapQuestionType(q.type),
+      MaxLength: q.type === "Text" ? 500 : null // Set default max length for text questions
+    };
+    
+    console.log("🔧 Creating question with data:", questionRequest);
+    
+    await createQuestion(tpl.id, sectionId, questionRequest)
+      .then(() => {
+        toast.success("Question ajoutée avec succès!");
+        refreshSection(sectionId);
+      })
+      .catch((error) => {
+        console.error("❌ Question creation failed:", error);
+        toast.error("Ajout de question impossible");
+      });
+  };
+
+  // Helper function to map frontend question types to backend enum values
+  const mapQuestionType = (frontendType) => {
+    switch (frontendType) {
+      case "Likert":
+        return 1; // QuestionType.Likert
+      case "Binary":
+        return 2; // QuestionType.Binary
+      case "Text":
+        return 3; // QuestionType.Text
+      default:
+        return 1; // Default to Likert
+    }
   };
 
   const removeQuestion = async (sectionId, qId) => {
@@ -124,8 +214,13 @@ export default function TemplateEditor() {
   };
 
   const refreshSection = async (sectionId) => {
-    const { data } = await getSections(tpl.id);            // quickest: reload all
-    setSections(data);
+    try {
+      const { data } = await getSections(tpl.id);            // quickest: reload all
+      setSections(data);
+    } catch (error) {
+      console.error('❌ Error refreshing sections:', error);
+      toast.error("Erreur lors du rafraîchissement des sections");
+    }
   };
 
   const handlePublish = async () => {
@@ -134,13 +229,30 @@ export default function TemplateEditor() {
       return;
     }
 
+    // Convert dates to ISO format and validate
+    const startDate = new Date(publishForm.startDate);
+    const endDate = new Date(publishForm.endDate);
+    
+    if (endDate <= startDate) {
+      toast.error("La date de fin doit être après la date de début");
+      return;
+    }
+    
+    const publishData = {
+      startAt: startDate.toISOString(),
+      endAt: endDate.toISOString()
+    };
+    
+    console.log('🔧 Publishing with data:', publishData);
+
     try {
-              await publicationService.publish(tpl.id, publishForm);
+      await publicationService.publish(tpl.id, publishData);
       toast.success("Questionnaire publié avec succès !");
       setShowPublishModal(false);
       nav("/admin/questionnaire");
     } catch (error) {
-      toast.error("Erreur lors de la publication");
+      console.error("❌ Publication error:", error);
+      toast.error(`Erreur lors de la publication: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -150,7 +262,10 @@ export default function TemplateEditor() {
       return false;
     }
     
-    const hasEmptySections = sections.some(s => !s.questions || s.questions.length === 0);
+    const hasEmptySections = sections.some(s => {
+      const questions = s.questions || s.Questions || [];
+      return questions.length === 0;
+    });
     if (hasEmptySections) {
       toast.error("Toutes les sections doivent contenir au moins une question");
       return false;
@@ -186,11 +301,12 @@ export default function TemplateEditor() {
               </p>
             </div>
 
-            {tpl.status === "Draft" && (
+            {(tpl.status === "Draft" || tpl.status === "draft" || tpl.status === 0) && (
               <motion.button
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
+                  console.log('🔧 Template status for publish check:', tpl.status);
                   if (validateTemplate()) {
                     setShowPublishModal(true);
                   }
@@ -201,7 +317,7 @@ export default function TemplateEditor() {
               </motion.button>
             )}
             
-            {tpl.status === "Published" && (
+            {(tpl.status === "Published" || tpl.status === "published" || tpl.status === 1) && (
               <span className="bg-green-100 text-green-800 px-4 py-2 rounded-lg">
                 ✓ Publié
               </span>
@@ -213,7 +329,7 @@ export default function TemplateEditor() {
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
           <p className="text-blue-800 dark:text-blue-200">
             <strong>{sections.length}</strong> section(s) • 
-            <strong> {sections.reduce((acc, s) => acc + (s.questions?.length || 0), 0)}</strong> question(s) au total
+            <strong> {sections.reduce((acc, s) => acc + ((s.questions || s.Questions)?.length || 0), 0)}</strong> question(s) au total
           </p>
         </div>
 
@@ -283,16 +399,7 @@ export default function TemplateEditor() {
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description (optionnelle)</label>
-                  <textarea
-                    className="input w-full"
-                    rows="3"
-                    placeholder="Description de la publication..."
-                    value={publishForm.description}
-                    onChange={(e) => setPublishForm({...publishForm, description: e.target.value})}
-                  />
-                </div>
+
               </div>
               
               <div className="flex justify-end gap-3 mt-6">
@@ -327,7 +434,7 @@ function SectionCard({ section, index, totalSections, onDelete, onUpdateOrder, o
     wording: "", 
     type: "Likert",
     isRequired: true,
-    displayOrder: (section.questions?.length || 0) + 1
+    displayOrder: ((section.questions || section.Questions)?.length || 0) + 1
   });
 
   const submitQ = async () => {
@@ -337,19 +444,32 @@ function SectionCard({ section, index, totalSections, onDelete, onUpdateOrder, o
       wording: "", 
       type: "Likert",
       isRequired: true,
-      displayOrder: (section.questions?.length || 0) + 2
+      displayOrder: ((section.questions || section.Questions)?.length || 0) + 2
     });
     setShowAdd(false);
   };
 
   const handleUpdateSection = async () => {
-    if (!sectionTitle.trim()) return;
+    if (!sectionTitle.trim()) {
+      toast.error("Le titre de la section ne peut pas être vide");
+      return;
+    }
+    
+    const updateData = { 
+      title: sectionTitle.trim(), 
+      displayOrder: section.displayOrder || 1
+    };
+    
+    console.log('🔧 Updating section with data:', updateData);
+    
     try {
-      await updateSection(templateId, section.id, { title: sectionTitle });
+      await updateSection(templateId, section.id, updateData);
       section.title = sectionTitle;
       setEditingSection(false);
       toast.success("Section mise à jour");
-    } catch {
+    } catch (error) {
+      console.error("❌ Error updating section:", error);
+      console.error("❌ Error details:", error.response?.data);
       toast.error("Erreur lors de la mise à jour");
     }
   };
@@ -411,14 +531,14 @@ function SectionCard({ section, index, totalSections, onDelete, onUpdateOrder, o
 
       {/* questions list --------------------------------------------- */}
       <div className="space-y-2 mb-4">
-        {section.questions?.map((q, qIndex) => (
+        {(section.questions || section.Questions || []).map((q, qIndex) => (
           <QuestionItem 
-            key={q.id} 
+            key={q.id || q.Id} 
             question={q} 
             index={qIndex}
-            onDelete={() => onDeleteQuestion(q.id)}
+            onDelete={() => onDeleteQuestion(q.id || q.Id)}
             templateId={templateId}
-            sectionId={section.id}
+            sectionId={section.id || section.Id}
           />
         ))}
       </div>
@@ -493,14 +613,36 @@ function QuestionItem({ question, index, onDelete, templateId, sectionId }) {
 
   const handleUpdate = async () => {
     try {
-      await updateQuestion(templateId, sectionId, question.id, qData);
+      // Map frontend form data to backend DTO format
+      const questionRequest = {
+        Wording: qData.wording,
+        Type: mapQuestionType(qData.type),
+        MaxLength: qData.type === "Text" ? 500 : null
+      };
+      
+      await updateQuestion(templateId, sectionId, question.id, questionRequest);
       question.wording = qData.wording;
       question.type = qData.type;
       question.isRequired = qData.isRequired;
       setEditing(false);
       toast.success("Question mise à jour");
-    } catch {
+    } catch (error) {
+      console.error("❌ Question update failed:", error);
       toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  // Helper function to map frontend question types to backend enum values
+  const mapQuestionType = (frontendType) => {
+    switch (frontendType) {
+      case "Likert":
+        return 1; // QuestionType.Likert
+      case "Binary":
+        return 2; // QuestionType.Binary
+      case "Text":
+        return 3; // QuestionType.Text
+      default:
+        return 1; // Default to Likert
     }
   };
 

@@ -59,6 +59,7 @@ export default function Templates() {
         publicationsData = response.data.publications;
       }
       
+      console.log('🔧 Publications loaded in Templates:', publicationsData); // Debug log
       setPublications(publicationsData);
     } catch (error) {
       console.error("Error loading publications:", error);
@@ -69,6 +70,11 @@ export default function Templates() {
   /* ─── handlers ─── */
   const handleCreate = async (e) => {
     e.preventDefault();
+    
+    // Debug logging
+    console.log('🔧 Form data:', form);
+    console.log('🔧 Available filieres:', filieresList);
+    console.log('🔧 Selected filiereId:', form.filiereId, typeof form.filiereId);
     
     // Validate filière selection
     if (!form.filiereId || form.filiereId === "") {
@@ -84,6 +90,8 @@ export default function Templates() {
       title: form.title.trim()
     };
     
+    console.log('🔧 Final payload:', payload);
+    
     // Additional validation
     if (!payload.templateCode) {
       toast.error("Le code du template est obligatoire");
@@ -94,7 +102,12 @@ export default function Templates() {
       return;
     }
     if (isNaN(payload.filiereId) || payload.filiereId <= 0) {
-      toast.error("Filière invalide");
+      toast.error("Filière invalide - Debug: " + JSON.stringify({
+        original: form.filiereId,
+        converted: payload.filiereId,
+        isNaN: isNaN(payload.filiereId),
+        isLessOrEqual0: payload.filiereId <= 0
+      }));
       return;
     }
     
@@ -130,8 +143,8 @@ export default function Templates() {
   });
 
   // Get publication info for a template
-  const getPublicationInfo = (templateId) => {
-    return publications.find(pub => pub.templateId === templateId);
+  const getPublicationInfo = (templateCode) => {
+    return publications.find(pub => pub.templateCode === templateCode);
   };
 
   // Ensure filieres is always an array
@@ -253,7 +266,7 @@ export default function Templates() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((tpl) => {
-              const pubInfo = getPublicationInfo(tpl.id);
+              const pubInfo = getPublicationInfo(tpl.templateCode);
               return (
                 <motion.div
                   key={tpl.id}
@@ -267,12 +280,12 @@ export default function Templates() {
                     </h3>
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
-                        tpl.status === "Published"
+                        (tpl.status === "Published" || tpl.status === "published" || tpl.status === 1)
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {tpl.status === "Published" ? "Publié" : "Brouillon"}
+                      {(tpl.status === "Published" || tpl.status === "published" || tpl.status === 1) ? "Publié" : "Brouillon"}
                     </span>
                   </div>
                   
@@ -282,7 +295,11 @@ export default function Templates() {
                     <p><strong>Rôle:</strong> {tpl.role}</p>
                     {pubInfo && (
                       <p className="text-blue-600 dark:text-blue-400">
-                        <strong>Publication active</strong> jusqu'au {new Date(pubInfo.endDate).toLocaleDateString()}
+                        <strong>Publication active</strong> jusqu'au {
+                          pubInfo.endAt ? 
+                            new Date(pubInfo.endAt).toLocaleDateString() : 
+                            "Date inconnue"
+                        }
                       </p>
                     )}
                   </div>
@@ -292,7 +309,7 @@ export default function Templates() {
                       to={`/admin/questionnaire/${tpl.id}/edit`}
                       className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
                     >
-                      {tpl.status === "Draft" ? (
+                      {(tpl.status === "Draft" || tpl.status === "draft" || tpl.status === 0) ? (
                         <>
                           <FaArrowRight /> Éditer
                         </>
@@ -311,9 +328,10 @@ export default function Templates() {
                       <FaCopy />
                     </button>
                     
-                    {tpl.status === "Draft" && (
+                    {(tpl.status === "Draft" || tpl.status === "draft" || tpl.status === 0) && (
                       <button
                         onClick={() => {
+                          console.log('🔧 Template status for delete check:', tpl.status);
                           if (window.confirm("Êtes-vous sûr de vouloir supprimer ce template ?")) {
                             removeTemplate(tpl.id);
                           }

@@ -21,12 +21,19 @@ export const formationService = {
         formations = [response.data];
       }
 
-      // Map backend format to frontend format - use the actual ID from backend
-      return formations.map(formation => ({
-        id: formation.id || formation.Id, // Use the actual database ID (integer)
-        code: formation.code || formation.Code,
-        title: formation.title || formation.Title
-      }));
+      // Map backend format to frontend format
+      return formations.map(formation => {
+        console.log('🔧 Raw formation object:', formation); // Debug log
+        
+        // Map the properties (handle both Pascal and camel case)
+        const id = formation.id || formation.Id;
+        const code = formation.code || formation.Code;
+        const title = formation.title || formation.Title;
+        
+        console.log('🔧 Mapped formation:', { id, code, title }); // Debug log
+        
+        return { id, code, title };
+      });
     } catch (error) {
       console.error('❌ Formation service error:', error);
       console.error('❌ Error response:', error.response?.data);

@@ -46,7 +46,8 @@ export default function QuestionnairePublications() {
         }
       }
       
-      console.log('Publications data:', publicationsData); // Debug log
+      console.log('🔧 Publications data received:', publicationsData); // Debug log
+      console.log('🔧 First publication sample:', publicationsData[0]); // Debug log
       setPublications(publicationsData);
     } catch (error) {
       console.error('Error loading publications:', error);
@@ -83,14 +84,19 @@ export default function QuestionnairePublications() {
     }
   };
 
-  const getTemplateInfo = (templateId) => {
-    return templates.find(t => t.id === templateId);
+  const getTemplateInfo = (templateCode) => {
+    return templates.find(t => t.templateCode === templateCode);
   };
 
   const getStatusColor = (publication) => {
     const now = new Date();
-    const start = new Date(publication.startDate);
-    const end = new Date(publication.endDate);
+    const start = new Date(publication.startAt);
+    const end = new Date(publication.endAt);
+    
+    // Validate dates
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return "bg-red-100 text-red-800"; // Invalid dates
+    }
     
     if (now < start) return "bg-yellow-100 text-yellow-800";
     if (now > end) return "bg-gray-100 text-gray-800";
@@ -99,12 +105,25 @@ export default function QuestionnairePublications() {
 
   const getStatusText = (publication) => {
     const now = new Date();
-    const start = new Date(publication.startDate);
-    const end = new Date(publication.endDate);
+    const start = new Date(publication.startAt);
+    const end = new Date(publication.endAt);
+    
+    // Validate dates
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return "Dates invalides";
+    }
     
     if (now < start) return "À venir";
     if (now > end) return "Terminé";
     return "En cours";
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return "Date invalide";
+    }
+    return date.toLocaleDateString();
   };
 
   const exportSubmissions = async (publicationId) => {
@@ -155,7 +174,7 @@ export default function QuestionnairePublications() {
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
             {publicationsList.map((pub) => {
-              const template = getTemplateInfo(pub.templateId);
+              const template = getTemplateInfo(pub.templateCode);
               return (
                 <motion.div
                   key={pub.id}
@@ -166,10 +185,10 @@ export default function QuestionnairePublications() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {template?.title || "Template inconnu"}
+                        {pub.title || template?.title || "Template inconnu"}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Code: {template?.templateCode || pub.templateCode || "N/A"}
+                        Code: {pub.templateCode || "N/A"}
                       </p>
                     </div>
                     <span className={`px-3 py-1 text-sm rounded-full ${getStatusColor(pub)}`}>
@@ -181,7 +200,7 @@ export default function QuestionnairePublications() {
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <FaCalendar />
                       <span>
-                        Du {new Date(pub.startDate).toLocaleDateString()} au {new Date(pub.endDate).toLocaleDateString()}
+                        Du {formatDate(pub.startAt)} au {formatDate(pub.endAt)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">

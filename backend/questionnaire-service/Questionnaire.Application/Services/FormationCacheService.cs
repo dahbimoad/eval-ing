@@ -110,6 +110,7 @@ namespace Questionnaire.Application.Services
 
                 return new FormationCacheDto
                 {
+                    Id = formation.Id,
                     Code = formation.Code,
                     Title = formation.Title,
                     Description = formation.Description,
@@ -133,6 +134,7 @@ namespace Questionnaire.Application.Services
 
                 return formations.Select(f => new FormationCacheDto
                 {
+                    Id = f.Id,
                     Code = f.Code,
                     Title = f.Title,
                     Description = f.Description,

@@ -36,7 +36,7 @@ export const createQuestion = (templateId, sectionId, data) =>
 
 export const getQuestions = (templateId, sectionId) =>
   qApi.get(
-    `/template/${templateId}/section/${sectionId}/questions`
+    `/template/${templateId}/section/${sectionId}/question/questions`
   );
 
 export const updateQuestion = (templateId, sectionId, id, data) =>
