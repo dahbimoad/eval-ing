@@ -111,6 +111,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+await ApplyMigrationsAsync(app);
 
 // ──────────────────────────────────────────────────────────────────────
 // 7. Configure HTTP pipeline
