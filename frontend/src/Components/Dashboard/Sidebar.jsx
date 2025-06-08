@@ -17,7 +17,7 @@ function Sidebar() {
 
   return (
     <div className="flex h-screen">
-      <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white w-80 flex flex-col shadow-2xl">
+      <div className="relative bg-gradient-to-br from-blue-900 via-blue-700 to-blue-900 text-white w-80 flex flex-col shadow-2xl">
         {/* Overlay pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent"></div>
         <div className="absolute inset-0 opacity-30">
