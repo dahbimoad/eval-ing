@@ -15,6 +15,9 @@ import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.j
 import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
 import ProfessorQuestionnaires from "./Components/ProfessorQuestionnaires.jsx";
 import ProQuestionnaires from "./Components/ProQuestionnaires.jsx";
+import Templates from "./Components/Dashboard/Templates.jsx";
+import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
+import QuestionnairePublications from "./Components/Dashboard/QuestionnairePublications.jsx";
 
 export default function App() {
   return (
@@ -56,6 +59,21 @@ export default function App() {
           <Route path="/admin/statistics" element={
             <PrivateRoute>
               <Statistics />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/questionnaire" element={
+            <PrivateRoute>
+              <Templates />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/questionnaire/:id/edit" element={
+            <PrivateRoute>
+              <TemplateEditor />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/publications" element={
+            <PrivateRoute>
+              <QuestionnairePublications />
             </PrivateRoute>
           } />
           <Route path="/enseignant/dashboard" element={

@@ -32,44 +32,42 @@ namespace Questionnaire.Application.Services
         }
 
         public async Task AddOrUpdateFormationAsync(FormationCreatedEvent formationEvent)
-{
-    try
-    {
-        var existing = await _dbContext.Formations
-            .FirstOrDefaultAsync(f => f.Code == formationEvent.Code);
-
-        if (existing == null)
         {
-            var newEntity = new FormationCache
+            try
             {
-                Code = formationEvent.Code,
-                Title = formationEvent.Title,
-                Description = formationEvent.Description,
-                Credits = formationEvent.Credits
-            };
+                var existing = await _dbContext.Formations
+                    .FirstOrDefaultAsync(f => f.Code == formationEvent.Code);
 
-            await _dbContext.Formations.AddAsync(newEntity);
+                if (existing == null)
+                {
+                    var newEntity = new FormationCache
+                    {
+                        Code = formationEvent.Code,
+                        Title = formationEvent.Title,
+                        Description = formationEvent.Description,
+                        Credits = formationEvent.Credits
+                    };
+
+                    await _dbContext.Formations.AddAsync(newEntity);
+                }
+                else
+                {
+                    existing.Title = formationEvent.Title;
+                    existing.Description = formationEvent.Description;
+                    existing.Credits = formationEvent.Credits;
+                    _dbContext.Formations.Update(existing);
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Formation cache saved to DB for code: {Code}", formationEvent.Code);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving formation to DB for code: {Code}", formationEvent.Code);
+                throw;
+            }
         }
-        else
-        {
-            existing.Title = formationEvent.Title;
-            existing.Description = formationEvent.Description;
-            existing.Credits = formationEvent.Credits;
-            _dbContext.Formations.Update(existing);
-        }
-
-        await _dbContext.SaveChangesAsync();
-
-        _logger.LogInformation("Formation cache saved to DB for code: {Code}", formationEvent.Code);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error saving formation to DB for code: {Code}", formationEvent.Code);
-        throw;
-    }
-}
-
-
 
         private async Task UpdateCacheViaHttpAsync(FormationCacheDto formation)
         {
@@ -100,15 +98,52 @@ namespace Questionnaire.Application.Services
             }
         }
 
-        public Task<FormationCacheDto?> GetFormationAsync(string code)
+        public async Task<FormationCacheDto?> GetFormationAsync(string code)
         {
-            _cache.TryGetValue(code, out var formation);
-            return Task.FromResult(formation);
+            try
+            {
+                var formation = await _dbContext.Formations
+                    .FirstOrDefaultAsync(f => f.Code == code);
+
+                if (formation == null)
+                    return null;
+
+                return new FormationCacheDto
+                {
+                    Code = formation.Code,
+                    Title = formation.Title,
+                    Description = formation.Description,
+                    Credits = formation.Credits
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving formation with code: {Code}", code);
+                return null;
+            }
         }
 
-        public Task<IEnumerable<FormationCacheDto>> GetAllFormationsAsync()
+        public async Task<IEnumerable<FormationCacheDto>> GetAllFormationsAsync()
         {
-            return Task.FromResult(_cache.Values.AsEnumerable());
+            try
+            {
+                var formations = await _dbContext.Formations
+                    .OrderBy(f => f.Title)
+                    .ToListAsync();
+
+                return formations.Select(f => new FormationCacheDto
+                {
+                    Code = f.Code,
+                    Title = f.Title,
+                    Description = f.Description,
+                    Credits = f.Credits
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all formations from database");
+                return new List<FormationCacheDto>();
+            }
         }
     }
 }
