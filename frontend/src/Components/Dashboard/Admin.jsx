@@ -99,30 +99,8 @@ function Admin() {
                     ))}
                 </div>
 
-                {/* Quick Stats */}
-                <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                        Aperçu rapide
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-blue-600">0</p>
-                            <p className="text-gray-600 dark:text-gray-400">Questionnaires actifs</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-green-600">0</p>
-                            <p className="text-gray-600 dark:text-gray-400">Réponses cette semaine</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-purple-600">0</p>
-                            <p className="text-gray-600 dark:text-gray-400">Utilisateurs actifs</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-yellow-600">0</p>
-                            <p className="text-gray-600 dark:text-gray-400">Templates créés</p>
-                        </div>
-                    </div>
-                </div>
+            
+                
             </div>
         </div>
     );
