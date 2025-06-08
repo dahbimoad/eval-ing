@@ -273,9 +273,9 @@ namespace Statistics.API.Services
             {
                 var answers = questionGroup.ToList();
                 
-                switch (questionGroup.Key.Type)
+                switch (questionGroup.Key.Type.ToLower())
                 {
-                    case 1: // Likert scale questions (1-5)
+                    case "likert": // Likert scale questions (1-5)
                         var likertValues = answers
                             .Where(a => a.ValueNumber.HasValue)
                             .Select(a => (double)a.ValueNumber!.Value);
@@ -288,7 +288,7 @@ namespace Statistics.API.Services
                         }
                         break;
 
-                    case 2: // Binary questions (Yes/No)
+                    case "binary": // Binary questions (Yes/No)
                         var binaryValues = answers
                             .Where(a => a.ValueNumber.HasValue)
                             .Select(a => a.ValueNumber!.Value);
@@ -302,7 +302,7 @@ namespace Statistics.API.Services
                         }
                         break;
                         
-                    case 3: // Text questions - no scoring
+                    case "text": // Text questions - no scoring
                         // Text questions don't contribute to numeric score
                         break;
                 }
@@ -347,14 +347,14 @@ namespace Statistics.API.Services
                 {
                     QuestionId = firstAnswer.QuestionId,
                     QuestionText = firstAnswer.Wording,
-                    QuestionType = GetQuestionTypeName(firstAnswer.Type),
+                    QuestionType = firstAnswer.Type, // Use string directly since it's already the type name
                     TotalAnswers = questionGroup.Count()
                 };
 
                 // Calculate statistics based on question type
-                switch (firstAnswer.Type)
+                switch (firstAnswer.Type.ToLower())
                 {
-                    case 1: // Likert Scale Questions (1-5) - As defined in ScoringExplanation.jsx
+                    case "likert": // Likert Scale Questions (1-5) - As defined in ScoringExplanation.jsx
                         var numericAnswers = questionGroup.Where(a => a.ValueNumber.HasValue).Select(a => a.ValueNumber!.Value);
                         if (numericAnswers.Any())
                         {
@@ -374,7 +374,7 @@ namespace Statistics.API.Services
                         }
                         break;
 
-                    case 2: // Binary Questions (Yes/No) - As defined in ScoringExplanation.jsx
+                    case "binary": // Binary Questions (Yes/No) - As defined in ScoringExplanation.jsx
                         var binaryAnswers = questionGroup.Where(a => a.ValueNumber.HasValue).Select(a => a.ValueNumber!.Value);
                         if (binaryAnswers.Any())
                         {
@@ -396,7 +396,7 @@ namespace Statistics.API.Services
                         }
                         break;
 
-                    case 3: // Text Questions - As defined in ScoringExplanation.jsx
+                    case "text": // Text Questions - As defined in ScoringExplanation.jsx
                         // No numeric scoring - qualitative analysis only
                         questionStat.TextAnswers = questionGroup
                             .Where(a => !string.IsNullOrEmpty(a.ValueText))
@@ -412,15 +412,6 @@ namespace Statistics.API.Services
             return questionStats;
         }
 
-        private string GetQuestionTypeName(int type)
-        {
-            return type switch
-            {
-                1 => "Likert",
-                2 => "Binary", 
-                3 => "Text",
-                _ => "Unknown"
-            };
-        }
+
     }
 }
