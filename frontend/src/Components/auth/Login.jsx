@@ -158,14 +158,7 @@ function Login() {
                   </button>
                 </form>
                 {/* Register */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-300">
-                    Pas encore de compte ?{" "}
-                    <a href="/register" className="text-purple-300 hover:text-purple-200 font-medium transition-colors duration-200">
-                      S'inscrire
-                    </a>
-                  </p>
-                </div>
+                
               </div>
             </div>
             {/* Right - Image */}
