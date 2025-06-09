@@ -15,13 +15,51 @@ const ModuleList = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [moduleToDelete, setModuleToDelete] = useState(null);
 
+  // Helper function to get cookie value
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = getCookie('accessToken');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  };
+
+  // Helper function to handle auth errors
+  const handleAuthError = (response) => {
+    if (response.status === 401) {
+      // Handle unauthorized - clear token and show error
+      document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    if (response.status === 403) {
+      throw new Error('Accès refusé. Vous n\'avez pas les permissions nécessaires.');
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [modulesRes, formationsRes] = await Promise.all([
-          fetch(`${API_BASE}/api/Module`),
-          fetch(`${API_BASE}/api/Formation`)
+          fetch(`${API_BASE}/api/Module`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+          }),
+          fetch(`${API_BASE}/api/Formation`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+          })
         ]);
+
+        handleAuthError(modulesRes);
+        handleAuthError(formationsRes);
 
         if (!modulesRes.ok || !formationsRes.ok) {
           throw new Error('Failed to fetch data');
@@ -45,15 +83,18 @@ const ModuleList = () => {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(`${API_BASE}/api/Module/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
+
+      handleAuthError(response);
 
       if (!response.ok) {
         throw new Error('Failed to delete module');
       }
 
       setModules(modules.filter(module => module.id !== id));
-      setSuccessMessage('Module deleted successfully!');
+      setSuccessMessage('Module supprimé avec succès !');
       setModuleToDelete(null);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -71,11 +112,11 @@ const ModuleList = () => {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(moduleData),
       });
+
+      handleAuthError(response);
 
       if (!response.ok) {
         throw new Error('Failed to save module');
@@ -87,10 +128,10 @@ const ModuleList = () => {
         setModules(modules.map(m => 
           m.id === savedModule.id ? savedModule : m
         ));
-        setSuccessMessage('Module updated successfully!');
+        setSuccessMessage('Module mis à jour avec succès !');
       } else {
         setModules([...modules, savedModule]);
-        setSuccessMessage('Module added successfully!');
+        setSuccessMessage('Module ajouté avec succès !');
       }
 
       setIsFormOpen(false);
@@ -120,7 +161,7 @@ const ModuleList = () => {
   if (error) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong className="font-bold">Error: </strong>
+        <strong className="font-bold">Erreur: </strong>
         <span className="block sm:inline">{error}</span>
       </div>
     );
@@ -133,7 +174,7 @@ const ModuleList = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center">
             <AcademicCapIcon className="h-8 w-8 mr-2 text-indigo-600" />
-            Modules Management
+            Gestion des Modules
           </h1>
           <button
             onClick={() => {
@@ -143,33 +184,33 @@ const ModuleList = () => {
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md flex items-center"
           >
             <PlusIcon className="h-5 w-5 mr-1" />
-            Add Module
+            Ajouter Module
           </button>
         </div>
 
         {successMessage && (
           <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Success! </strong>
+            <strong className="font-bold">Succès ! </strong>
             <span className="block sm:inline">{successMessage}</span>
           </div>
         )}
 
         {moduleToDelete && (
           <div className="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Confirm Delete</strong>
-            <p className="mt-1">Are you sure you want to delete the module "{moduleToDelete.title}"?</p>
+            <strong className="font-bold">Confirmer la suppression</strong>
+            <p className="mt-1">Êtes-vous sûr de vouloir supprimer le module "{moduleToDelete.title}" ?</p>
             <div className="mt-2 space-x-2">
               <button
                 onClick={() => handleDelete(moduleToDelete.id)}
                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
               >
-                Yes, Delete
+                Oui, Supprimer
               </button>
               <button
                 onClick={cancelDelete}
                 className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
               >
-                Cancel
+                Annuler
               </button>
             </div>
           </div>
@@ -180,11 +221,11 @@ const ModuleList = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Formation</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crédits</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
