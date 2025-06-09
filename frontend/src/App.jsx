@@ -17,6 +17,9 @@ import ProfessorQuestionnaires from "./Components/ProfessorQuestionnaires.jsx";
 import ProQuestionnaires from "./Components/ProQuestionnaires.jsx";
 import FormationList from './Components/Dashboard/FormationList';
 import ModuleList from './Components/Dashboard/ModuleList';
+import Templates from "./Components/Dashboard/Templates.jsx";
+import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
+import QuestionnairePublications from "./Components/Dashboard/QuestionnairePublications.jsx";
 
 export default function App() {
   return (
@@ -68,6 +71,21 @@ export default function App() {
           <Route path="/admin/statistics" element={
             <PrivateRoute>
               <Statistics />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/questionnaire" element={
+            <PrivateRoute>
+              <Templates />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/questionnaire/:id/edit" element={
+            <PrivateRoute>
+              <TemplateEditor />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/publications" element={
+            <PrivateRoute>
+              <QuestionnairePublications />
             </PrivateRoute>
           } />
           <Route path="/enseignant/dashboard" element={

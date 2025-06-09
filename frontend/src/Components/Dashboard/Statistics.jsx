@@ -1,7 +1,8 @@
 // frontend/src/Components/Dashboard/Statistics.jsx
 import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { FaChartBar, FaUsers, FaClipboardList, FaPercentage, FaInfoCircle } from 'react-icons/fa';
+import { FaChartBar, FaUsers, FaClipboardList, FaPercentage, FaInfoCircle, FaArrowLeft } from 'react-icons/fa';
 import { statisticsService } from '../../services/statisticsApi';
 import StatsCard from './StatisticsComponents/StatsCard';
 import FormationStats from './StatisticsComponents/FormationStats';
@@ -11,15 +12,37 @@ import ScoringExplanation from './StatisticsComponents/ScoringExplanation';
 import ChartsSection from './StatisticsComponents/ChartsSection';
 
 function Statistics() {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [overallStats, setOverallStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
     const [showScoringExplanation, setShowScoringExplanation] = useState(false);
+    const [selectedPublicationId, setSelectedPublicationId] = useState(null);
+    const [fromPublications, setFromPublications] = useState(false);
 
     useEffect(() => {
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(location.search);
+        const tab = urlParams.get('tab');
+        const publicationId = urlParams.get('publicationId');
+        const templateCode = urlParams.get('templateCode');
+        
+        if (tab) {
+            setActiveTab(tab);
+        }
+        
+        if (publicationId) {
+            setSelectedPublicationId(parseInt(publicationId));
+            setFromPublications(true);
+            if (!tab) {
+                setActiveTab('questionnaires'); // Default to questionnaires tab if coming from publications
+            }
+        }
+        
         loadOverallStatistics();
-    }, []);
+    }, [location.search]);
 
     const loadOverallStatistics = async () => {
         try {
@@ -88,15 +111,37 @@ function Statistics() {
             <div className="h-full w-full overflow-auto p-6">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="mb-8 flex justify-between items-start">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                📊 Tableau de Bord des Statistiques
-                            </h1>
-                            <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                Analyse des données d'évaluation des formations
-                            </p>
-                        </div>
+                    <div className="mb-8">
+                        {/* Navigation breadcrumb when coming from publications */}
+                        {fromPublications && (
+                            <div className="mb-4">
+                                <Link
+                                    to="/admin/publications"
+                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                >
+                                    <FaArrowLeft />
+                                    Retour aux publications
+                                </Link>
+                            </div>
+                        )}
+                        
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                    📊 Tableau de Bord des Statistiques
+                                    {selectedPublicationId && (
+                                        <span className="text-lg text-gray-500 dark:text-gray-400 ml-2">
+                                            - Publication #{selectedPublicationId}
+                                        </span>
+                                    )}
+                                </h1>
+                                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                    {fromPublications 
+                                        ? "Analyse détaillée du questionnaire sélectionné"
+                                        : "Analyse des données d'évaluation des formations"
+                                    }
+                                </p>
+                            </div>
                         
                         {/* Action Buttons */}
                         <div className="flex items-center space-x-4">
@@ -121,6 +166,7 @@ function Statistics() {
                             )}
                         </div>
                     </div>
+                </div>
 
                     {/* Tabs */}
                     <div className="mb-6">
@@ -259,7 +305,10 @@ function Statistics() {
 
                     {activeTab === 'questionnaires' && (
                         <div className="space-y-6">
-                            <QuestionnaireDetails />
+                            <QuestionnaireDetails 
+                                selectedPublicationId={selectedPublicationId}
+                                fromPublications={fromPublications}
+                            />
                         </div>
                     )}
                 </div>
