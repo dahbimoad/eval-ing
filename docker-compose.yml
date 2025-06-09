@@ -13,6 +13,13 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - microservices-network
+    # Health check simplifié pour éviter les blocages
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -30,8 +37,16 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     networks:
       - microservices-network
+    # Health check simplifié
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
 
   # Base de données PostgreSQL pour auth-service
   auth-postgres:
@@ -41,14 +56,20 @@ services:
       - POSTGRES_DB=UserDb
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Imad2002
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # Base de données PostgreSQL pour catalog-service
   catalog-postgres:
@@ -58,6 +79,7 @@ services:
       - POSTGRES_DB=catalog_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Imad2002
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     ports:
       - "5433:5432"
     volumes:
@@ -65,6 +87,12 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # Base de données PostgreSQL pour questionnaire-service
   questionnaire-postgres:
@@ -74,6 +102,7 @@ services:
       - POSTGRES_DB=evaling
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Imad2002
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     ports:
       - "5434:5432"
     volumes:
@@ -81,6 +110,12 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # pgAdmin - Database Management Interface
   pgadmin:
@@ -95,8 +130,6 @@ services:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
-      - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
     networks:
       - microservices-network
     depends_on:
@@ -105,7 +138,7 @@ services:
       - questionnaire-postgres
     restart: unless-stopped
 
-  # Authentication service
+  # Authentication service - Démarrage sans dépendances strictes d'abord
   auth-service:
     build:
       context: ./backend/authentication_system/authentication_system
@@ -114,7 +147,7 @@ services:
     ports:
       - "5001:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - DB_HOST=auth-postgres
       - DB_PORT=5432
@@ -138,6 +171,13 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    # Health check basique sans curl (peut ne pas être disponible)
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Catalog service
   catalog-service:
@@ -148,7 +188,7 @@ services:
     ports:
       - "5003:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=catalog-postgres;Database=catalog_db;Username=postgres;Password=Imad2002
       - Jwt__Token=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
@@ -156,10 +196,15 @@ services:
       - Jwt__Audience=formation-evaluation-app
     depends_on:
       - catalog-postgres
-      - auth-service
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Service de questionnaire (Evaluation Service)
   questionnaire-service:
@@ -170,7 +215,7 @@ services:
     ports:
       - "5004:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Postgres=Host=questionnaire-postgres;Port=5432;Username=postgres;Password=Imad2002;Database=evaling
       - JWT_TOKEN=QmFzZTY0IGVuY29kZWQgNjQgYnl0ZSBrZXkgZm9yIEpXVCBIUzUxMiBhbGdvcml0aG0gMTIzNDU2Nzg5MCEjQCQlXiYqKClfKw
@@ -178,10 +223,15 @@ services:
       - JWT_AUDIENCE=formation-evaluation-app
     depends_on:
       - questionnaire-postgres
-      - auth-service
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Statistics service
   statistics-service:
@@ -192,7 +242,7 @@ services:
     ports:
       - "5005:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - QUESTIONNAIRE_SERVICE_URL=http://questionnaire-service:8080
       - AUTH_SERVICE_URL=http://auth-service:8080
@@ -204,8 +254,14 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
-  # API Gateway
+  # API Gateway - Démarrage simplifié
   api-gateway:
     build:
       context: ./backend/api-gateway
@@ -214,9 +270,13 @@ services:
     ports:
       - "5000:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - CATALOG_SERVICE_URL=http://catalog-service:8080
+      - QUESTIONNAIRE_SERVICE_URL=http://questionnaire-service:8080
+      - STATISTICS_SERVICE_URL=http://statistics-service:8080
     depends_on:
       - kafka
       - auth-service
@@ -226,6 +286,12 @@ services:
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
 
 # Configuration du réseau partagé entre microservices
 networks:
