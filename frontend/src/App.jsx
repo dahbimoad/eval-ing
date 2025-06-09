@@ -20,6 +20,10 @@ import ModuleList from './Components/Dashboard/ModuleList';
 import Templates from "./Components/Dashboard/Templates.jsx";
 import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
 import QuestionnairePublications from "./Components/Dashboard/QuestionnairePublications.jsx";
+import AnswerQuestionnaire from "./Components/Dashboard/AnswerQuestionnaireProfesseur.jsx";
+import ProfessorDashboard from "./Components/Dashboard/ProfessorDashboard.jsx";
+import ProfessionalDashboard from "./Components/Dashboard/ProfessionalDashboard.jsx";
+import AnswerQuestionnaireProfessional from "./Components/Dashboard/AnswerQuestionnaireProfessional.jsx";
 
 export default function App() {
   return (
@@ -88,16 +92,31 @@ export default function App() {
               <QuestionnairePublications />
             </PrivateRoute>
           } />
-          <Route path="/enseignant/dashboard" element={
-            <PrivateRoute>
-              <ProfessorQuestionnaires />
-            </PrivateRoute>
-          } />
-          <Route path="pro/dashboard" element={
-            <PrivateRoute>
-              <ProQuestionnaires />
-            </PrivateRoute>
-          } />
+         
+ <Route path="/enseignant/dashboard" element={
+  <PrivateRoute>
+    <ProfessorDashboard />
+  </PrivateRoute>
+} />
+
+<Route path="/enseignant/questionnaire/:templateCode" element={
+  <PrivateRoute>
+    <AnswerQuestionnaire />
+  </PrivateRoute>
+} />
+ <Route path="/pro/dashboard" element={
+  <PrivateRoute>
+    <ProfessionalDashboard />
+  </PrivateRoute>
+} />
+
+<Route path="/professionnel/questionnaire/:templateCode" element={
+  <PrivateRoute>  
+    <AnswerQuestionnaireProfessional />
+  </PrivateRoute>
+} />
+
+          
           
         
         

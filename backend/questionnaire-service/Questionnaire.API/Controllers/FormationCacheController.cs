@@ -5,8 +5,10 @@ using Questionnaire.Domain.Entities.Events;
 
 namespace Questionnaire.API.Controllers
 {
+
+     [Route("api/formation-cache")]
     [ApiController]
-    [Route("api/formation-cache")]
+   
     public class FormationCacheController : ControllerBase
     {
         private readonly FormationCacheService _formationCacheService;
@@ -16,7 +18,7 @@ namespace Questionnaire.API.Controllers
             _formationCacheService = formationCacheService;
         }
 
-        [HttpGet]
+        [HttpGet("")]
         public async Task<IActionResult> GetAllFormations()
         {
             try

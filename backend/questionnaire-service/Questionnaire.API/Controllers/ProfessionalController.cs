@@ -21,8 +21,22 @@ namespace Questionnaire.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPublishedQuestionnaires()
         {
-            var questionnaires = await _professionalService.GetPublishedQuestionnairesForProfessionalAsync();
+            var questionnaires = await _professionalService.GetPublishedQuestionnairesForProfAsync();
             return Ok(questionnaires);
+        }
+
+        [HttpGet("{templateCode}")]
+        public async Task<IActionResult> GetQuestionnaireDetails(string templateCode)
+        {
+            try
+            {
+                var questionnaire = await _professionalService.GetTemplateDetailsAsync(templateCode);
+                return Ok(questionnaire);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost("submit/{templateCode}")]
@@ -39,11 +53,11 @@ namespace Questionnaire.API.Controllers
             }
             catch (KeyNotFoundException e)
             {
-                return NotFound(e.Message);
+                return NotFound(new { message = e.Message });
             }
             catch (InvalidOperationException e)
             {
-                return BadRequest(e.Message);
+                return BadRequest(new { message = e.Message });
             }
         }
     }
