@@ -55,9 +55,10 @@ export function useTemplates() {
     try {
       await createTemplate(payload);
       await loadTemplates();
-      toast.success("Template créé");
+      return true; // Return success indicator
     } catch {
       toast.error("Impossible de créer le template");
+      return false; // Return failure indicator
     }
   };
 
