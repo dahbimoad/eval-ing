@@ -26,7 +26,9 @@ namespace Questionnaire.Application.Services
         public async Task<List<Section>> GetSectionsByTemplateIdAsync(int templateId)
         {
             return await _context.Sections
+                .Include(s => s.Questions) // Include questions in the query
                 .Where(s => s.TemplateId == templateId)
+                .OrderBy(s => s.DisplayOrder) // Order by display order
                 .ToListAsync();
         }
 
@@ -34,6 +36,7 @@ namespace Questionnaire.Application.Services
         public async Task<Section?> GetSectionByIdAsync(int templateId, int id)
         {
             return await _context.Sections
+                .Include(s => s.Questions) // Include questions in the query
                 .FirstOrDefaultAsync(s => s.Id == id && s.TemplateId == templateId);
         }
 

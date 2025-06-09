@@ -19,7 +19,7 @@ namespace Statistics.API.Models
     {
         public int QuestionId { get; set; }
         public string Wording { get; set; } = string.Empty;
-        public int Type { get; set; }
+        public string Type { get; set; } = string.Empty; // Changed from int to string to handle enum strings
         public decimal? ValueNumber { get; set; }
         public string? ValueText { get; set; }
     }
