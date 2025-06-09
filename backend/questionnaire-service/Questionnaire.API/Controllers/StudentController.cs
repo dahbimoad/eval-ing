@@ -30,6 +30,26 @@ namespace Questionnaire.API.Controllers
             return Ok(questionnaires);
         }
 
+        // 🆕 NEW ENDPOINT: Get specific questionnaire details
+        [HttpGet("{templateCode}")]
+        public async Task<IActionResult> GetQuestionnaireDetails(string templateCode)
+        {
+            // Extract filiere code from JWT token
+            var filiereClaim = User.FindFirst("filiere")?.Value; // adjust claim name as needed
+            if (string.IsNullOrEmpty(filiereClaim))
+                return BadRequest("Filiere information not found in token.");
+
+            try
+            {
+                var questionnaire = await _studentService.GetTemplateDetailsAsync(templateCode, filiereClaim);
+                return Ok(questionnaire);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+        }
+
         [HttpPost("submit/{templateCode}")]
         public async Task<IActionResult> SubmitAnswers(string templateCode, [FromBody] SubmitAnswersRequestDto request)
         {
@@ -49,11 +69,11 @@ namespace Questionnaire.API.Controllers
             }
             catch (KeyNotFoundException e)
             {
-                return NotFound(e.Message);
+                return NotFound(new { message = e.Message });
             }
             catch (InvalidOperationException e)
             {
-                return BadRequest(e.Message);
+                return BadRequest(new { message = e.Message });
             }
         }
     }

@@ -24,6 +24,8 @@ import AnswerQuestionnaire from "./Components/Dashboard/AnswerQuestionnaireProfe
 import ProfessorDashboard from "./Components/Dashboard/ProfessorDashboard.jsx";
 import ProfessionalDashboard from "./Components/Dashboard/ProfessionalDashboard.jsx";
 import AnswerQuestionnaireProfessional from "./Components/Dashboard/AnswerQuestionnaireProfessional.jsx";
+import StudentDashboard from "./Components/Dashboard/StudentDashboard.jsx";
+import AnswerQuestionnaireStudent from "./Components/Dashboard/AnswerQuestionnaireStudent.jsx";
 
 export default function App() {
   return (
@@ -115,7 +117,16 @@ export default function App() {
     <AnswerQuestionnaireProfessional />
   </PrivateRoute>
 } />
-
+<Route path="/etudiant/dashboard" element={
+  <PrivateRoute>
+    <StudentDashboard />
+  </PrivateRoute>
+} />
+<Route path="/etudiant/questionnaire/:templateCode" element={
+  <PrivateRoute>
+    <AnswerQuestionnaireStudent />
+  </PrivateRoute>
+} />
           
           
         
