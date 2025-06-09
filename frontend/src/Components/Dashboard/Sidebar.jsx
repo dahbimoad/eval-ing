@@ -17,6 +17,9 @@ function Sidebar() {
         { icon: FaUsers, label: "Enseignants", path: "/admin/ens", id: "ens", color: "text-yellow-400" },
         { icon: FaUsers, label: "Étudiants", path: "/admin/etud", id: "etud", color: "text-yellow-400" },
         { icon: FaUsers, label: "Professionnels", path: "/admin/pro", id: "pro", color: "text-yellow-400" },
+        { icon: FaUsers, label: "Filieres", path: "/admin/formations", id: "formations", color: "text-yellow-400" },
+        { icon: FaUsers, label: "Modules", path: "/admin/modules", id: "modules", color: "text-yellow-400" },
+
         { icon: FaClipboardList, label: "Questionnaires", path: "/admin/questionnaire", id: "questionnaire", color: "text-yellow-400" },
         { icon: FaFileAlt, label: "Publications", path: "/admin/publications", id: "publications", color: "text-yellow-400" },
         { icon: FaChartBar, label: "Statistiques", path: "/admin/statistics", id: "statistics", color: "text-yellow-400" },
