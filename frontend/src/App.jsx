@@ -15,6 +15,8 @@ import ProfileCompletion from './Components/Dashboard/WelcomeProfileCompletion.j
 import FirstLoginRedirect from './Components/auth/FirstLoginRedirect.jsx';
 import ProfessorQuestionnaires from "./Components/ProfessorQuestionnaires.jsx";
 import ProQuestionnaires from "./Components/ProQuestionnaires.jsx";
+import FormationList from './Components/Dashboard/FormationList';
+import ModuleList from './Components/Dashboard/ModuleList';
 import Templates from "./Components/Dashboard/Templates.jsx";
 import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
 import QuestionnairePublications from "./Components/Dashboard/QuestionnairePublications.jsx";
@@ -44,6 +46,16 @@ export default function App() {
           <Route path="/admin/etud" element={
             <PrivateRoute>
               <Students />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/formations" element={
+            <PrivateRoute>
+              <FormationList />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/modules" element={
+            <PrivateRoute>
+              <ModuleList />
             </PrivateRoute>
           } />
           <Route path="/admin/ens" element={
