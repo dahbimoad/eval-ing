@@ -23,8 +23,7 @@ wwwroot/
 # NPM packages (if using Node.js in frontend)
 node_modules/
 
-# Environment variables
-.env
+
 
 # Azure Functions (if using Azure Functions)
 local.settings.json
