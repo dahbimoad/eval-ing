@@ -44,27 +44,45 @@ namespace Questionnaire.Application.Services
                     .ThenInclude(s => s.Questions)
                 .ToListAsync();
 
-            return templates.Select(t => new QuestionnaireForStudentDto
-            {
-                TemplateCode = t.TemplateCode ?? string.Empty,
-                Title = t.Title ?? string.Empty,
-                Version = t.Version,
-                FiliereCode = filiereCode,
-                Sections = t.Sections.Select(s => new SectionDto
-                {
-                    Id = s.Id,
-                    Title = s.Title,
-                    Questions = s.Questions.Select(q => new QuestionDto
-                    {
-                        Id = q.Id,
-                        Wording = q.Wording,
-                        Type = q.Type.ToString(),
-                        Mandatory = q.Mandatory,
-                        MaxLength = q.MaxLength,
-                        Options = q.Options.ToList()
-                    }).ToList()
-                }).ToList()
-            }).ToList();
+            return templates.Select(t => MapTemplateToStudentDto(t, filiereCode)).ToList();
+        }
+
+        // 🆕 NEW METHOD: Get specific questionnaire details for student
+        public async Task<QuestionnaireForStudentDto> GetTemplateDetailsAsync(string templateCode, string filiereCode)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            // Find the filiere by code
+            var filiere = await _context.Formations
+                .FirstOrDefaultAsync(f => f.Code == filiereCode);
+
+            if (filiere == null)
+                throw new KeyNotFoundException($"Filiere with code '{filiereCode}' not found.");
+
+            // Check if there's an active publication for this template and filiere
+            var activePublication = await _context.Publications
+                .Where(p => p.TemplateCode == templateCode && 
+                           p.FiliereId == filiere.Id && 
+                           p.StartAt <= now && 
+                           p.EndAt >= now)
+                .FirstOrDefaultAsync();
+
+            if (activePublication == null)
+                throw new KeyNotFoundException("No active publication found for this questionnaire in your filiere.");
+
+            // Get the template details
+            var template = await _context.Templates
+                .Where(t => t.TemplateCode == templateCode && 
+                           t.Status == TemplateStatus.Published && 
+                           t.Role == "Étudiant")
+                .Include(t => t.Sections)
+                    .ThenInclude(s => s.Questions)
+                .FirstOrDefaultAsync();
+
+            if (template == null)
+                throw new KeyNotFoundException("The requested questionnaire does not exist or is not accessible.");
+
+            return MapTemplateToStudentDto(template, filiereCode);
         }
 
         public async Task SubmitAnswersAsync(Guid userId, string templateCode, string filiereCode, SubmitAnswersRequestDto request)
@@ -117,6 +135,32 @@ namespace Questionnaire.Application.Services
             submission.Complete();
 
             await _context.SaveChangesAsync();
+        }
+
+        // 🔁 Mapping method to convert Template to StudentDto
+        private static QuestionnaireForStudentDto MapTemplateToStudentDto(QuestionnaireTemplate template, string filiereCode)
+        {
+            return new QuestionnaireForStudentDto
+            {
+                TemplateCode = template.TemplateCode ?? string.Empty,
+                Title = template.Title ?? string.Empty,
+                Version = template.Version,
+                FiliereCode = filiereCode,
+                Sections = template.Sections.Select(s => new SectionDto
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Questions = s.Questions.Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Wording = q.Wording,
+                        Type = q.Type.ToString(),
+                        Mandatory = q.Mandatory,
+                        MaxLength = q.MaxLength,
+                        Options = q.Options.ToList()
+                    }).ToList()
+                }).ToList()
+            };
         }
     }
 }

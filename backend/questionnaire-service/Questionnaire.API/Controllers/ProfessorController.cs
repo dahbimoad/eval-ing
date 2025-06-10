@@ -25,6 +25,20 @@ namespace Questionnaire.API.Controllers
             return Ok(questionnaires);
         }
 
+        [HttpGet("{templateCode}")]
+        public async Task<IActionResult> GetQuestionnaireDetails(string templateCode)
+        {
+            try
+            {
+                var questionnaire = await _professorService.GetTemplateDetailsAsync(templateCode);
+                return Ok(questionnaire);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+        }
+
         [HttpPost("submit/{templateCode}")]
         public async Task<IActionResult> SubmitAnswers(string templateCode, [FromBody] SubmitAnswersRequestDto request)
         {
@@ -39,11 +53,11 @@ namespace Questionnaire.API.Controllers
             }
             catch (KeyNotFoundException e)
             {
-                return NotFound(e.Message);
+                return NotFound(new { message = e.Message });
             }
             catch (InvalidOperationException e)
             {
-                return BadRequest(e.Message);
+                return BadRequest(new { message = e.Message });
             }
         }
     }

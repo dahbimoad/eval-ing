@@ -41,6 +41,7 @@ export function useTemplates() {
     try {
       const res  = await getTemplates();   // Axios response
       const list = safeArray(res.data);
+      console.log('🔧 Templates loaded with statuses:', list.map(t => ({ id: t.id, title: t.title, status: t.status })));
       setTemplates(list);
     } catch {
       toast.error("Erreur lors du chargement des templates");
@@ -72,11 +73,14 @@ export function useTemplates() {
 
   const removeTemplate = async id => {
     try {
+      console.log('🔧 Deleting template with ID:', id);
       await deleteTemplate(id);
       await loadTemplates();
       toast.success("Template supprimé");
-    } catch {
-      toast.error("Suppression impossible");
+    } catch (error) {
+      console.error('❌ Error deleting template:', error);
+      console.error('❌ Error details:', error.response?.data);
+      toast.error(`Suppression impossible: ${error.response?.data?.message || error.message}`);
     }
   };
 

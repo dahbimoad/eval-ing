@@ -17,6 +17,15 @@ import ProfessorQuestionnaires from "./Components/ProfessorQuestionnaires.jsx";
 import ProQuestionnaires from "./Components/ProQuestionnaires.jsx";
 import FormationList from './Components/Dashboard/FormationList';
 import ModuleList from './Components/Dashboard/ModuleList';
+import Templates from "./Components/Dashboard/Templates.jsx";
+import TemplateEditor from "./Components/Dashboard/TemplateEditor.jsx";
+import QuestionnairePublications from "./Components/Dashboard/QuestionnairePublications.jsx";
+import AnswerQuestionnaire from "./Components/Dashboard/AnswerQuestionnaireProfesseur.jsx";
+import ProfessorDashboard from "./Components/Dashboard/ProfessorDashboard.jsx";
+import ProfessionalDashboard from "./Components/Dashboard/ProfessionalDashboard.jsx";
+import AnswerQuestionnaireProfessional from "./Components/Dashboard/AnswerQuestionnaireProfessional.jsx";
+import StudentDashboard from "./Components/Dashboard/StudentDashboard.jsx";
+import AnswerQuestionnaireStudent from "./Components/Dashboard/AnswerQuestionnaireStudent.jsx";
 
 export default function App() {
   return (
@@ -70,16 +79,55 @@ export default function App() {
               <Statistics />
             </PrivateRoute>
           } />
-          <Route path="/enseignant/dashboard" element={
+          <Route path="/admin/questionnaire" element={
             <PrivateRoute>
-              <ProfessorQuestionnaires />
+              <Templates />
             </PrivateRoute>
           } />
-          <Route path="pro/dashboard" element={
+          <Route path="/admin/questionnaire/:id/edit" element={
             <PrivateRoute>
-              <ProQuestionnaires />
+              <TemplateEditor />
             </PrivateRoute>
           } />
+          <Route path="/admin/publications" element={
+            <PrivateRoute>
+              <QuestionnairePublications />
+            </PrivateRoute>
+          } />
+         
+ <Route path="/enseignant/dashboard" element={
+  <PrivateRoute>
+    <ProfessorDashboard />
+  </PrivateRoute>
+} />
+
+<Route path="/enseignant/questionnaire/:templateCode" element={
+  <PrivateRoute>
+    <AnswerQuestionnaire />
+  </PrivateRoute>
+} />
+ <Route path="/pro/dashboard" element={
+  <PrivateRoute>
+    <ProfessionalDashboard />
+  </PrivateRoute>
+} />
+
+<Route path="/professionnel/questionnaire/:templateCode" element={
+  <PrivateRoute>  
+    <AnswerQuestionnaireProfessional />
+  </PrivateRoute>
+} />
+<Route path="/etudiant/dashboard" element={
+  <PrivateRoute>
+    <StudentDashboard />
+  </PrivateRoute>
+} />
+<Route path="/etudiant/questionnaire/:templateCode" element={
+  <PrivateRoute>
+    <AnswerQuestionnaireStudent />
+  </PrivateRoute>
+} />
+          
           
         
         

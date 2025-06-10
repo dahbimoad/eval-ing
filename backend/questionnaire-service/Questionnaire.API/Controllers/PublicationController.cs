@@ -6,7 +6,7 @@ using Questionnaire.Application.Services;
 namespace Questionnaire.API.Controllers;
 
 [ApiController]
-[Route("api/template/{templateId:int}/publish")]
+[Route("api/template/{templateId:int}")]
 [Authorize(Roles = "Admin")]
 public class PublicationController : ControllerBase
 {
@@ -14,7 +14,7 @@ public class PublicationController : ControllerBase
     public PublicationController(PublicationService svc) => _svc = svc;
 
     /// <summary>Publish a template -> new Publication row.</summary>
-    [HttpPost]
+    [HttpPost("publish")]
     public async Task<IActionResult> Publish(int templateId,
                                              [FromBody] PublishTemplateRequest dto)
     {

@@ -1010,7 +1010,7 @@ namespace Statistics.API.Services
                                 sheet.Cells[$"B{row}"].Value = submission.SubmittedAt.ToString("dd/MM/yyyy HH:mm");
                                 sheet.Cells[$"C{row}"].Value = section.Title;
                                 sheet.Cells[$"D{row}"].Value = answer.Wording;
-                                sheet.Cells[$"E{row}"].Value = GetQuestionTypeName(answer.Type);
+                                sheet.Cells[$"E{row}"].Value = answer.Type; // Use string directly
                                 sheet.Cells[$"F{row}"].Value = answer.ValueNumber?.ToString() ?? "";
                                 sheet.Cells[$"G{row}"].Value = answer.ValueText ?? "";
                                 row++;
@@ -1043,7 +1043,7 @@ namespace Statistics.API.Services
                     {
                         foreach (var answer in section.Answers)
                         {
-                            csv.AppendLine($"{submission.UserId},{submission.SubmittedAt:dd/MM/yyyy HH:mm},{section.Title},{answer.Wording},{GetQuestionTypeName(answer.Type)},{answer.ValueNumber?.ToString() ?? ""},{answer.ValueText ?? ""}");
+                            csv.AppendLine($"{submission.UserId},{submission.SubmittedAt:dd/MM/yyyy HH:mm},{section.Title},{answer.Wording},{answer.Type},{answer.ValueNumber?.ToString() ?? ""},{answer.ValueText ?? ""}");
                         }
                     }
                 }
@@ -1063,15 +1063,6 @@ namespace Statistics.API.Services
             return cell;
         }
 
-        private string GetQuestionTypeName(int type)
-        {
-            return type switch
-            {
-                1 => "Échelle",
-                2 => "Oui/Non",
-                3 => "Texte",
-                _ => "Inconnu"
-            };
-        }
+
     }
 } 
