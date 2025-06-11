@@ -106,7 +106,7 @@ namespace authentication_system.Services
             {
                 var accessToken = await CreateTokenAsync(user);
                 var refreshToken = await GenerateAndSaveRefreshTokenAsync(user);
-                int tokenExpiryMinutes = GetConfigValue("AppSettings:TokenExpiryMinutes", 15);
+                int tokenExpiryMinutes = GetConfigValue("AppSettings:TokenExpiryMinutes", 60); // Changé de 15 à 60 minutes
 
                 return new AuthResponseDTO
                 {
@@ -161,7 +161,7 @@ namespace authentication_system.Services
                 {
                     Token = refreshToken,
                     UserId = user.Id,
-                    ExpiresAt = DateTime.UtcNow.AddDays(GetConfigValue("AppSettings:RefreshTokenExpiryDays", 7)),
+                    ExpiresAt = DateTime.UtcNow.AddDays(GetConfigValue("AppSettings:RefreshTokenExpiryDays", 30)), // Changé de 7 à 30 jours
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -201,7 +201,7 @@ namespace authentication_system.Services
                     audience: audience,
                     claims: claims,
                     notBefore: DateTime.UtcNow,
-                    expires: DateTime.UtcNow.AddMinutes(GetConfigValue("AppSettings:TokenExpiryMinutes", 15)),
+                    expires: DateTime.UtcNow.AddMinutes(GetConfigValue("AppSettings:TokenExpiryMinutes", 60)), // Changé de 15 à 60 minutes
                     signingCredentials: creds
                 );
 

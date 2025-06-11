@@ -205,7 +205,7 @@ public class StudentAdminService
     // Méthode auxiliaire pour obtenir l'URL de base de l'application
     private string GetAppBaseUrl()
     {
-        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:5173";
+        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "https://evaluation-formation-prod.vercel.app";
     }
 
     // Mapping : n'inclut plus de mot de passe par défaut
