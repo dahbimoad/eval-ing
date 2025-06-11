@@ -199,7 +199,7 @@ public class TeacherAdminService
     private string GetAppBaseUrl()
     {
         // Enlever le /reset à la fin de l'URL de base
-        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:5173";
+        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "https://evaluation-formation-prod.vercel.app";
     }
 
     // Mapping : n'inclut plus de mot de passe par défaut

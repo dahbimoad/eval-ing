@@ -181,7 +181,7 @@ public class ProfessionalAdminService
 
     private string GetAppBaseUrl()
     {
-        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:5173";
+        return Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "https://evaluation-formation-prod.vercel.app";
     }
 
     private static ProfessionalResponseDTO ToDTO(User user, ProfessionalProfile profile, bool includePassword = false) => new()
