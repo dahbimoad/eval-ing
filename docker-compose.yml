@@ -271,7 +271,7 @@ services:
       dockerfile: Dockerfile
     container_name: api-gateway
     ports:
-      - "5000:80"
+      - "80:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
