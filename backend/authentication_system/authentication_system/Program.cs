@@ -172,7 +172,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Swagger middleware (docs only in dev)
 // Swagger middleware (enabled always, including production)
 app.UseSwagger();
 app.UseSwaggerUI(o =>
@@ -180,7 +179,6 @@ app.UseSwaggerUI(o =>
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "JwtAuthDotNet9 API v1");
     o.RoutePrefix = "docs"; // accessible via /docs
 });
-
 
 // Middleware order is important
 app.UseHttpsRedirection();

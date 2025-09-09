@@ -127,16 +127,13 @@ await ApplyMigrationsAsync(app);
 // 8. Configure HTTP pipeline
 // ──────────────────────────────────────────────────────────────────────
 // 8. Middleware Pipeline
-if (app.Environment.IsDevelopment())
+// Enable Swagger in all environments (including production)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questionnaire API V1");
-        c.RoutePrefix = "docs"; // 👈 Swagger disponible à /docs/index.html
-    });
-}
-
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questionnaire API V1");
+    c.RoutePrefix = "docs"; // 👈 Swagger disponible à /docs/index.html
+});
 
 // ★ CORS → Authentication → Authorization
 app.UseCors(AllowFrontend);
