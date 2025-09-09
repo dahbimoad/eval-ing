@@ -6,6 +6,8 @@ using Catalog.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -153,19 +155,77 @@ app.MapControllers();
 app.MapHealthChecks("/health"); // ✅ AJOUT ICI
 
 // ─── Apply migrations automatiquement ────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
+async Task ApplyMigrationsAsync()
 {
+    using var scope = app.Services.CreateScope();
     var svc = scope.ServiceProvider;
+    var log = svc.GetRequiredService<ILogger<Program>>();
+    
     try
     {
+        log.LogInformation("🔄 Starting automatic database migration...");
+        
         var ctx = svc.GetRequiredService<ApplicationDbContext>();
-        ctx.Database.Migrate();
+        
+        // Check if database exists and connection is working
+        var canConnect = await ctx.Database.CanConnectAsync();
+        log.LogInformation("✅ Database connection status: {CanConnect}", canConnect);
+        
+        if (!canConnect)
+        {
+            log.LogWarning("⚠️ Cannot connect to database. Retrying in 5 seconds...");
+            await Task.Delay(5000);
+            canConnect = await ctx.Database.CanConnectAsync();
+        }
+        
+        if (canConnect)
+        {
+            // Get pending migrations
+            var pendingMigrations = await ctx.Database.GetPendingMigrationsAsync();
+            var appliedMigrations = await ctx.Database.GetAppliedMigrationsAsync();
+            
+            log.LogInformation("📊 Applied migrations: {AppliedCount}", appliedMigrations.Count());
+            log.LogInformation("⏳ Pending migrations: {PendingCount}", pendingMigrations.Count());
+            
+            if (pendingMigrations.Any())
+            {
+                log.LogInformation("🚀 Applying {Count} pending migrations...", pendingMigrations.Count());
+                foreach (var migration in pendingMigrations)
+                {
+                    log.LogInformation("📝 Pending migration: {Migration}", migration);
+                }
+                
+                await ctx.Database.MigrateAsync();
+                log.LogInformation("✅ Database migrations applied successfully!");
+            }
+            else
+            {
+                log.LogInformation("✅ Database is already up to date!");
+            }
+        }
+        else
+        {
+            log.LogError("❌ Could not establish database connection for migrations!");
+        }
     }
     catch (Exception ex)
     {
-        var log = svc.GetRequiredService<ILogger<Program>>();
-        log.LogError(ex, "Erreur lors de la migration auto.");
+        log.LogError(ex, "❌ Error during automatic database migration: {ErrorMessage}", ex.Message);
+        
+        // In development, we might want to continue even if migrations fail
+        // In production, you might want to throw and stop the application
+        if (app.Environment.IsDevelopment())
+        {
+            log.LogWarning("⚠️ Continuing startup despite migration error (Development mode)");
+        }
+        else
+        {
+            throw; // Stop the application in production if migrations fail
+        }
     }
 }
+
+// Apply migrations before starting the app
+await ApplyMigrationsAsync();
 
 app.Run();
