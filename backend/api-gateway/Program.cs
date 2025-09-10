@@ -1,6 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add health checks
 builder.Services.AddHealthChecks();
 
 // Add CORS if needed
@@ -56,7 +55,7 @@ app.MapHealthChecks("/health");
 app.MapGet("/", (HttpContext context) => {
     // Use environment-specific URLs
     var isDevelopment = app.Environment.IsDevelopment();
-    var baseUrl = isDevelopment ? "http://localhost" : "https://api.eval-ing.live";
+    var baseUrl = isDevelopment ? "http://localhost" : "http://209.38.233.63";
     var authPort = isDevelopment ? ":5001" : ":5001";
     var catalogPort = isDevelopment ? ":5003" : ":5003";
     var questionnairePort = isDevelopment ? ":5004" : ":5004";
