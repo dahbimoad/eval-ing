@@ -433,6 +433,85 @@ app.MapGet("/", (HttpContext context) => {
             animation: pulse 2s infinite;
         }}
 
+        .documentation-section {{
+            margin-bottom: 48px;
+            animation: fadeInUp 0.8s ease-out 1.2s both;
+        }}
+
+        .documentation-card {{
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-lg);
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }}
+
+        .documentation-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }}
+
+        .documentation-header {{
+            margin-bottom: 24px;
+        }}
+
+        .documentation-icon {{
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin: 0 auto 16px;
+            animation: pulse 2s infinite;
+        }}
+
+        .documentation-title {{
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+        }}
+
+        .documentation-description {{
+            color: #4a5568;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }}
+
+        .documentation-link {{
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: var(--transition);
+            box-shadow: 0 8px 30px rgba(240, 147, 251, 0.3);
+        }}
+
+        .documentation-link:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(240, 147, 251, 0.4);
+        }}
+
         .footer {{
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
@@ -665,6 +744,28 @@ app.MapGet("/", (HttpContext context) => {
                         </a>
                     </div>
                 </div>
+            </div>
+        </section>
+        
+        <section class='documentation-section'>
+            <div class='documentation-card'>
+                <div class='documentation-header'>
+                    <div class='documentation-icon'>
+                        <i class=""fas fa-folder-open""></i>
+                    </div>
+                    <h3 class='documentation-title'>📁 Project Reports & Demos</h3>
+                </div>
+                <p class='documentation-description'>
+                    Explore comprehensive project documentation, technical reports, architecture diagrams, 
+                    and demonstration videos showcasing the complete system functionality and development process.
+                </p>
+                <a href='https://drive.google.com/drive/u/1/folders/1RepeGm5a3tKa8LWXnGJ7CpoN5OyxAdKA' 
+                   class='documentation-link' 
+                   target='_blank' 
+                   rel='noopener noreferrer'>
+                    <i class=""fas fa-external-link-alt""></i>
+                    View Documentation & Videos
+                </a>
             </div>
         </section>
         
