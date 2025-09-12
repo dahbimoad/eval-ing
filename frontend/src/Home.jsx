@@ -7,6 +7,7 @@ import About from "./Components/HomePage/About";
 import Contact from "./Components/HomePage/Contact";
 import Footer from "./Components/HomePage/Footer";
 import AnimationStyles from "./Components/HomePage/AnimationStyles";
+import ApiShowcase from "./Components/HomePage/ApiShowcase";
 function Home(){
     return(
         <>
@@ -14,6 +15,7 @@ function Home(){
         <Header/>
         <Section1/>
         <Section2/>
+        <ApiShowcase/>
         <Section3/>
         <About/>
         <Contact/>
