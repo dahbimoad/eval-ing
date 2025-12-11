@@ -180,6 +180,10 @@ app.UseSwaggerUI(o =>
     o.RoutePrefix = "docs"; // accessible via /docs
 });
 
+// Ensure upload directories exist
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads", "profiles");
+Directory.CreateDirectory(uploadsPath);
+
 // Middleware order is important
 app.UseHttpsRedirection();
 app.UseStaticFiles();
