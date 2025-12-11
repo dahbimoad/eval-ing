@@ -157,6 +157,41 @@ function Login() {
                     )}
                   </button>
                 </form>
+
+                {/* Test Credentials Info */}
+                <div className="mt-6 p-4 bg-blue-500/20 border border-blue-400/30 rounded-lg backdrop-blur-sm">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-blue-200 mb-2">
+                        🧪 Compte de test Admin
+                      </h4>
+                      <div className="space-y-1 text-xs text-blue-100">
+                        <p className="font-mono">
+                          <span className="text-blue-300">Email:</span> admin@adm.uae.ac.ma
+                        </p>
+                        <p className="font-mono">
+                          <span className="text-blue-300">Mot de passe:</span> Admin@123
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail('admin@adm.uae.ac.ma');
+                          setPassword('Admin@123');
+                        }}
+                        className="mt-2 text-xs text-blue-200 hover:text-blue-100 underline transition-colors"
+                      >
+                        Remplir automatiquement
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Register */}
                 
               </div>

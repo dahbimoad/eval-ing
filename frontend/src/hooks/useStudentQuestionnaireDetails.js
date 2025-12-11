@@ -10,7 +10,6 @@ export function useStudentQuestionnaireDetails(templateCode) {
 
   useEffect(() => {
     if (!templateCode) {
-      console.warn("No templateCode provided to useStudentQuestionnaireDetails");
       setLoading(false);
       setError("Template code is required");
       return;
@@ -21,13 +20,10 @@ export function useStudentQuestionnaireDetails(templateCode) {
         setLoading(true);
         setError(null);
         
-        console.log("Fetching student questionnaire details for:", templateCode);
         const res = await getStudentTemplateDetails(templateCode);
-        console.log("Student questionnaire details received:", res.data);
         
         setTemplate(res.data);
       } catch (e) {
-        console.error("Error fetching student questionnaire details:", e);
         const errorMessage = e.response?.data?.message || e.message || "Impossible de charger le questionnaire étudiant.";
         
         setError(errorMessage);
@@ -59,9 +55,7 @@ export function useStudentQuestionnaireDetails(templateCode) {
       
       const res = await getStudentTemplateDetails(templateCode);
       setTemplate(res.data);
-      console.log("Template refreshed successfully");
     } catch (e) {
-      console.error("Error refreshing template:", e);
       const errorMessage = e.response?.data?.message || e.message || "Erreur lors du rafraîchissement";
       setError(errorMessage);
       toast.error(errorMessage);

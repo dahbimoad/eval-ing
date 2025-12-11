@@ -2,6 +2,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
+// Add YARP reverse proxy
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
 // Add CORS if needed
 builder.Services.AddCors(options =>
 {
@@ -47,6 +51,9 @@ app.Use(async (context, next) =>
 
 // Enable CORS
 app.UseCors();
+
+// Add YARP routing BEFORE other routes
+app.MapReverseProxy();
 
 // Add health check endpoint
 app.MapHealthChecks("/health");
