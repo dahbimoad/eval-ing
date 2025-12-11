@@ -28,9 +28,3 @@ export const submitProfessionalAnswers = async (templateCode, data) => {
     throw error;
   }
 };
-    console.error("❌ Error details:", error);
-    console.error("❌ Error response:", error.response?.data);
-    console.error("❌ Error status:", error.response?.status);
-    throw error;
-  }
-};
