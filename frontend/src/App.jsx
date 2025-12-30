@@ -26,6 +26,7 @@ import ProfessionalDashboard from "./Components/Dashboard/ProfessionalDashboard.
 import AnswerQuestionnaireProfessional from "./Components/Dashboard/AnswerQuestionnaireProfessional.jsx";
 import StudentDashboard from "./Components/Dashboard/StudentDashboard.jsx";
 import AnswerQuestionnaireStudent from "./Components/Dashboard/AnswerQuestionnaireStudent.jsx";
+import DeploymentNotice from "./Components/DeploymentNotice.jsx";
 
 export default function App() {
   return (
@@ -35,16 +36,16 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forget" element={<Forget />} />
-        <Route path="/reset-password" element={<Reset />} /> {/* Add this line for the Reset component */}
+          <Route path="/reset-password" element={<Reset />} />
           <Route path="/redirect" element={<FirstLoginRedirect />} />
 
-          {/* 🔐 Routes protégées */}
+          {/* ��� Routes protégées */}
           <Route path="/admin" element={
             <PrivateRoute>
               <Admin />
             </PrivateRoute>
           } />
-           <Route path="/ProfileCompletion" element={
+          <Route path="/ProfileCompletion" element={
             <PrivateRoute>
               <ProfileCompletion />
             </PrivateRoute>
@@ -94,44 +95,46 @@ export default function App() {
               <QuestionnairePublications />
             </PrivateRoute>
           } />
-         
- <Route path="/enseignant/dashboard" element={
-  <PrivateRoute>
-    <ProfessorDashboard />
-  </PrivateRoute>
-} />
 
-<Route path="/enseignant/questionnaire/:templateCode" element={
-  <PrivateRoute>
-    <AnswerQuestionnaire />
-  </PrivateRoute>
-} />
- <Route path="/pro/dashboard" element={
-  <PrivateRoute>
-    <ProfessionalDashboard />
-  </PrivateRoute>
-} />
+          <Route path="/enseignant/dashboard" element={
+            <PrivateRoute>
+              <ProfessorDashboard />
+            </PrivateRoute>
+          } />
 
-<Route path="/professionnel/questionnaire/:templateCode" element={
-  <PrivateRoute>  
-    <AnswerQuestionnaireProfessional />
-  </PrivateRoute>
-} />
-<Route path="/etudiant/dashboard" element={
-  <PrivateRoute>
-    <StudentDashboard />
-  </PrivateRoute>
-} />
-<Route path="/etudiant/questionnaire/:templateCode" element={
-  <PrivateRoute>
-    <AnswerQuestionnaireStudent />
-  </PrivateRoute>
-} />
-          
-          
-        
-        
+          <Route path="/enseignant/questionnaire/:templateCode" element={
+            <PrivateRoute>
+              <AnswerQuestionnaire />
+            </PrivateRoute>
+          } />
+
+          <Route path="/pro/dashboard" element={
+            <PrivateRoute>
+              <ProfessionalDashboard />
+            </PrivateRoute>
+          } />
+
+          <Route path="/professionnel/questionnaire/:templateCode" element={
+            <PrivateRoute>
+              <AnswerQuestionnaireProfessional />
+            </PrivateRoute>
+          } />
+
+          <Route path="/etudiant/dashboard" element={
+            <PrivateRoute>
+              <StudentDashboard />
+            </PrivateRoute>
+          } />
+
+          <Route path="/etudiant/questionnaire/:templateCode" element={
+            <PrivateRoute>
+              <AnswerQuestionnaireStudent />
+            </PrivateRoute>
+          } />
         </Routes>
+        
+        {/* Notice de déploiement */}
+        <DeploymentNotice />
       </Router>
     </AuthProvider>
   );
