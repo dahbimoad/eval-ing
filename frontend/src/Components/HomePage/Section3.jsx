@@ -1,127 +1,120 @@
-import React, { useState } from "react";
-import img4 from '../images/HomePage/4.png';
-import img5 from '../images/HomePage/5.png';
-import img6 from '../images/HomePage/6.png';
-import { TrendingUp, MessageSquare, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useRef } from "react";
+import { TrendingUp, MessageSquare, BarChart3, Shield, Zap, Globe } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 
+const FEATURES = [
+  {
+    icon: TrendingUp,
+    title: "Suivi des progrès",
+    description:
+      "Tableaux de bord interactifs pour suivre l'évolution des étudiants avec des indicateurs de performance en temps réel.",
+    accent: "emerald",
+  },
+  {
+    icon: MessageSquare,
+    title: "Feedback détaillé",
+    description:
+      "Système de retours personnalisés avec commentaires structurés et suggestions d'amélioration.",
+    accent: "cyan",
+  },
+  {
+    icon: BarChart3,
+    title: "Rapports d'évaluation",
+    description:
+      "Génération automatique de rapports complets avec analyses statistiques et visualisations.",
+    accent: "blue",
+  },
+  {
+    icon: Shield,
+    title: "Sécurité avancée",
+    description:
+      "Authentification robuste, contrôle d'accès par rôle et protection complète des données.",
+    accent: "indigo",
+  },
+  {
+    icon: Zap,
+    title: "Performance optimale",
+    description:
+      "Architecture microservices pour une réactivité maximale et une scalabilité sans limite.",
+    accent: "violet",
+  },
+  {
+    icon: Globe,
+    title: "Multi-filières",
+    description:
+      "Gestion de multiples formations et filières avec des questionnaires adaptés à chaque cursus.",
+    accent: "pink",
+  },
+];
+
+const ACCENTS = {
+  emerald: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: "text-emerald-400", glow: "group-hover:shadow-emerald-500/10" },
+  cyan:    { bg: "bg-cyan-500/10",    border: "border-cyan-500/20",    icon: "text-cyan-400",    glow: "group-hover:shadow-cyan-500/10" },
+  blue:    { bg: "bg-blue-500/10",    border: "border-blue-500/20",    icon: "text-blue-400",    glow: "group-hover:shadow-blue-500/10" },
+  indigo:  { bg: "bg-indigo-500/10",  border: "border-indigo-500/20",  icon: "text-indigo-400",  glow: "group-hover:shadow-indigo-500/10" },
+  violet:  { bg: "bg-violet-500/10",  border: "border-violet-500/20",  icon: "text-violet-400",  glow: "group-hover:shadow-violet-500/10" },
+  pink:    { bg: "bg-pink-500/10",    border: "border-pink-500/20",    icon: "text-pink-400",    glow: "group-hover:shadow-pink-500/10" },
+};
 
 function Section3() {
-  const [activeFeature, setActiveFeature] = useState(null);
-  const [hoveredFeature, setHoveredFeature] = useState(null);
-
-  const features = [
-    {
-      icon: <TrendingUp className="w-12 h-12 text-emerald-600" />,
-      title: "Suivi des Progrès",
-      description: "Suivez facilement les progrès des étudiants à travers leurs évaluations avec des tableaux de bord interactifs.",
-      details: "Visualisation en temps réel, graphiques de progression, alertes automatiques pour les performances exceptionnelles ou nécessitant une attention particulière.",
-      color: "from-emerald-500 to-cyan-500",
-      accent: "emerald"
-    },
-    {
-      icon: <MessageSquare className="w-12 h-12  text-purple-600" />,
-      title: "Feedback Détaillé",
-      description: "Fournissez des retours constructifs et personnalisés pour chaque évaluation avec notre système de commentaires avancé.",
-      details: "Commentaires vocaux, annotations visuelles, suggestions d'amélioration automatiques basées sur l'IA, historique des retours.",
-      color: "from-purple-500 to-pink-500",
-      accent: "purple"
-    },
-    {
-      icon: <BarChart3 className="w-12 h-12 text-blue-600" />,
-      title: "Rapports d'Évaluation",
-      description: "Générez des rapports complets avec des analyses statistiques approfondies et des visualisations interactives.",
-      details: "Exportation PDF/Excel, comparaisons temporelles, analyses prédictives, recommandations pédagogiques personnalisées.",
-      color: "from-blue-500 to-indigo-500",
-      accent: "blue"
-    }
-  ];
-
-  const toggleFeature = (index) => {
-    setActiveFeature(activeFeature === index ? null : index);
-  };
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <div id="fonctionnalites" className="py-20 bg-gradient-to-br  from-blue-900 via-blue-700 to-blue-900 relative overflow-hidden">
-      {/* Enhanced Background Elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-40 h-40 bg-emerald-400 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-60 h-60 bg-purple-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+    <section
+      id="fonctionnalites"
+      className="relative py-28 bg-slate-950 overflow-hidden"
+    >
+      {/* Subtle glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Nos <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Fonctionnalités</span>
+      <div ref={ref} className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-4">
+            Fonctionnalités
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Tout ce dont vous avez besoin
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Des outils puissants pour révolutionner l'évaluation éducative
+          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+            Des outils puissants et intuitifs pour moderniser l'évaluation pédagogique.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="space-y-12">
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className={`bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 transition-all duration-500 animate-fade-in-up ${
-                hoveredFeature === index ? 'bg-white/20 scale-105' : 'hover:bg-white/15'
-              } ${activeFeature === index ? 'ring-2 ring-emerald-400' : ''}`}
-              style={{ animationDelay: `${index * 0.2}s` }}
-              onMouseEnter={() => setHoveredFeature(index)}
-              onMouseLeave={() => setHoveredFeature(null)}
-            >
-              <div className="flex flex-col lg:flex-row items-center gap-8">
-                <div className="flex-1 text-center lg:text-left">
-                  <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                    <div className={`p-3 rounded-full bg-gradient-to-r ${feature.color} shadow-lg animate-pulse`}>
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">{feature.title}</h3>
-                  </div>
-                  <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-                    {feature.description}
-                  </p>
-                  <button
-                    onClick={() => toggleFeature(index)}
-                    className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-6 py-3 rounded-full hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 font-semibold flex items-center gap-2 mx-auto lg:mx-0 shadow-lg"
-                  >
-                    {activeFeature === index ? (
-                      <>
-                        <ChevronUp className="w-4 h-4" />
-                        Moins de détails
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="w-4 h-4" />
-                        Plus de détails
-                      </>
-                    )}
-                  </button>
+        {/* Feature grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {FEATURES.map((feat, i) => {
+            const a = ACCENTS[feat.accent];
+            return (
+              <motion.div
+                key={feat.title}
+                initial={{ opacity: 0, y: 32 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className={`group relative bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:bg-slate-900/90 hover:border-slate-700 hover:shadow-2xl ${a.glow} transition-all duration-400 hover:-translate-y-1`}
+              >
+                <div className={`w-12 h-12 rounded-xl ${a.bg} border ${a.border} flex items-center justify-center mb-5`}>
+                  <feat.icon className={`w-5 h-5 ${a.icon}`} />
                 </div>
-                
-                <div className="flex-1 flex justify-center">
-                  <div className={`w-64 h-64 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center transform transition-all duration-500 ${
-                    hoveredFeature === index ? 'scale-110 rotate-3' : 'hover:scale-105'
-                  } shadow-2xl`}>
-                    <div className="text-white text-8xl opacity-30 animate-pulse">
-                      {feature.icon}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {activeFeature === index && (
-                <div className="mt-8 bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 animate-slide-down">
-                  <p className="text-gray-200 leading-relaxed">
-                    {feature.details}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {feat.title}
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  {feat.description}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
+
 export default Section3;

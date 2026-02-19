@@ -1,76 +1,132 @@
-import React from "react";
+import React, { useRef } from "react";
+import { ClipboardList, Users, BarChart3, ArrowRight } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 
-import { Award, Users, BarChart3 } from "lucide-react";
+const STEPS = [
+  {
+    num: "01",
+    icon: ClipboardList,
+    title: "Créer l'évaluation",
+    description:
+      "Définissez les critères, choisissez un modèle ou créez-en un sur mesure en quelques clics.",
+    accent: "emerald",
+  },
+  {
+    num: "02",
+    icon: Users,
+    title: "Collecter les réponses",
+    description:
+      "Étudiants, enseignants et professionnels soumettent leurs réponses en toute simplicité.",
+    accent: "cyan",
+  },
+  {
+    num: "03",
+    icon: BarChart3,
+    title: "Analyser les résultats",
+    description:
+      "Visualisez les performances en temps réel grâce à des tableaux de bord et rapports détaillés.",
+    accent: "blue",
+  },
+];
+
+const ACCENT_MAP = {
+  emerald: {
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    text: "text-emerald-400",
+    icon: "text-emerald-400",
+    line: "from-emerald-500",
+  },
+  cyan: {
+    bg: "bg-cyan-500/10",
+    border: "border-cyan-500/20",
+    text: "text-cyan-400",
+    icon: "text-cyan-400",
+    line: "from-cyan-500",
+  },
+  blue: {
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+    text: "text-blue-400",
+    icon: "text-blue-400",
+    line: "from-blue-500",
+  },
+};
 
 function Section2() {
-  const steps = [
-    {
-      icon: <Award className="w-16 h-16 text-emerald-600" />,
-      title: "Création de l'évaluation",
-      description: "Les administrateurs définissent les critères d'évaluation avec des outils intuitifs",
-      color: "from-emerald-500 to-cyan-500"
-    },
-    {
-      icon: <Users className="w-16 h-16 text-purple-600" />,
-      title: "Soumission des évaluations",
-      description: "Les étudiants et enseignants soumettent leurs travaux facilement",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: <BarChart3 className="w-16 h-16 text-blue-600" />,
-      title: "Analyse des résultats",
-      description: "Analyse détaillée et visualisation des performances en temps réel",
-      color: "from-blue-500 to-indigo-500"
-    }
-  ];
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <div className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-5">
-        <div className="absolute top-20 left-10 w-40 h-40 bg-emerald-500 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-60 h-60 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+    <section className="relative py-28 bg-white overflow-hidden">
+      {/* Subtle bg pattern */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: 'radial-gradient(circle, #64748b 1px, transparent 1px)',
+        backgroundSize: '32px 32px',
+      }} />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Comment ça marche</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Un processus simple et efficace en trois étapes
+      <div ref={ref} className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <span className="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm font-medium mb-4">
+            Comment ça marche
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+            Trois étapes vers l'excellence
+          </h2>
+          <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">
+            Un processus fluide, de la création d'évaluation jusqu'à l'analyse des résultats.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step, index) => (
-            <div 
-              key={index} 
-              className="relative group animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.2}s` }}
-            >
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group-hover:border-emerald-200">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`bg-gradient-to-br ${step.color} bg-opacity-10 p-6 rounded-full group-hover:scale-110 transition-all duration-300 animate-pulse`}>
-                    {step.icon}
+        {/* Steps */}
+        <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+          {STEPS.map((step, i) => {
+            const a = ACCENT_MAP[step.accent];
+            return (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 40 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+                className="relative group"
+              >
+                {/* Connector arrow (hidden on last) */}
+                {i < STEPS.length - 1 && (
+                  <div className="hidden md:flex absolute top-12 -right-6 lg:-right-8 z-10 text-slate-300">
+                    <ArrowRight className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-800">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                )}
+
+                <div className="bg-white border border-slate-100 rounded-2xl p-8 h-full hover:border-slate-200 hover:shadow-xl hover:shadow-slate-100 transition-all duration-400 group-hover:-translate-y-1">
+                  {/* Number + Icon */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className={`w-14 h-14 rounded-2xl ${a.bg} border ${a.border} flex items-center justify-center`}>
+                      <step.icon className={`w-6 h-6 ${a.icon}`} />
+                    </div>
+                    <span className={`text-4xl font-extrabold ${a.text} opacity-30 select-none`}>
+                      {step.num}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-slate-500 leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
-                
-                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${step.color} rounded-t-2xl`}></div>
-              </div>
-              
-              {/* Animated Connection Line */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2">
-                  <div className="w-8 h-0.5 bg-gradient-to-r from-emerald-300 to-purple-300 animate-pulse"></div>
-                  <div className="absolute -right-1 -top-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
-                </div>
-              )}
-            </div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

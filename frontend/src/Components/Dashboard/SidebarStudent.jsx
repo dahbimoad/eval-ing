@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FaClipboardList, FaSignOutAlt, FaGraduationCap } from "react-icons/fa";
 import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "../images/HomePage/Eval.png";
 
 function SidebarStudent() {
     const location = useLocation();
@@ -29,7 +28,7 @@ function SidebarStudent() {
                 <div className="relative z-10 flex flex-col h-full">
                     <div className="p-8 border-b border-white/10">
                         <div className="flex items-center justify-center mb-4">
-                            <img src={logo} alt="Logo" className="w-32 h-auto" />
+                            <img src="/logo-evaling.svg" alt="EvalIng Logo" className="h-12 w-auto" />
                         </div>
                         <div className="text-center">
                             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">

@@ -1,73 +1,113 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Users, Target, Award } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useRef } from "react";
+import { Layers, ShieldCheck, Database, Workflow } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+
+const HIGHLIGHTS = [
+  { icon: Layers, value: "4", label: "Microservices indépendants", accent: "emerald" },
+  { icon: ShieldCheck, value: "4", label: "Rôles utilisateurs", accent: "cyan" },
+  { icon: Database, value: "5", label: "Bases de données", accent: "blue" },
+  { icon: Workflow, value: "Full", label: "Pipeline CI/CD Docker", accent: "indigo" },
+];
+
+const ACCENT_MAP = {
+  emerald: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", icon: "text-emerald-400" },
+  cyan:    { bg: "bg-cyan-500/10",    border: "border-cyan-500/20",    text: "text-cyan-400",    icon: "text-cyan-400" },
+  blue:    { bg: "bg-blue-500/10",    border: "border-blue-500/20",    text: "text-blue-400",    icon: "text-blue-400" },
+  indigo:  { bg: "bg-indigo-500/10",  border: "border-indigo-500/20",  text: "text-indigo-400",  icon: "text-indigo-400" },
+};
 
 function About() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const element = document.getElementById('about');
-    if (element) observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
-
-  const stats = [
-    { icon: Users, value: "3K+", label: "Étudiants", color: "emerald" },
-    { icon: Target, value: "6", label: "Filières", color: "purple" },
-    { icon: Award, value: "10K+", label: "Instructeurs", color: "blue" }
-  ];
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <div id="about" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-10 right-10 w-32 h-32 bg-emerald-500 rounded-full blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-10 left-10 w-40 h-40 bg-purple-500 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+    <section id="about" className="relative py-28 bg-white overflow-hidden">
+      {/* Decorative dot pattern */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: 'radial-gradient(circle, #64748b 1px, transparent 1px)',
+        backgroundSize: '32px 32px',
+      }} />
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <div className="text-center animate-fade-in-up">
-          <h2 className="text-4xl font-bold text-gray-800 mb-6">
-            À Propos de <span className="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Nous</span>
-          </h2>
-          <div className="bg-white rounded-3xl p-12 shadow-2xl border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <p className="text-lg text-gray-700 mb-8 leading-relaxed max-w-4xl mx-auto">
-              EvalIng est une plateforme innovante dédiée à l'évaluation continue des étudiants en ingénierie.
-              Nous permettons aux enseignants et administrateurs de suivre efficacement les progrès des étudiants, 
-              tout en fournissant un retour détaillé pour chaque évaluation. Notre mission est de rendre l'évaluation 
-              plus accessible, transparente et précise pour tous les acteurs de l'éducation.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              {stats.map((stat, index) => (
-                <div 
-                  key={index} 
-                  className={`text-center transform transition-all duration-500 animate-fade-in-up ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                  style={{ animationDelay: `${0.4 + index * 0.2}s` }}
-                >
-                  <div className={`bg-${stat.color}-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle`}>
-                    <stat.icon className={`w-8 h-8 text-${stat.color}-600`} />
-                  </div>
-                  <h3 className={`text-3xl font-bold text-${stat.color}-600 animate-count-up`}>{stat.value}</h3>
-                  <p className="text-gray-600">{stat.label}</p>
-                </div>
-              ))}
+      <div ref={ref} className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left: text content */}
+          <motion.div
+            initial={{ opacity: 0, x: -32 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm font-medium mb-4">
+              À propos du projet
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-6">
+              Un projet{' '}
+              <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-gradient">
+                full-stack
+              </span>{' '}
+              de A à Z
+            </h2>
+            <div className="space-y-4 text-slate-600 leading-relaxed">
+              <p>
+                EvalIng est une plateforme complète de digitalisation des évaluations de
+                formations d'ingénieurs — conçue avec une architecture
+                microservices moderne et pensée pour la performance.
+              </p>
+              <p>
+                Le système gère 4 rôles distincts (Administrateur, Enseignant,
+                Étudiant, Professionnel), permet la création de questionnaires
+                dynamiques, la collecte de réponses et la génération de
+                statistiques détaillées.
+              </p>
             </div>
-          </div>
+
+            {/* Tech highlights */}
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              {["React 19 + Tailwind", ".NET 9 + EF Core", "Docker + Kafka", "PostgreSQL"].map(
+                (item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 text-sm text-slate-600"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    {item}
+                  </div>
+                )
+              )}
+            </div>
+          </motion.div>
+
+          {/* Right: stats grid */}
+          <motion.div
+            initial={{ opacity: 0, x: 32 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            <div className="grid grid-cols-2 gap-5">
+              {HIGHLIGHTS.map((stat, i) => {
+                const a = ACCENT_MAP[stat.accent];
+                return (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={inView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                    className="bg-slate-50 border border-slate-100 rounded-2xl p-6 text-center hover:shadow-lg hover:shadow-slate-100 transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className={`w-12 h-12 rounded-xl ${a.bg} border ${a.border} flex items-center justify-center mx-auto mb-4`}>
+                      <stat.icon className={`w-5 h-5 ${a.icon}`} />
+                    </div>
+                    <div className={`text-2xl font-bold ${a.text} mb-1`}>
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-slate-500">{stat.label}</div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

@@ -1,158 +1,8 @@
 import React from 'react';
 
-
 function AnimationStyles() {
   return (
-    <style jsx>{`
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes fadeInLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      @keyframes fadeInRight {
-        from {
-          opacity: 0;
-          transform: translateX(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      @keyframes fadeInDown {
-        from {
-          opacity: 0;
-          transform: translateY(-30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes float {
-        0%, 100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
-      }
-
-      @keyframes floatDelayed {
-        0%, 100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-15px);
-        }
-      }
-
-      @keyframes gradientX {
-        0%, 100% {
-          background-size: 200% 200%;
-          background-position: left center;
-        }
-        50% {
-          background-size: 200% 200%;
-          background-position: right center;
-        }
-      }
-
-      @keyframes bounceGentle {
-        0%, 100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-5px);
-        }
-      }
-
-      @keyframes countUp {
-        from {
-          opacity: 0;
-          transform: scale(0.5);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      .animate-fade-in-up {
-        animation: fadeInUp 0.8s ease-out forwards;
-        opacity: 0;
-      }
-
-      .animate-fade-in-left {
-        animation: fadeInLeft 0.8s ease-out forwards;
-        opacity: 0;
-      }
-
-      .animate-fade-in-right {
-        animation: fadeInRight 0.8s ease-out forwards;
-        opacity: 0;
-      }
-
-      .animate-fade-in-down {
-        animation: fadeInDown 0.8s ease-out forwards;
-        opacity: 0;
-      }
-
-      .animate-slide-down {
-        animation: slideDown 0.5s ease-out forwards;
-      }
-
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
-
-      .animate-float-delayed {
-        animation: floatDelayed 8s ease-in-out infinite;
-        animation-delay: 2s;
-      }
-
-      .animate-gradient-x {
-        animation: gradientX 3s ease infinite;
-      }
-
-      .animate-bounce-gentle {
-        animation: bounceGentle 2s ease-in-out infinite;
-      }
-
-      .animate-count-up {
-        animation: countUp 1s ease-out forwards;
-      }
-
+    <style>{`
       /* Smooth scroll behavior */
       html {
         scroll-behavior: smooth;
@@ -160,20 +10,44 @@ function AnimationStyles() {
 
       /* Custom scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
+        width: 6px;
       }
-
       ::-webkit-scrollbar-track {
-        background: #1f2937;
+        background: #0f172a;
       }
-
       ::-webkit-scrollbar-thumb {
-        background: linear-gradient(to bottom, #10b981, #06b6d4);
-        border-radius: 4px;
+        background: linear-gradient(to bottom, #10b981, #0ea5e9);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(to bottom, #059669, #0284c7);
       }
 
-      ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(to bottom, #059669, #0891b2);
+      /* Landing page overrides — scoped so they don't bleed into dashboard */
+      .landing-page input,
+      .landing-page select,
+      .landing-page textarea {
+        background-color: transparent !important;
+        color: inherit !important;
+        border: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+
+      /* Gradient text helper */
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Subtle glow on cards */
+      .card-glow {
+        transition: box-shadow 0.4s ease;
+      }
+      .card-glow:hover {
+        box-shadow: 0 0 40px -12px rgba(16, 185, 129, 0.25);
       }
     `}</style>
   );

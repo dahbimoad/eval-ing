@@ -8,20 +8,20 @@ import Contact from "./Components/HomePage/Contact";
 import Footer from "./Components/HomePage/Footer";
 import AnimationStyles from "./Components/HomePage/AnimationStyles";
 import ApiShowcase from "./Components/HomePage/ApiShowcase";
+
 function Home(){
     return(
-        <>
-        <AnimationStyles/>
-        <Header/>
-        <Section1/>
-        <Section2/>
-        <ApiShowcase/>
-        <Section3/>
-        <About/>
-        <Contact/>
-        <Footer/>
-        
-        </>
+        <div className="landing-page">
+            <AnimationStyles/>
+            <Header/>
+            <Section1/>
+            <Section2/>
+            <Section3/>
+            <ApiShowcase/>
+            <About/>
+            <Contact/>
+            <Footer/>
+        </div>
     )
 }
 export default Home;

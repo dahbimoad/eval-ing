@@ -1,116 +1,117 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import logo from "../images/HomePage/Eval.png";
-import { Target, Code, ExternalLink, ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
+const NAV_ITEMS = [
+  { label: 'Accueil', href: '#home' },
+  { label: 'Fonctionnalités', href: '#fonctionnalites' },
+  { label: 'À propos', href: '#about' },
+  { label: 'Contact', href: '#contact' },
+];
 
 function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isApiDropdownOpen, setIsApiDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const apiServices = [
-    { name: 'API Gateway', url: 'https://api.eval-ing.live', icon: '🚀' },
-    { name: 'Authentication', url: 'http://209.38.233.63:5001/docs', icon: '🔒' },
-    { name: 'Catalog Service', url: 'http://209.38.233.63:5003/docs', icon: '📚' },
-    { name: 'Questionnaire', url: 'http://209.38.233.63:5004/docs', icon: '📝' },
-    { name: 'Statistics', url: 'http://209.38.233.63:5005/docs', icon: '📊' },
-    { name: 'Project Reports & Demos', url: 'https://drive.google.com/drive/u/1/folders/1RepeGm5a3tKa8LWXnGJ7CpoN5OyxAdKA', icon: '📁' }
-  ];
-
   return (
-    <div className={`bg-gradient-to-r from-blue-900 via-blue-700 to-blue-900 text-white sticky top-0 z-50 transition-all duration-500 ${isScrolled ? 'shadow-2xl backdrop-blur-md bg-opacity-90' : 'shadow-lg'}`}>
-      <header className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4 animate-fade-in-left">
-          <div className="bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full p-2 shadow-lg animate-pulse">
-            <Target className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
-            EvalIng
-          </h1>
-        </div>
-        
-        <nav className="hidden md:flex animate-fade-in-down">
-          <ul className="flex space-x-8">
-            {['Home', 'Fonctionnalités', 'À propos', 'Contact'].map((item, index) => (
-              <li key={item} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-down">
-                <a href={`#${item.toLowerCase().replace(' ', '').replace('à', 'a')}`} className="hover:text-emerald-400 transition-all duration-300 relative group font-medium">
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? 'bg-slate-950/80 backdrop-blur-xl shadow-lg shadow-black/10 border-b border-white/5'
+          : 'bg-transparent'
+      }`}
+    >
+      <nav className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18 py-4">
+          {/* Logo */}
+          <a href="#home" className="flex items-center gap-3 group">
+            <div className="relative">
+              <img src="/logo-icon.svg" alt="EvalIng" className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow duration-300" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">
+              Eval<span className="text-emerald-400">Ing</span>
+            </span>
+          </a>
+
+          {/* Desktop nav */}
+          <ul className="hidden md:flex items-center gap-1">
+            {NAV_ITEMS.map((item) => (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  className="relative px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200 rounded-lg hover:bg-white/5"
+                >
+                  {item.label}
                 </a>
               </li>
             ))}
-            <li className="animate-fade-in-down relative" style={{ animationDelay: '0.4s' }}>
-              <button 
-                onClick={() => setIsApiDropdownOpen(!isApiDropdownOpen)}
-                onMouseEnter={() => setIsApiDropdownOpen(true)}
-                className="hover:text-emerald-400 transition-all duration-300 relative group font-medium flex items-center space-x-2 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 px-4 py-2 rounded-full border border-emerald-400/20 hover:border-emerald-400/40 hover:bg-gradient-to-r hover:from-emerald-500/20 hover:to-cyan-500/20 backdrop-blur-sm"
-              >
-                <Code className="w-4 h-4 animate-pulse" />
-                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent font-semibold">
-                  API Docs
-                </span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isApiDropdownOpen ? 'rotate-180' : ''}`} />
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </button>
-              
-              {/* Dropdown Menu */}
-              {isApiDropdownOpen && (
-                <div 
-                  className="absolute top-full right-0 mt-2 w-64 bg-gradient-to-br from-gray-900/95 to-blue-900/95 backdrop-blur-lg rounded-xl shadow-2xl border border-emerald-400/20 z-50 animate-fade-in-down"
-                  onMouseLeave={() => setIsApiDropdownOpen(false)}
-                >
-                  <div className="p-2">
-                    <div className="text-xs text-emerald-400 px-3 py-2 font-semibold border-b border-emerald-400/20 mb-2">
-                      🔗 API Services & Documentation
-                    </div>
-                    {apiServices.map((service, index) => (
-                      <a
-                        key={service.name}
-                        href={service.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gradient-to-r hover:from-emerald-500/20 hover:to-cyan-500/20 transition-all duration-300 group"
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
-                        <span className="text-lg">{service.icon}</span>
-                        <div className="flex-1">
-                          <div className="text-white font-medium text-sm group-hover:text-emerald-400 transition-colors">
-                            {service.name}
-                          </div>
-                        </div>
-                        <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-emerald-400 transition-colors" />
-                      </a>
-                    ))}
-                  </div>
-                  <div className="border-t border-emerald-400/20 p-2">
-                    <div className="text-xs text-gray-400 px-3 py-1 text-center">
-                      ✨ Built with .NET 9 & Swagger
-                    </div>
-                  </div>
-                </div>
-              )}
-            </li>
           </ul>
-        </nav>
-        
-        <Link to="/login" >
-        <button className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-6 py-2 rounded-full hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold animate-fade-in-right">
-          Se connecter
-        </button>
-        </Link>
-      </header>
-    </div>
+
+          {/* CTA */}
+          <div className="flex items-center gap-3">
+            <Link
+              to="/login"
+              className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:from-emerald-400 hover:to-cyan-400 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Se connecter
+            </Link>
+
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-slate-950/95 backdrop-blur-xl border-t border-white/5 overflow-hidden"
+          >
+            <div className="px-6 py-4 space-y-1">
+              {NAV_ITEMS.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block mt-3 px-4 py-3 text-sm font-semibold text-center rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
+              >
+                Se connecter
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }
-
 
 export default Header;

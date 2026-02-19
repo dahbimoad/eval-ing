@@ -3,7 +3,6 @@ import { FaUsers, FaClipboardList, FaChartBar, FaFileAlt, FaHome, FaSignOutAlt }
 import { ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // Importer useAuth
-import logo from "../images/HomePage/Eval.png";
 
 function Sidebar() {
     const location = useLocation();
@@ -53,11 +52,11 @@ function Sidebar() {
                     {/* Header with Logo */}
                     <div className="p-8 border-b border-white/10">
                         <div className="flex items-center justify-center mb-4">
-                            <img src={logo} alt="Logo" className="w-32 h-auto" />
+                            <img src="/logo-evaling.svg" alt="EvalIng Logo" className="h-12 w-auto" />
                         </div>
                         <div className="text-center">
                             <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                                EvalPro Admin
+                                EvalIng Admin
                             </h1>
                             <p className="text-slate-300 text-sm mt-1">Tableau de bord</p>
                         </div>
