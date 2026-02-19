@@ -34,13 +34,8 @@ function Header() {
       <nav className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 py-4">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-3 group">
-            <div className="relative">
-              <img src="/logo-icon.svg" alt="EvalIng" className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow duration-300" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight">
-              Eval<span className="text-emerald-400">Ing</span>
-            </span>
+          <a href="#home" className="flex items-center group">
+            <img src="/logo-evaling.svg" alt="EvalIng" className="h-10 w-auto" />
           </a>
 
           {/* Desktop nav */}

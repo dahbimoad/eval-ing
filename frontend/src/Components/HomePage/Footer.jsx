@@ -20,11 +20,8 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="#home" className="flex items-center gap-3 mb-5">
-              <img src="/logo-icon.svg" alt="EvalIng" className="w-9 h-9 rounded-xl" />
-              <span className="text-lg font-bold text-white tracking-tight">
-                Eval<span className="text-emerald-400">Ing</span>
-              </span>
+            <a href="#home" className="flex items-center mb-5">
+              <img src="/logo-evaling.svg" alt="EvalIng" className="h-9 w-auto" />
             </a>
             <p className="text-sm text-slate-400 leading-relaxed max-w-sm mb-6">
               Plateforme full-stack de digitalisation
